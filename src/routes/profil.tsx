@@ -77,8 +77,7 @@ function ProfilPage() {
   const [bankName, setBankName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [email, setEmail] = useState("");
-  const [spouseFirstName, setSpouseFirstName] = useState("");
-  const [spouseLastName, setSpouseLastName] = useState("");
+  const [spouseId, setSpouseId] = useState("");
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -119,8 +118,7 @@ function ProfilPage() {
           setBankName(mine.bankName ?? "");
           setBirthday(mine.birthday ?? "");
           setEmail(mine.email ?? "");
-          setSpouseFirstName(mine.spouseFirstName ?? "");
-          setSpouseLastName(mine.spouseLastName ?? "");
+          setSpouseId(mine.spouseId ?? "");
         }
         setOtherMembers(
           res.members.filter(
@@ -259,8 +257,7 @@ function ProfilPage() {
           bankName: cleanBank,
           birthday,
           email: cleanEmail,
-          spouseFirstName,
-          spouseLastName,
+          spouseId,
         },
       });
       store.setConfig({ spreadsheetId: res.spreadsheetId });
@@ -606,22 +603,13 @@ function ProfilPage() {
                   <Heart className="h-3 w-3" /> Conjoint·e (optionnel)
                 </div>
                 <select
-                  value={
-                    spouseFirstName && spouseLastName ? `${spouseFirstName}|${spouseLastName}` : ""
-                  }
-                  onChange={(e) => {
-                    const [f, l] = e.target.value ? e.target.value.split("|") : ["", ""];
-                    setSpouseFirstName(f ?? "");
-                    setSpouseLastName(l ?? "");
-                  }}
+                  value={spouseId}
+                  onChange={(e) => setSpouseId(e.target.value)}
                   className="mt-1.5 w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
                 >
                   <option value="">Aucun</option>
                   {otherMembers.map((m) => (
-                    <option
-                      key={`${m.firstName}|${m.lastName}`}
-                      value={`${m.firstName}|${m.lastName}`}
-                    >
+                    <option key={m.id} value={m.id}>
                       {m.firstName} {m.lastName}
                     </option>
                   ))}

@@ -12,8 +12,8 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "BNP Paribas",
     birthday: "1982-04-12",
     email: "alain@fief.fr",
-    spouseFirstName: "Claire",
-    spouseLastName: "Bretillot",
+    spouseId: "m2",
+    
   },
   {
     id: "m2",
@@ -23,8 +23,8 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "Crédit Agricole",
     birthday: "1979-08-03",
     email: "marie.dupont@gmail.com",
-    spouseFirstName: "Pierre",
-    spouseLastName: "Dupont",
+    spouseId: "m1",
+    
   },
   {
     id: "m3",
@@ -34,8 +34,8 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "Crédit Agricole",
     birthday: "1977-02-17",
     email: "pierre.dupont@gmail.com",
-    spouseFirstName: "Marie",
-    spouseLastName: "Dupont",
+    spouseId: "m4",
+    
   },
   {
     id: "m4",
@@ -45,8 +45,8 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "LCL",
     birthday: "1985-11-28",
     email: "sophie.bernard@yahoo.fr",
-    spouseFirstName: "Paul",
-    spouseLastName: "Bernard",
+    spouseId: "m3",
+    
   },
   {
     id: "m5",
@@ -56,8 +56,8 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "LCL",
     birthday: "1983-06-14",
     email: "paul.bernard@yahoo.fr",
-    spouseFirstName: "Sophie",
-    spouseLastName: "Bernard",
+    spouseId: "m4",
+    
   },
   {
     id: "m6",
@@ -67,8 +67,7 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "Société Générale",
     birthday: "1990-03-21",
     email: "camille.leroy@outlook.fr",
-    spouseFirstName: "",
-    spouseLastName: "",
+    spouseId: "",
   },
   {
     id: "m7",
@@ -78,8 +77,8 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "CIC",
     birthday: "1975-09-07",
     email: "thomas.moreau@gmail.com",
-    spouseFirstName: "Julie",
-    spouseLastName: "Moreau",
+    spouseId: "m8",
+    
   },
   {
     id: "m8",
@@ -89,8 +88,8 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "CIC",
     birthday: "1978-12-30",
     email: "julie.moreau@gmail.com",
-    spouseFirstName: "Thomas",
-    spouseLastName: "Moreau",
+    spouseId: "m7",
+    
   },
   {
     id: "m9",
@@ -100,8 +99,7 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "La Banque Postale",
     birthday: "1993-05-16",
     email: "lucas.petit@gmail.com",
-    spouseFirstName: "",
-    spouseLastName: "",
+    spouseId: "",
   },
   {
     id: "m10",
@@ -111,8 +109,7 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "Crédit Mutuel",
     birthday: "1988-07-09",
     email: "emma.girard@gmail.com",
-    spouseFirstName: "",
-    spouseLastName: "",
+    spouseId: "",
   },
   {
     id: "m11",
@@ -122,8 +119,8 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "Caisse d'Épargne",
     birthday: "1971-01-25",
     email: "antoine.simon@orange.fr",
-    spouseFirstName: "Hélène",
-    spouseLastName: "Simon",
+    spouseId: "m10",
+    
   },
   {
     id: "m12",
@@ -133,8 +130,8 @@ export const MOCK_MEMBERS: Member[] = [
     bankName: "Caisse d'Épargne",
     birthday: "1973-10-11",
     email: "helene.simon@orange.fr",
-    spouseFirstName: "Antoine",
-    spouseLastName: "Simon",
+    spouseId: "m9",
+    
   },
 ];
 

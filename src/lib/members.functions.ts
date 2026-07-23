@@ -12,8 +12,7 @@ export interface Member {
   bankName: string;
   birthday: string; // ISO YYYY-MM-DD
   email: string;
-  spouseFirstName: string; // vide si non renseigné
-  spouseLastName: string;
+  spouseId: string; // ID du membre conjoint, vide si non renseigné
 }
 
 const ListInput = z.object({ spreadsheetId: z.string().nullable() });
@@ -66,8 +65,7 @@ export const listMembers = createServerFn({ method: "POST" })
         bankName: (row[5] ?? "").trim(),
         birthday: (row[6] ?? "").trim(),
         email: (row[7] ?? "").trim(),
-        spouseFirstName: (row[8] ?? "").trim(),
-        spouseLastName: (row[9] ?? "").trim(),
+        spouseId: (row[8] ?? "").trim(),
       };
       byName.set(
         `${firstName.toLocaleLowerCase("fr-FR")}:${lastName.toLocaleLowerCase("fr-FR")}`,
@@ -198,8 +196,7 @@ export const addMember = createServerFn({ method: "POST" })
         bankName,
         birthday,
         email,
-        spouseFirstName: "",
-        spouseLastName: "",
+        spouseId: "",
       },
     };
   });
@@ -215,8 +212,7 @@ const UpdateInput = z.object({
   bankName: z.string().min(1).max(80),
   birthday: z.string().min(1).max(20),
   email: z.string().email().max(120),
-  spouseFirstName: z.string().max(60).optional(),
-  spouseLastName: z.string().max(60).optional(),
+  spouseId: z.string().max(36).optional(),
 });
 
 export const updateMember = createServerFn({ method: "POST" })
@@ -231,8 +227,7 @@ export const updateMember = createServerFn({ method: "POST" })
     const bankName = data.bankName.trim();
     const birthday = data.birthday.trim();
     const email = data.email.trim().toLocaleLowerCase("fr-FR");
-    const spouseFirstName = (data.spouseFirstName ?? "").trim();
-    const spouseLastName = (data.spouseLastName ?? "").trim();
+    const spouseId = (data.spouseId ?? "").trim();
 
     const spreadsheetId = await ensureSpreadsheet(data.spreadsheetId);
     const rows = await getRows(spreadsheetId, `${MEMBERS_TAB}!A2:J`);
@@ -259,8 +254,8 @@ export const updateMember = createServerFn({ method: "POST" })
         bankName,
         birthday,
         email,
-        spouseFirstName,
-        spouseLastName,
+        spouseId,
+        "",
       ]);
     } catch (error) {
       console.error("[updateMember] échec updateRange (Sheets):", error);
@@ -279,8 +274,7 @@ export const updateMember = createServerFn({ method: "POST" })
         bankName,
         birthday,
         email,
-        spouseFirstName,
-        spouseLastName,
+        spouseId,
       },
     };
   });
