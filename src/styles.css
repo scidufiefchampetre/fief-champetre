@@ -1,0 +1,411 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+@import "@fontsource/inter/400.css";
+@import "@fontsource/inter/500.css";
+@import "@fontsource/inter/600.css";
+@import "@fontsource/inter/700.css";
+
+@custom-variant dark (&:is(.dark *));
+@custom-variant hover-device (@media (hover: hover) and (pointer: fine));
+@custom-variant touch-device (@media (hover: none));
+
+@theme {
+  --breakpoint-xs: 22.5rem; /* 360px */
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-secondary-foreground: var(--brand-secondary-foreground);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-accent-foreground: var(--brand-accent-foreground);
+  --color-brand-light: var(--pantone-light);
+  --color-brand-dark: var(--pantone-dark);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.06);
+  --shadow-float: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+
+:root {
+  --radius: 1.25rem;
+  /* PANTONE 11-4201 TPG "Cloud Dancer" — exact */
+  --background: #f0eee9;
+  /* PANTONE 20-0199 TPM "Darkest Hour" — pas de hex officiel publié pour ce
+     coloris métallisé, valeur la plus proche visuellement du swatch fourni */
+  --foreground: #242226;
+  --card: #f8f7f4;
+  --card-foreground: #242226;
+  --popover: #f8f7f4;
+  --popover-foreground: #242226;
+  --primary: #242226;
+  --primary-foreground: #f0eee9;
+  --secondary: oklch(0.93 0.004 90);
+  --secondary-foreground: oklch(0.32 0.006 285);
+  --muted: oklch(0.93 0.004 90);
+  --muted-foreground: oklch(0.55 0.006 285);
+  --accent: oklch(0.93 0.004 90);
+  --accent-foreground: oklch(0.32 0.006 285);
+  /* Rouge d'erreur système — réservé aux vrais messages d'erreur, hors palette Pantone */
+  --destructive: oklch(0.6 0.22 30);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.9 0.004 90);
+  --input: oklch(0.9 0.004 90);
+  --pantone-violet: #685bc7;
+  --pantone-orange: #ff582d;
+  --pantone-light: #f0eee9;
+  --pantone-dark: #242226;
+  /* 60–30–10 : base Cloud Dancer, contraste Blue Violet, accent Orange. */
+  --brand-secondary: var(--pantone-violet);
+  --brand-secondary-foreground: #fbfaf9;
+  --brand-accent: var(--pantone-orange);
+  --brand-accent-foreground: #fbfaf9;
+  --ring: var(--brand-secondary);
+  --success: oklch(0.9 0.05 145);
+  --success-foreground: oklch(0.35 0.05 145);
+}
+
+.dark {
+  --background: #242226;
+  --foreground: #f0eee9;
+  --card: #2c2a2f;
+  --card-foreground: #f0eee9;
+  --popover: #2c2a2f;
+  --popover-foreground: #f0eee9;
+  --primary: #f0eee9;
+  --primary-foreground: #242226;
+  --secondary: oklch(0.27 0.008 285);
+  --secondary-foreground: oklch(0.92 0.004 90);
+  --muted: oklch(0.27 0.008 285);
+  --muted-foreground: oklch(0.68 0.008 285);
+  --accent: oklch(0.27 0.008 285);
+  --accent-foreground: oklch(0.92 0.004 90);
+  --destructive: oklch(0.65 0.22 30);
+  --destructive-foreground: oklch(0.98 0 0);
+  --border: oklch(0.3 0.008 285);
+  --input: oklch(0.3 0.008 285);
+  --ring: var(--brand-secondary);
+  --success: oklch(0.4 0.08 145);
+  --success-foreground: oklch(0.92 0.05 145);
+  --brand-secondary: var(--pantone-violet);
+  --brand-secondary-foreground: #fbfaf9;
+  --brand-accent: var(--pantone-orange);
+  --brand-accent-foreground: #fbfaf9;
+}
+
+@keyframes rise-in {
+  0% {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fly-away {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-80px) scale(0.96);
+  }
+}
+@keyframes soft-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes check-pop {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  40% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes save-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+@keyframes loading-bar {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+@keyframes fly-bounce {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(-6deg);
+  }
+  50% {
+    transform: translate(10px, -8px) rotate(6deg);
+  }
+}
+
+@utility animate-rise {
+  animation: rise-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@utility animate-fly {
+  animation: fly-away 0.6s cubic-bezier(0.4, 0, 0.6, 1) forwards;
+}
+@utility animate-soft-pulse {
+  animation: soft-pulse 2s ease-in-out infinite;
+}
+@utility animate-check-pop {
+  animation: check-pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes save-dash {
+  0% {
+    stroke-dasharray: 1, 150;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -35;
+  }
+  100% {
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: -124;
+  }
+}
+@utility animate-save-spin {
+  animation: save-spin 1.2s linear infinite;
+}
+@utility animate-save-dash {
+  animation: save-dash 1.8s ease-in-out infinite;
+}
+@utility animate-loading-bar {
+  animation: loading-bar 1.5s ease-in-out infinite;
+}
+@utility animate-fly-bounce {
+  animation: fly-bounce 1.8s ease-in-out infinite;
+}
+@utility shadow-card {
+  box-shadow: var(--shadow-card);
+}
+@utility shadow-card-hover {
+  box-shadow: var(--shadow-card-hover);
+}
+@utility shadow-float {
+  box-shadow: var(--shadow-float);
+}
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Interactions : couleur pleine, hover intensifie, tap enfonce. */
+@utility tap {
+  transition-property: transform, filter, box-shadow, background-color, color, border-color;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+  &:active {
+    transform: scale(0.97);
+    filter: brightness(0.94);
+  }
+}
+@media (hover: hover) and (pointer: fine) {
+  .lift:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.06) saturate(1.08);
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+/* Sur mobile (pas de hover), un tap prolongé donne le même feedback visuel */
+@media (hover: none) {
+  .lift:active {
+    filter: brightness(1.08) saturate(1.1);
+    box-shadow: var(--shadow-card-hover);
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+  html,
+  body {
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+  }
+  h1,
+  h2,
+  h3 {
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+}
+
+.page-title {
+  font-size: 2.25rem;
+  line-height: 0.95;
+  font-weight: 900;
+  letter-spacing: -0.025em;
+}
+
+/* Grammaire pictogrammes 60–30–10 : une pastille secondaire est toujours
+   Blue Violet pleine avec un tracé blanc. Le sélecteur ne cible que les
+   conteneurs dédiés à une icône afin de ne pas recolorer les panneaux. */
+:is(span, div):has(> svg:only-child)[class*="bg-brand-secondary/"][class*="rounded"] {
+  background-color: var(--brand-secondary);
+  color: var(--brand-secondary-foreground);
+}
+:is(span, div):has(> svg:only-child)[class*="bg-brand-secondary/"][class*="rounded"]
+  > svg:only-child {
+  color: var(--brand-secondary-foreground);
+}
+
+.page-action {
+  display: inline-flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 1rem;
+  background: var(--brand-accent);
+  color: var(--brand-accent-foreground);
+  padding: 0.75rem 1rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    filter 180ms ease,
+    box-shadow 180ms ease;
+}
+.page-action:hover {
+  filter: brightness(0.96);
+  box-shadow: var(--shadow-card-hover);
+}
+.page-action:active {
+  transform: scale(0.97);
+}
+.page-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+/* ── Typographie — classes utilitaires normalisées ── */
+
+/* Titre hero : pages spacieuses uniquement (accueil, chantiers, agenda).
+   Sur pages denses (chantier.$id, admin), préférer .page-title. */
+.hero-title {
+  font-size: clamp(2.75rem, 11vw, 3.75rem);
+  line-height: 0.95;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+/* .page-title existant conservé (2.25rem/900) — alias pour compatibilité */
+
+/* Titre de section H2 */
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+/* Titre d'item / carte */
+.item-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+/* Info secondaire */
+.meta-text {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+  line-height: 1.4;
+}
+
+/* Label micro (9px uppercase tracking) */
+.label-micro {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* ── Boutons — classe utilitaire unifiée ── */
+/* min-height 44px = touch target minimum.
+   Icône toujours [&_svg]:size-4 (16×16) via buttonVariants.
+   Count badge à côté, jamais en remplacement de l'icône. */
+.btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4375rem;
+  min-height: 2.75rem;
+  padding: 0.6875rem 1.25rem;
+  border-radius: 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition:
+    filter 0.15s ease,
+    opacity 0.15s ease;
+  white-space: nowrap;
+}
