@@ -37,7 +37,7 @@ export interface AppModule {
 export const APP_MODULES: AppModule[] = [
   {
     key: "facture",
-    label: "Mes dépenses",
+    label: "Gérer mes dépenses",
     icon: FileText,
     color: "sun",
     links: [
@@ -58,7 +58,7 @@ export const APP_MODULES: AppModule[] = [
   },
   {
     key: "sejour",
-    label: "Mes réservations",
+    label: "Gérer mes réservations",
     icon: CalendarDays,
     color: "sci",
     links: [
@@ -78,7 +78,7 @@ export const APP_MODULES: AppModule[] = [
   },
   {
     key: "chantier",
-    label: "Mes chantiers",
+    label: "Gérer mes chantiers",
     icon: HardHat,
     color: "asso",
     links: [
