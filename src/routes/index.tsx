@@ -638,7 +638,8 @@ function ChantierExpenseAssociation({
       : []),
   ];
 
-  if (!looksLikeFood || (dismissed && !isChantierMeal)) return null;
+  const isSCI = expense.finalSide?.toLowerCase().includes("sci");
+  if (isSCI || !looksLikeFood || (dismissed && !isChantierMeal)) return null;
 
   function chooseChantierMeal() {
     onChange({
