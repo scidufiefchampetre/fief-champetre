@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -125,6 +125,7 @@ const TYPE_STYLES: Record<ReservationType, { bg: string; fg: string; icon: typeo
 function AgendaPage() {
   const store = useExpenseStore();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const list = useServerFn(listReservations);
   const [formOpen, setFormOpen] = useState(false);
   const [rangeStart, setRangeStart] = useState<string | null>(null);
@@ -237,7 +238,17 @@ function AgendaPage() {
             rangeStart={rangeStart}
             rangeEnd={rangeEnd}
             onDayClick={handleDayClick}
-            onSegmentClick={setDetail}
+            onSegmentClick={(r) => {
+              if (r.type === "chantier") {
+                void navigate({
+                  to: "/chantier/$id",
+                  params: { id: r.id },
+                  search: { startDate: r.startDate, demo: false, signupDemo: false, focus: undefined },
+                });
+              } else {
+                setDetail(r);
+              }
+            }}
           />
         </div>
 
