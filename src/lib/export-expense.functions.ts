@@ -101,9 +101,10 @@ export const exportExpense = createServerFn({ method: "POST" })
         : data.file.mimeType.startsWith("image/")
           ? "." + data.file.mimeType.split("/")[1]
           : "";
+    const id = crypto.randomUUID();
     const renamedFile = {
       ...data.file,
-      name: [dateSlug, objetSlug].filter(Boolean).join("_") + ext,
+      name: [dateSlug, objetSlug, id.slice(0, 8)].filter(Boolean).join("_") + ext,
     };
     const uploaded = await uploadFileToDrive(targetFolderId, renamedFile);
     const depositor = data.depositor
@@ -113,34 +114,34 @@ export const exportExpense = createServerFn({ method: "POST" })
     const paidByLabel = e.paidBy === "Membre" && memberFullName ? memberFullName : e.paidBy;
     const memberIban = e.paidBy === "Membre" ? (data.memberIban ?? "").replace(/\s+/g, "") : "";
     const personalNote = (data.personalNote ?? "").trim();
-    const id = crypto.randomUUID();
     const row = [
-      new Date().toISOString(),
-      e.supplier,
-      e.invoiceDate,
-      e.amountTTC,
-      e.vat ?? "",
-      e.topCategory,
-      e.purchaseDetail,
-      e.place,
-      paidByLabel,
-      e.paymentMethod,
-      memberIban,
-      e.reimbursementStatus ?? (e.paidBy === "Membre" ? "À rembourser" : ""),
-      e.reimbursementSide ?? "",
-      e.comment,
-      personalNote,
-      uploaded.webViewLink,
-      depositor,
-      id,
-      e.chantierId ?? "",
-      e.chantierStartDate ?? "",
-      e.chantierLabel ?? "",
+      new Date().toISOString(), // A
+      e.supplier,               // B
+      e.invoiceDate,            // C
+      e.amountTTC,              // D
+      e.vat ?? "",              // E
+      e.topCategory,            // F
+      e.purchaseDetail,         // G
+      e.place,                  // H
+      paidByLabel,              // I
+      e.paymentMethod,          // J
+      memberIban,               // K
+      e.reimbursementStatus ?? (e.paidBy === "Membre" ? "À rembourser" : ""), // L
+      e.reimbursementSide ?? "", // M
+      e.comment,                // N
+      personalNote,             // O
+      uploaded.webViewLink,     // P
+      depositor,                // Q
+      id,                       // R — ID unique facture
+      e.chantierId ?? "",       // S
+      e.chantierStartDate ?? "", // T
+      e.chantierLabel ?? "",    // U
+      uploaded.id,              // V — Drive file ID (pour suppression)
     ];
     const tab = tabForSide(e.finalSide);
     let mainRowWritten = false;
     try {
-      await appendRow(spreadsheetId, `${tab}!A:U`, row);
+      await appendRow(spreadsheetId, `${tab}!A:V`, row);
       mainRowWritten = true;
 
       if (e.chantierId && e.chantierStartDate) {
@@ -173,7 +174,7 @@ export const exportExpense = createServerFn({ method: "POST" })
     } catch (error) {
       if (mainRowWritten) {
         try {
-          const rows = await getRows(spreadsheetId, `${tab}!A2:U`);
+          const rows = await getRows(spreadsheetId, `${tab}!A2:V`);
           const rowIndex = rows.findIndex((candidate) => candidate[17] === id);
           if (rowIndex >= 0) await deleteRow(spreadsheetId, tab, rowIndex);
         } catch (rollbackError) {
@@ -194,4 +195,73 @@ export const exportExpense = createServerFn({ method: "POST" })
       tab,
       id,
     };
+  });
+
+const DeleteExpenseInput = z.object({
+  spreadsheetId: z.string().nullable(),
+  side: z.enum(["SCI", "Association"]),
+  expenseId: z.string().min(1),
+  password: z.string().min(1),
+});
+
+export const deleteExpense = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => DeleteExpenseInput.parse(d))
+  .handler(async ({ data }) => {
+    const { checkPassword } = await import("./admin.functions");
+    if (!checkPassword(data.side, data.password)) {
+      throw new Error("Mot de passe admin invalide.");
+    }
+
+    const {
+      ensureSpreadsheet,
+      ensureChantiersSpreadsheet,
+      getRows,
+      deleteRow,
+      deleteDriveFile,
+      SCI_TAB,
+      ASSO_TAB,
+    } = await import("../core/google/google.server");
+    const { CHANTIER_TAB_LAST_COL } = await import("./chantier-types");
+
+    const spreadsheetId = await ensureSpreadsheet(data.spreadsheetId);
+    const tab = data.side === "SCI" ? SCI_TAB : ASSO_TAB;
+    const rows = await getRows(spreadsheetId, `${tab}!A2:V`);
+    const rowIndex = rows.findIndex((r) => (r[17] ?? "").trim() === data.expenseId);
+    if (rowIndex === -1) throw new Error("Facture introuvable.");
+
+    const row = rows[rowIndex];
+    const driveFileId = (row[21] ?? "").trim(); // col V
+    const chantierId = (row[18] ?? "").trim();   // col S
+    const chantierStartDate = (row[19] ?? "").trim(); // col T
+
+    // 1. Supprimer la ligne principale
+    await deleteRow(spreadsheetId, tab, rowIndex);
+
+    // 2. Supprimer le fichier Drive si on a l'ID
+    if (driveFileId) {
+      try {
+        await deleteDriveFile(driveFileId);
+      } catch (e) {
+        console.error("[deleteExpense] échec suppression Drive:", e);
+      }
+    }
+
+    // 3. Supprimer la ligne dans l'onglet chantier si lié
+    if (chantierId && chantierStartDate) {
+      try {
+        const { chantierTabTitle } = await import("./chantier-types");
+        const cSpreadsheetId = await ensureChantiersSpreadsheet(null);
+        const chantierTab = chantierTabTitle(chantierId, chantierStartDate);
+        const safeTab = `'${chantierTab.replace(/'/g, "''")}'`;
+        const cRows = await getRows(cSpreadsheetId, `${safeTab}!A2:${CHANTIER_TAB_LAST_COL}`);
+        const cRowIndex = cRows.findIndex((r) => (r[24] ?? "").trim() === data.expenseId);
+        if (cRowIndex !== -1) {
+          await deleteRow(cSpreadsheetId, chantierTab, cRowIndex);
+        }
+      } catch (e) {
+        console.error("[deleteExpense] échec suppression onglet chantier:", e);
+      }
+    }
+
+    return { ok: true as const };
   });

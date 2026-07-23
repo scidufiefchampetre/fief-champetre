@@ -59,6 +59,7 @@ import {
   type AdminSpace,
   type PendingReimbursement,
 } from "@/lib/admin.functions";
+import { deleteExpense } from "@/lib/export-expense.functions";
 import {
   createChantier,
   listChantiers,
@@ -590,10 +591,8 @@ function AdminSpacePanel({
         space={space}
         password={password}
         onOpenChange={(open) => !open && setDetail(null)}
-        onPaid={() => {
-          setDetail(null);
-          refresh();
-        }}
+        onPaid={() => { setDetail(null); refresh(); }}
+        onDeleted={() => { setDetail(null); refresh(); }}
       />
     </section>
   );
@@ -652,16 +651,21 @@ function ReimbursementDetailSheet({
   password,
   onOpenChange,
   onPaid,
+  onDeleted,
 }: {
   item: PendingReimbursement | null;
   space: AdminSpace;
   password: string;
   onOpenChange: (open: boolean) => void;
   onPaid: () => void;
+  onDeleted: () => void;
 }) {
   const store = useExpenseStore();
   const mark = useServerFn(markReimbursed);
+  const del = useServerFn(deleteExpense);
   const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   async function confirmPaid() {
     if (!item) return;
@@ -679,10 +683,27 @@ function ReimbursementDetailSheet({
     }
   }
 
+  async function handleDelete() {
+    if (!item) return;
+    setDeleting(true);
+    try {
+      await del({
+        data: { spreadsheetId: store.spreadsheetId, side: space, expenseId: item.id, password },
+      });
+      toast.success("Facture supprimée.");
+      onDeleted();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Échec de la suppression.");
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  }
+
   const paid = item?.reimbursementStatus === "Remboursé";
 
   return (
-    <Sheet open={!!item} onOpenChange={onOpenChange}>
+    <Sheet open={!!item} onOpenChange={(o) => { if (!o) setConfirmDelete(false); onOpenChange(o); }}>
       <SheetContent side="bottom" className="max-h-[85vh] overflow-y-auto rounded-t-3xl">
         {item && (
           <>
@@ -723,12 +744,48 @@ function ReimbursementDetailSheet({
             ) : (
               <button
                 onClick={confirmPaid}
-                disabled={submitting}
+                disabled={submitting || deleting}
                 className="tap lift mt-6 w-full rounded-2xl bg-brand-accent px-4 py-4 text-sm font-semibold text-brand-accent-foreground disabled:opacity-50 shadow-card"
               >
                 {submitting ? "Enregistrement…" : "Marquer comme réglé"}
               </button>
             )}
+
+            <div className="mt-3">
+              {!confirmDelete ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  disabled={deleting}
+                  className="w-full rounded-2xl border border-destructive/30 py-3 text-[13px] font-semibold text-destructive hover:bg-destructive/5 transition disabled:opacity-50"
+                >
+                  Supprimer cette facture
+                </button>
+              ) : (
+                <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 space-y-3">
+                  <p className="text-[13px] font-semibold text-destructive text-center">
+                    Supprimer la facture, le fichier Drive et les données liées ?
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(false)}
+                      className="rounded-xl border border-border py-2.5 text-[13px] font-semibold text-muted-foreground"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={deleting}
+                      className="rounded-xl bg-destructive py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
+                    >
+                      {deleting ? "Suppression…" : "Confirmer"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </>
         )}
       </SheetContent>
