@@ -104,7 +104,7 @@ export function BurgerMenu() {
       >
         <SheetHeader>
           <SheetTitle className="text-2xl font-bold tracking-tight">Menu</SheetTitle>
-          <SheetDescription className="text-xs">Tout ce qu'il te faut, à portée.</SheetDescription>
+          <SheetDescription className="sr-only">Menu</SheetDescription>
         </SheetHeader>
 
         <nav className="mt-6 flex-1 overflow-y-auto px-4 space-y-2">
