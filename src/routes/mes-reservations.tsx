@@ -302,9 +302,11 @@ function ReservationBreakdownCard({
     electricityAmount: reservation.electricityAmount,
   });
   const paymentStatus = getPaymentStatus(reservation);
-  // Modifiable et annulable tant que ce n'est pas payé — la date du séjour
-  // (passé ou à venir) n'entre pas en compte, seul le paiement ferme la porte.
-  const canEdit = !reservation.paid;
+  // Modifiable et annulable uniquement si le séjour n'est pas encore passé et non payé.
+  // Après le séjour, seul l'admin peut annuler (depuis l'espace admin).
+  const today = new Date().toISOString().slice(0, 10);
+  const isPast = reservation.endDate < today;
+  const canEdit = !reservation.paid && !isPast;
 
   async function handleCancel() {
     setCancelling(true);

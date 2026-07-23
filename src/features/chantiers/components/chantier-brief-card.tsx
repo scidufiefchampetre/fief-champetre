@@ -24,6 +24,7 @@ import {
   listChantierExpenses,
   listChantierTasks,
 } from "@/lib/chantier.functions";
+import { listTaskCatalog } from "@/lib/chantier-contributions.functions";
 import {
   listChantierDuties,
   DUTY_ROLE_LABEL,
@@ -43,6 +44,7 @@ import { getTaskPhase, type ChantierPeriod } from "@/lib/chantier-types";
 import type { ChantierTask } from "@/lib/chantier-types";
 import { TaskItem, AddTaskButton } from "./task-item";
 import { TaskFormSheet } from "./task-form";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface RegistrationGroup {
   groupId: string;
@@ -300,7 +302,9 @@ export function ChantierBriefCard({
     ? Math.ceil((new Date(`${startDate}T00:00:00`).getTime() - Date.now()) / 86_400_000)
     : Number.POSITIVE_INFINITY;
   const [missionsOpen, setMissionsOpen] = useState(false);
+  const [catalogOpen, setCatalogOpen] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
+  const [formInitialLabel, setFormInitialLabel] = useState("");
   const [selectedDay, setSelectedDay] = useState("");
   const [openDutyRole, setOpenDutyRole] = useState<DutyRole | null>(null);
   const [activeSection, setActiveSection] = useState<BriefSection | null>(null);
@@ -310,6 +314,7 @@ export function ChantierBriefCard({
 
   const getFiche = useServerFn(getChantierFiche);
   const listTasks = useServerFn(listChantierTasks);
+  const getCatalog = useServerFn(listTaskCatalog);
   const listDuties = useServerFn(listChantierDuties);
   const listExpenses = useServerFn(listChantierExpenses);
   const phase = getTaskPhase(startDate, endDate || startDate);
@@ -323,6 +328,11 @@ export function ChantierBriefCard({
     queryKey: ["chantier-tasks", chantierId, startDate],
     queryFn: () => listTasks({ data: { chantierId, startDate } }),
     enabled: !demo && !!startDate,
+  });
+  const { data: catalogData } = useQuery({
+    queryKey: ["task-catalog"],
+    queryFn: () => getCatalog(),
+    enabled: catalogOpen,
   });
   const { data: dutiesData } = useQuery({
     queryKey: ["chantier-duties", chantierId, startDate],
@@ -486,7 +496,12 @@ export function ChantierBriefCard({
         { id: "demo-task-12", label: "Évacuer les gravats à la déchetterie", done: false },
       ].map((task) => ({
         ...task,
+        taskStatus: (task.done ? "Terminé" : "À faire") as "À faire" | "En cours" | "Terminé",
+        percentage: 0,
+        description: "",
         note: "",
+        toBuyItems: [] as string[],
+        photoBeforeUrl: "",
         participants: "",
         completedAt: "",
         resultPhotoUrl: "",
@@ -765,15 +780,61 @@ export function ChantierBriefCard({
                     : `+ ${tasks.length - 3} autre${tasks.length - 3 > 1 ? "s" : ""} mission${tasks.length - 3 > 1 ? "s" : ""}`}
                 </button>
               )}
-              <AddTaskButton onClick={() => setFormOpen(true)} label="Nouvelle tâche" />
+              <AddTaskButton onClick={() => setCatalogOpen(true)} label="Nouvelle tâche" />
+              {/* Step 1: Catalog picker — pick from existing or create new */}
+              <Sheet open={catalogOpen} onOpenChange={setCatalogOpen}>
+                <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto rounded-t-3xl px-5 pb-10 pt-5">
+                  <SheetHeader className="mb-4">
+                    <SheetTitle className="text-left text-[17px] font-bold">Ajouter une tâche</SheetTitle>
+                  </SheetHeader>
+                  <div className="space-y-3">
+                    <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-2">
+                      Choisir dans le catalogue
+                    </div>
+                    <div className="rounded-xl border border-border bg-card divide-y divide-border overflow-hidden">
+                      {(catalogData?.tasks ?? []).length === 0 && (
+                        <div className="px-4 py-3 text-[13px] text-muted-foreground">Chargement…</div>
+                      )}
+                      {(catalogData?.tasks ?? []).map((t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => {
+                            setFormInitialLabel(t.label);
+                            setCatalogOpen(false);
+                            setFormOpen(true);
+                          }}
+                          className="flex w-full items-center justify-between px-4 py-3 text-left text-[14px] font-medium hover:bg-secondary/50 transition"
+                        >
+                          {t.label}
+                          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setFormInitialLabel("");
+                        setCatalogOpen(false);
+                        setFormOpen(true);
+                      }}
+                      className="tap lift w-full rounded-2xl border border-border bg-card px-4 py-3 text-left text-[14px] font-semibold text-muted-foreground hover:text-foreground transition"
+                    >
+                      + Créer une nouvelle tâche
+                    </button>
+                  </div>
+                </SheetContent>
+              </Sheet>
+              {/* Step 2: Task creation form (with optional pre-filled label) */}
               <TaskFormSheet
                 open={formOpen}
-                onOpenChange={setFormOpen}
-                title="Nouvelle tâche"
+                onOpenChange={(v) => { setFormOpen(v); if (!v) setFormInitialLabel(""); }}
+                title={formInitialLabel ? `Tâche : ${formInitialLabel}` : "Nouvelle tâche"}
                 chantierId={chantierId}
                 startDate={startDate}
                 mode="user"
                 preview={demo}
+                initialLabel={formInitialLabel}
               />
             </div>
           )}

@@ -61,27 +61,29 @@ export function AppHeader({
           <ThemeToggle />
         </div>
       </div>
-      {variant === "back" &&
-        (onBack ? (
-          <button
-            type="button"
-            onClick={onBack}
-            aria-label={`Retour vers ${resolvedBackLabel}`}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-full px-1 py-1 text-[10px] font-semibold text-muted-foreground transition hover:text-foreground"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            {resolvedBackLabel}
-          </button>
-        ) : (
-          <Link
-            to={resolvedBackTo}
-            aria-label={`Retour vers ${resolvedBackLabel}`}
-            className="mt-2 inline-flex items-center gap-1.5 rounded-full px-1 py-1 text-[10px] font-semibold text-muted-foreground transition hover:text-foreground"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            {resolvedBackLabel}
-          </Link>
-        ))}
+      <div className="mt-2 h-[26px] flex items-center">
+        {variant === "back" &&
+          (onBack ? (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label={`Retour vers ${resolvedBackLabel}`}
+              className="inline-flex items-center gap-1.5 rounded-full px-1 py-1 text-[10px] font-semibold text-muted-foreground transition hover:text-foreground"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {resolvedBackLabel}
+            </button>
+          ) : (
+            <Link
+              to={resolvedBackTo}
+              aria-label={`Retour vers ${resolvedBackLabel}`}
+              className="inline-flex items-center gap-1.5 rounded-full px-1 py-1 text-[10px] font-semibold text-muted-foreground transition hover:text-foreground"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              {resolvedBackLabel}
+            </Link>
+          ))}
+      </div>
     </header>
   );
 }

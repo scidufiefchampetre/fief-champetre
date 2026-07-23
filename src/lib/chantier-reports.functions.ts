@@ -53,63 +53,67 @@ export interface ChantierReport {
   photoUrl: string;
 }
 
-const REPORTS_TAB = "Tâches chantier";
-const REPORTS_HEADERS = [
-  "ID",
-  "Créé le",
-  "Nom",
-  "Catégorie",
-  "Lieu",
-  "Temps estimé",
-  "Jours-homme estimés",
-  "Budget estimé",
-  "Description",
-  "Urgence",
-  "Statut",
-  "Chantier ID lié",
-  "Photo",
-  "Titre tâche",
-];
+// Reports are stored in the unified "Tâches chantier" tab alongside actual tasks.
+// New V schema (22 cols): P=Type discriminator ("signalement"), Q-V=signalement-only fields.
+// A=ID Chantier, B=ID, C=Créé le, D=Titre, E=Urgence, F=Statut, G=Pourcentage,
+// H=Description, I=À acheter, J=Photo avant, K=Photo après, L=Durée, M=Nb personnes,
+// N=Participants (=Signalé par for reports), O=Terminé le, P=Type,
+// Q=Catégorie, R=Lieu, S=Statut sig., T=Temps estimé, U=Jours-homme, V=Budget estimé
 
 function rowToReport(row: string[]): ChantierReport | null {
-  const id = (row[0] ?? "").trim();
+  const id = (row[1] ?? "").trim(); // B
   if (!id) return null;
-  const personDays = (row[6] ?? "").trim();
-  const budget = (row[7] ?? "").trim();
+  const chantierId = (row[0] ?? "").trim(); // A
+  const type = (row[15] ?? "").trim(); // P
+  if (chantierId !== "" && type !== "signalement") return null;
+  const urgency = (row[4] ?? "important").trim(); // E
+  const rawStatus = (row[18] ?? "").trim(); // S
+  const status: ReportStatus = rawStatus === "planifie" || chantierId !== "" ? "planifie" : "ouvert";
+  const personDays = (row[20] ?? "").trim(); // U
+  const budget = (row[21] ?? "").trim();     // V
   return {
     id,
-    createdAt: row[1] ?? "",
-    reportedBy: row[2] ?? "",
-    category: (row[3] ?? "tache") as ReportCategory,
-    location: row[4] ?? "",
-    timeEstimate: row[5] ?? "",
+    createdAt: row[2] ?? "",                           // C
+    reportedBy: row[13] ?? "",                         // N
+    title: (row[3] ?? "").trim(),                      // D
+    category: (row[16] ?? "tache") as ReportCategory,  // Q
+    location: row[17] ?? "",                           // R
+    timeEstimate: row[19] ?? "",                       // T
     personDaysEstimate: personDays ? Number(personDays.replace(",", ".")) : null,
     budgetEstimate: budget ? Number(budget.replace(",", ".")) : null,
-    description: row[8] ?? "",
-    urgency: (row[9] ?? "important") as ReportUrgency,
-    status: (row[10] ?? "ouvert") as ReportStatus,
-    linkedChantierId: row[11] ?? "",
-    photoUrl: row[12] ?? "",
-    title: (row[13] ?? "").trim(),
+    description: row[7] ?? "",                         // H
+    urgency: (urgency === "tres_urgent" || urgency === "urgent" || urgency === "important" || urgency === "must_have"
+      ? urgency : "important") as ReportUrgency,
+    status,
+    linkedChantierId: chantierId,
+    photoUrl: row[9] ?? "",                            // J
   };
 }
 
 function reportToRow(r: ChantierReport): unknown[] {
   return [
-    r.id,
-    r.createdAt,
-    r.reportedBy,
-    r.category,
-    r.location,
-    r.timeEstimate,
-    r.personDaysEstimate ?? "",
-    r.budgetEstimate ?? "",
-    r.description,
-    r.urgency,
-    r.status,
-    r.linkedChantierId,
-    r.photoUrl,
-    r.title,
+    r.linkedChantierId, // A
+    r.id,               // B
+    r.createdAt,        // C
+    r.title,            // D
+    r.urgency,          // E
+    "À faire",          // F: Statut
+    "",                 // G: Pourcentage
+    r.description,      // H
+    "[]",               // I: À acheter
+    r.photoUrl,         // J: Photo avant
+    "",                 // K: Photo après
+    "",                 // L: Durée
+    "",                 // M: Nb personnes
+    r.reportedBy,       // N: Participants (signalé par)
+    "",                 // O: Terminé le
+    "signalement",      // P: Type
+    r.category,         // Q
+    r.location,         // R
+    r.status,           // S: Statut sig.
+    r.timeEstimate,     // T
+    r.personDaysEstimate ?? "", // U
+    r.budgetEstimate ?? "",     // V
   ];
 }
 
@@ -142,9 +146,12 @@ export const reportChantierIssue = createServerFn({ method: "POST" })
       ensureDriveFolder,
       ensureDriveSubfolder,
       uploadFileToDrive,
+      TACHES_TAB,
+      TACHE_HEADERS,
+      TACHE_LAST_COL,
     } = await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    await ensureTabExists(spreadsheetId, REPORTS_TAB, REPORTS_HEADERS, "N");
+    await ensureTabExists(spreadsheetId, TACHES_TAB, TACHE_HEADERS, TACHE_LAST_COL);
 
     const createdAt = new Date().toISOString();
     let photoUrl = "";
@@ -189,7 +196,7 @@ export const reportChantierIssue = createServerFn({ method: "POST" })
       linkedChantierId: "",
       photoUrl,
     };
-    await appendRow(spreadsheetId, `'${REPORTS_TAB}'!A:N`, reportToRow(report));
+    await appendRow(spreadsheetId, `${TACHES_TAB}!A:${TACHE_LAST_COL}`, reportToRow(report));
     return { ok: true as const, report };
   });
 
@@ -202,11 +209,11 @@ export const listChantierReports = createServerFn({ method: "POST" })
     if (!checkPassword("Association", data.password)) {
       throw new Error("Mot de passe admin invalide.");
     }
-    const { ensureChantiersSpreadsheet, ensureTabExists, getRows } =
+    const { ensureChantiersSpreadsheet, ensureTabExists, getRows, TACHES_TAB, TACHE_HEADERS, TACHE_LAST_COL } =
       await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    await ensureTabExists(spreadsheetId, REPORTS_TAB, REPORTS_HEADERS, "N");
-    const rows = await getRows(spreadsheetId, `'${REPORTS_TAB}'!A2:N`);
+    await ensureTabExists(spreadsheetId, TACHES_TAB, TACHE_HEADERS, TACHE_LAST_COL);
+    const rows = await getRows(spreadsheetId, `${TACHES_TAB}!A2:${TACHE_LAST_COL}`);
     const reports = rows
       .map(rowToReport)
       .filter((r): r is ChantierReport => r !== null)
@@ -231,17 +238,17 @@ export const markReportPlanned = createServerFn({ method: "POST" })
     if (!checkPassword("Association", data.password)) {
       throw new Error("Mot de passe admin invalide.");
     }
-    const { ensureChantiersSpreadsheet, ensureTabExists, getRows, updateRange } =
+    const { ensureChantiersSpreadsheet, ensureTabExists, getRows, updateRange, TACHES_TAB, TACHE_HEADERS, TACHE_LAST_COL } =
       await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    await ensureTabExists(spreadsheetId, REPORTS_TAB, REPORTS_HEADERS, "N");
-    const rows = await getRows(spreadsheetId, `'${REPORTS_TAB}'!A2:N`);
-    const rowIndex = rows.findIndex((r) => (r[0] ?? "").trim() === data.id);
+    await ensureTabExists(spreadsheetId, TACHES_TAB, TACHE_HEADERS, TACHE_LAST_COL);
+    const rows = await getRows(spreadsheetId, `${TACHES_TAB}!A2:${TACHE_LAST_COL}`);
+    // col B (index 1) holds the ID for unified schema
+    const rowIndex = rows.findIndex((r) => (r[1] ?? "").trim() === data.id);
     if (rowIndex === -1) throw new Error("Signalement introuvable.");
     const sheetRow = rowIndex + 2;
-    await updateRange(spreadsheetId, `'${REPORTS_TAB}'!K${sheetRow}:L${sheetRow}`, [
-      "planifie",
-      data.chantierId,
-    ]);
+    // Update col A (chantierId) and col S (statut sig.)
+    await updateRange(spreadsheetId, `${TACHES_TAB}!A${sheetRow}`, [[data.chantierId]]);
+    await updateRange(spreadsheetId, `${TACHES_TAB}!S${sheetRow}`, [["planifie"]]);
     return { ok: true as const };
   });

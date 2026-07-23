@@ -48,7 +48,7 @@ export const CHANTIER_HEADERS = [
 
 // Onglets partagés (toutes données de tous les chantiers, col A = ID Chantier)
 export const INSCRIPTIONS_TAB = "Inscriptions";
-export const TACHES_TAB = "Tâches";
+export const TACHES_TAB = "Tâches chantier";
 export const INTENDANCE_TAB = "Intendance";
 
 export const INSCRIPTION_HEADERS = [
@@ -67,20 +67,30 @@ export const INSCRIPTION_HEADERS = [
 export const INSCRIPTION_LAST_COL = "K";
 
 export const TACHE_HEADERS = [
-  "ID Chantier",
-  "ID",
-  "Créé le",
-  "Tâche",
-  "Urgence",
-  "Fait",
-  "Note",
-  "Participants",
-  "Terminé le",
-  "Photo résultat",
-  "Durée (min)",
-  "Nb personnes",
+  "ID Chantier",    // A — empty = backlog
+  "ID",             // B — UUID
+  "Créé le",        // C
+  "Tâche",          // D — label
+  "Urgence",        // E
+  "Statut",         // F — "À faire" | "En cours" | "Terminé"
+  "Pourcentage",    // G — 0-100
+  "Description",    // H
+  "À acheter",      // I — JSON array stringified
+  "Photo avant",    // J — URL
+  "Photo après",    // K — URL
+  "Durée (min)",    // L
+  "Nb personnes",   // M
+  "Participants",   // N
+  "Terminé le",     // O
+  "Type",           // P — "tache" | "signalement"
+  "Catégorie",      // Q — for signalements
+  "Lieu",           // R — for signalements
+  "Statut sig.",    // S — for signalements: "ouvert" | "planifié"
+  "Temps estimé",   // T — for signalements (text)
+  "Jours-homme",    // U — for signalements (number)
+  "Budget estimé",  // V — for signalements (number)
 ];
-export const TACHE_LAST_COL = "L";
+export const TACHE_LAST_COL = "V";
 
 export const INTENDANCE_HEADERS = [
   "ID Chantier",
@@ -121,6 +131,7 @@ export const EXPENSE_HEADERS = [
   "ID chantier",
   "Date début chantier",
   "Chantier",
+  "ID Drive",
 ];
 
 // Les enfants d'un membre vivent sur SA ligne (pas de ligne à part) : une
@@ -732,8 +743,8 @@ async function ensureAllTabs(spreadsheetId: string) {
   const promise = (async () => {
     const titles = await fetchSheetTitles(spreadsheetId);
     const tabs = [
-      { title: SCI_TAB, headers: EXPENSE_HEADERS, width: "U" },
-      { title: ASSO_TAB, headers: EXPENSE_HEADERS, width: "U" },
+      { title: SCI_TAB, headers: EXPENSE_HEADERS, width: "V" },
+      { title: ASSO_TAB, headers: EXPENSE_HEADERS, width: "V" },
       { title: MEMBERS_TAB, headers: MEMBER_HEADERS, width: "V" },
       { title: RESERVATIONS_TAB, headers: RESERVATION_HEADERS, width: "S" },
     ];

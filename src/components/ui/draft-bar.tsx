@@ -43,6 +43,9 @@ export function DraftBar() {
                   chantierId: p.chantierId,
                   startDate: p.startDate,
                   label: p.label,
+                  urgency: p.urgency,
+                  estimatedDurationMinutes: p.estimatedDurationMinutes,
+                  estimatedPeopleCount: p.estimatedPeopleCount,
                 },
               });
             }

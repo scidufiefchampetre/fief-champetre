@@ -133,7 +133,7 @@ function fallbackReservationFromEvent(event: {
     totalAmount: 0,
     paid: false,
     calendarEventId: event.id,
-    cancelledAt: null,
+    cancelledAt: event.extendedProperties.cancelledAt || null,
     arrivalTime: event.extendedProperties.arrivalTime ?? "",
   };
 }
@@ -465,7 +465,7 @@ export const createReservation = createServerFn({ method: "POST" })
         const spreadsheetId = await ensureSpreadsheet(data.spreadsheetId);
         await appendRow(
           spreadsheetId,
-          `${quoteTab(RESERVATIONS_TAB)}!A:R`,
+          `${quoteTab(RESERVATIONS_TAB)}!A:S`,
           reservationToRow(reservation),
         );
       } catch (error) {
@@ -498,7 +498,7 @@ const CancelInput = z.object({ spreadsheetId: z.string().nullable(), id: z.strin
 export const cancelReservation = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => CancelInput.parse(d))
   .handler(async ({ data }) => {
-    const { ensureSpreadsheet, getRows, updateRange, RESERVATIONS_TAB } =
+    const { ensureSpreadsheet, getRows, deleteRow, RESERVATIONS_TAB } =
       await import("../core/google/google.server");
     const { deleteCalendarEvent } = await import("../core/google/google-calendar.server");
 
@@ -509,14 +509,11 @@ export const cancelReservation = createServerFn({ method: "POST" })
     );
     const rowIndex = rows.findIndex((row) => (row[0] ?? "").trim() === data.id);
 
+    let calendarEventId: string | null = null;
+
     if (rowIndex === -1) {
-      // Pas de ligne Sheet correspondante — cas d'un événement Calendar créé
-      // à la main, ou dont la ligne Sheet a été perdue depuis. On retrouve
-      // l'événement Calendar par son id direct ("calendar:<eventId>", cas
-      // fallbackReservationFromEvent sans reservationId) ou en cherchant
-      // l'événement dont extendedProperties.reservationId correspond, et on
-      // annule quand même en supprimant l'événement Calendar.
-      let calendarEventId = data.id.startsWith("calendar:")
+      // Pas de ligne Sheet — événement Calendar créé à la main.
+      calendarEventId = data.id.startsWith("calendar:")
         ? data.id.slice("calendar:".length)
         : null;
       if (!calendarEventId) {
@@ -527,57 +524,27 @@ export const cancelReservation = createServerFn({ method: "POST" })
           events.find((e) => e.extendedProperties.reservationId === data.id)?.id ?? null;
       }
       if (!calendarEventId) throw new Error("Réservation introuvable.");
+    } else {
+      const reservation = rowToReservation(rows[rowIndex]);
+      if (!reservation) throw new Error("Réservation introuvable.");
+      calendarEventId = reservation.calendarEventId;
+      // Supprime la ligne du Sheet en premier.
+      try {
+        await deleteRow(spreadsheetId, RESERVATIONS_TAB, rowIndex);
+      } catch (error) {
+        console.error("[cancelReservation] échec deleteRow (Sheets):", error);
+        throw new Error(
+          `Échec de la suppression dans Google Sheets : ${error instanceof Error ? error.message : String(error)}`,
+        );
+      }
+    }
+
+    if (calendarEventId) {
       try {
         await deleteCalendarEvent(calendarEventId);
       } catch (error) {
-        console.error("[cancelReservation] échec deleteCalendarEvent (fallback):", error);
-        throw new Error(
-          `Échec de la suppression Google Calendar : ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
-      return { ok: true as const };
-    }
-
-    const reservation = rowToReservation(rows[rowIndex]);
-    if (!reservation) throw new Error("Réservation introuvable.");
-
-    const cancelled: Reservation = {
-      ...reservation,
-      status: "cancelled",
-      cancelledAt: new Date().toISOString(),
-    };
-    // +2 : header en ligne 1, index de tableau 0-based -> ligne Sheet 1-based.
-    const sheetRow = rowIndex + 2;
-    try {
-      await updateRange(
-        spreadsheetId,
-        `${quoteTab(RESERVATIONS_TAB)}!A${sheetRow}:R${sheetRow}`,
-        reservationToRow(cancelled),
-      );
-    } catch (error) {
-      console.error("[cancelReservation] échec updateRange (Sheets):", error);
-      throw new Error(
-        `Échec de la mise à jour Google Sheets : ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
-
-    if (reservation.calendarEventId) {
-      try {
-        await deleteCalendarEvent(reservation.calendarEventId);
-      } catch (error) {
-        console.error("[cancelReservation] échec deleteCalendarEvent, rollback Sheets:", error);
-        try {
-          await updateRange(
-            spreadsheetId,
-            `${quoteTab(RESERVATIONS_TAB)}!A${sheetRow}:R${sheetRow}`,
-            reservationToRow(reservation),
-          );
-        } catch (rollbackError) {
-          console.error("[cancelReservation] rollback Sheets échoué:", rollbackError);
-        }
-        throw new Error(
-          `Échec de la suppression Google Calendar : ${error instanceof Error ? error.message : String(error)}`,
-        );
+        console.error("[cancelReservation] échec deleteCalendarEvent:", error);
+        // La ligne Sheet est déjà supprimée — on n'interrompt pas pour autant.
       }
     }
 
@@ -687,7 +654,7 @@ export const updateReservation = createServerFn({ method: "POST" })
     try {
       await updateRange(
         spreadsheetId,
-        `${quoteTab(RESERVATIONS_TAB)}!A${sheetRow}:R${sheetRow}`,
+        `${quoteTab(RESERVATIONS_TAB)}!A${sheetRow}:S${sheetRow}`,
         reservationToRow(updated),
       );
     } catch (error) {
@@ -760,7 +727,7 @@ export const setElectricityAmount = createServerFn({ method: "POST" })
     const sheetRow = rowIndex + 2;
     await updateRange(
       spreadsheetId,
-      `${quoteTab(RESERVATIONS_TAB)}!A${sheetRow}:R${sheetRow}`,
+      `${quoteTab(RESERVATIONS_TAB)}!A${sheetRow}:S${sheetRow}`,
       reservationToRow(updated),
     );
 

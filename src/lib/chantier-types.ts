@@ -48,17 +48,30 @@ export type ChantierPeriod = "" | "matin" | "apres_midi" | "soir";
 export interface ChantierTask {
   id: string;
   label: string;
-  done: boolean;
-  note: string;
-  participants: string; // noms séparés par virgule, ex: "Jean, Marie" — saisie libre
-  completedAt: string; // ISO, vide si pas fait
-  resultPhotoUrl: string; // lien Drive vers la photo du résultat (phase Après)
-  photoBefore?: string; // URL ou data-URL locale de la photo "avant" (phase Avant, draft uniquement)
-  description?: string; // description de ce qu'il faut faire (contexte pré-tâche)
-  toBuy?: string; // liste de courses / matériel à acheter
-  durationMinutes: number; // temps réellement passé, facultatif
-  peopleCount: number; // effectif réel (jours-homme), facultatif
-  urgency: "tres_urgent" | "urgent" | "important" | "must_have" | ""; // reprise du signalement d'origine, vide si tâche saisie à la main
+  urgency: "tres_urgent" | "urgent" | "important" | "must_have" | "";
+  // F: Statut
+  taskStatus: "À faire" | "En cours" | "Terminé";
+  done: boolean; // derived: taskStatus === "Terminé"
+  // G: Pourcentage
+  percentage: number; // 0-100
+  // H: Description
+  description: string;
+  // I: À acheter (JSON array)
+  toBuyItems: string[];
+  // J: Photo avant
+  photoBeforeUrl: string;
+  // K: Photo après
+  resultPhotoUrl: string;
+  // L: Durée (min)
+  durationMinutes: number;
+  // M: Nb personnes
+  peopleCount: number;
+  // N: Participants
+  participants: string;
+  // O: Terminé le
+  completedAt: string;
+  // Legacy aliases kept for compatibility with task-item/task-execution-form
+  note: string; // alias for description
 }
 
 export type TaskPhase = "avant" | "pendant" | "apres";

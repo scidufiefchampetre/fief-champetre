@@ -35,7 +35,7 @@ export function TaskItem({
   preview?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [photoBefore, setPhotoBefore] = useState<string | null>(task.photoBefore ?? null);
+  const [photoBefore, setPhotoBefore] = useState<string | null>(task.photoBeforeUrl ?? null);
 
   const isPending = task.isPending ?? false;
   const isReal = task.done && !isPending;

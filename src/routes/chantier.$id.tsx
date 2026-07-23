@@ -343,16 +343,16 @@ function ChantierPage() {
           onDutyVacancyClick={isPastChantier ? undefined : openDutySignup}
         />
 
-        {!demo && !isPastChantier && !wizardOpen && !myGroup && (
+        {!demo && !isPastChantier && !myGroup && (
           <button
             onClick={() => setWizardOpen(true)}
-            className="tap lift mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-secondary px-4 py-2.5 text-[13px] font-semibold text-brand-secondary-foreground shadow-card"
+            className="tap lift mt-3 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-secondary px-4 py-3 text-[13px] font-semibold text-brand-secondary-foreground shadow-card"
           >
             <Plus className="h-4 w-4" /> S'inscrire à ce chantier
           </button>
         )}
 
-        {!demo && !isPastChantier && !wizardOpen && myGroup && (
+        {!demo && !isPastChantier && myGroup && (
           <div className="mt-3 rounded-2xl border border-success/30 bg-success/10 p-3.5">
             <div className="flex items-center gap-3">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-success/60 text-success-foreground">
@@ -401,15 +401,30 @@ function ChantierPage() {
           </p>
         )}
 
-        {!demo && wizardOpen && (
-          <RegistrationWizard
-            chantierId={id}
-            startDate={startDate}
-            chantierEndDate={endDate}
-            myGroup={signupDemo ? null : (myGroup ?? null)}
-            onClose={() => setWizardOpen(false)}
-            preview={signupDemo}
-          />
+        {!demo && (
+          <Sheet open={wizardOpen} onOpenChange={(v) => { if (!v) setWizardOpen(false); }}>
+            <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto rounded-t-3xl px-5 pb-2 pt-6">
+              <SheetHeader className="mb-5">
+                <SheetTitle className="page-title text-left">
+                  {myGroup ? "Modifier l'inscription." : "S'inscrire."}
+                </SheetTitle>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {myGroup
+                    ? "Modifie ta participation à ce chantier."
+                    : "Rejoins ce chantier pour contribuer."}
+                </p>
+              </SheetHeader>
+              <RegistrationWizard
+                chantierId={id}
+                startDate={startDate}
+                chantierEndDate={endDate}
+                myGroup={signupDemo ? null : (myGroup ?? null)}
+                onClose={() => setWizardOpen(false)}
+                preview={signupDemo}
+                asSheet
+              />
+            </SheetContent>
+          </Sheet>
         )}
 
         {!demo && dutiesOpen && myGroup && (
@@ -979,6 +994,7 @@ function RegistrationWizard({
   myGroup,
   onClose,
   preview = false,
+  asSheet = false,
 }: {
   chantierId: string;
   startDate: string;
@@ -996,6 +1012,7 @@ function RegistrationWizard({
   } | null;
   onClose: () => void;
   preview?: boolean;
+  asSheet?: boolean;
 }) {
   const store = useExpenseStore();
   const queryClient = useQueryClient();
@@ -1233,7 +1250,7 @@ function RegistrationWizard({
   }
 
   return (
-    <div className="mt-3 space-y-3.5 rounded-2xl border border-border bg-card p-3.5">
+    <div className={asSheet ? "space-y-3.5" : "mt-3 space-y-3.5 rounded-2xl border border-border bg-card p-3.5"}>
       {preview && (
         <div className="inline-flex rounded-full bg-brand-accent/15 px-2 py-1 text-[8px] font-bold uppercase tracking-wider text-brand-accent">
           Aperçu · un adulte + un enfant
@@ -1470,19 +1487,19 @@ function RegistrationWizard({
               </button>
             </div>
 
-            <div className="flex items-center justify-end gap-2">
+            <div className="sticky bottom-0 flex items-center justify-end gap-2 bg-background/90 pb-4 pt-3 backdrop-blur-md">
               <button
                 onClick={onClose}
-                className="px-3 py-2 text-[10px] font-semibold text-muted-foreground"
+                className="tap rounded-2xl border border-border bg-card px-4 py-3 text-[12px] font-semibold text-muted-foreground hover:bg-secondary transition"
               >
                 Annuler
               </button>
               <button
                 onClick={handleSubmitStep1}
                 disabled={submitting}
-                className="tap rounded-2xl bg-brand-secondary px-5 py-2 text-[11px] font-semibold text-brand-secondary-foreground disabled:opacity-50"
+                className="tap lift flex-1 rounded-2xl bg-brand-secondary px-5 py-3 text-[12px] font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-50"
               >
-                {submitting ? "Enregistrement…" : "Continuer"}
+                {submitting ? "Enregistrement…" : "Continuer →"}
               </button>
             </div>
 
@@ -1536,19 +1553,19 @@ function RegistrationWizard({
               ))}
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between gap-2">
+          <div className="sticky bottom-0 mt-3 flex items-center gap-2 bg-background/90 pb-4 pt-3 backdrop-blur-md">
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="px-2 py-2 text-[10px] font-semibold text-muted-foreground"
+              className="tap rounded-2xl border border-border bg-card px-4 py-3 text-[12px] font-semibold text-muted-foreground hover:bg-secondary transition"
             >
-              Retour
+              ← Retour
             </button>
             <button
               type="button"
               onClick={finishRegistration}
               disabled={submitting}
-              className="tap lift rounded-2xl bg-brand-secondary px-4 py-2 text-[11px] font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-60"
+              className="tap lift flex-1 rounded-2xl bg-brand-secondary px-4 py-3 text-[12px] font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-60"
             >
               {submitting ? "Validation…" : "Confirmer mon inscription"}
             </button>

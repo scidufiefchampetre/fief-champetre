@@ -23,6 +23,7 @@ import { useProfileSummary } from "@/core/hooks/use-profile-summary";
 import { AppHeader } from "@/core/components/app-header";
 import { PageShell } from "@/components/ui/page-shell";
 import { Field, BankPicker } from "@/core/components/member-gate";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -536,7 +537,7 @@ function ProfilPage() {
         </div>
 
         <button
-          onClick={() => setEditOpen((v) => !v)}
+          onClick={() => setEditOpen(true)}
           className="tap mt-8 flex w-full items-center justify-between gap-2 rounded-2xl border border-border bg-card px-4 py-3.5 transition hover:bg-secondary"
         >
           <span className="flex items-center gap-2">
@@ -545,13 +546,17 @@ function ProfilPage() {
               Modifier mes informations
             </span>
           </span>
-          <ArrowRight
-            className={`h-4 w-4 text-muted-foreground transition-transform ${editOpen ? "rotate-90" : ""}`}
-          />
+          <ArrowRight className="h-4 w-4 text-muted-foreground" />
         </button>
 
-        {editOpen && (
-          <div className="mt-3 animate-rise">
+        <Sheet open={editOpen} onOpenChange={setEditOpen}>
+          <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto rounded-t-3xl px-5 pb-2 pt-6">
+            <SheetHeader className="mb-5">
+              <SheetTitle className="page-title text-left">Mes informations.</SheetTitle>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {member.firstName} {member.lastName} · coordonnées et IBAN
+              </p>
+            </SheetHeader>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -689,19 +694,27 @@ function ProfilPage() {
               </div>
             </div>
 
-            <button
-              onClick={handleSave}
-              disabled={saving || loadingProfile}
-              className="tap lift mt-6 w-full rounded-2xl bg-brand-secondary px-4 py-4 text-sm font-semibold text-brand-secondary-foreground disabled:opacity-50 shadow-card"
-            >
-              {loadingProfile
-                ? "Chargement…"
-                : saving
-                  ? "Enregistrement…"
-                  : "Enregistrer les modifications"}
-            </button>
-          </div>
-        )}
+            <div className="sticky bottom-0 mt-4 flex items-center gap-2 bg-background/90 pb-4 pt-3 backdrop-blur-md">
+              <button
+                onClick={() => setEditOpen(false)}
+                className="tap rounded-2xl border border-border bg-card px-4 py-3.5 text-[13px] font-semibold text-muted-foreground hover:bg-secondary transition"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={saving || loadingProfile}
+                className="tap lift flex-1 rounded-2xl bg-brand-secondary px-4 py-3.5 text-sm font-semibold text-brand-secondary-foreground disabled:opacity-50 shadow-card"
+              >
+                {loadingProfile
+                  ? "Chargement…"
+                  : saving
+                    ? "Enregistrement…"
+                    : "Enregistrer"}
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
 
         <button
           onClick={() => setConfirmOpen(true)}

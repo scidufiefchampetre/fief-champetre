@@ -150,7 +150,7 @@ export const getMemberBadgeStats = createServerFn({ method: "POST" })
       contributionsIndex = chantierRanges.push("'Jours chantier'!A2:F") - 1;
     }
     if (titles.has("Tâches chantier")) {
-      reportsIndex = chantierRanges.push("'Tâches chantier'!A2:M") - 1;
+      reportsIndex = chantierRanges.push("'Tâches chantier'!A2:V") - 1;
     }
     for (const title of chantierTabs) {
       tabIndexes.set(title, chantierRanges.push(`${quoteTab(title)}!A2:AE`) - 1);
@@ -272,12 +272,15 @@ export const getMemberBadgeStats = createServerFn({ method: "POST" })
 
     if (reportsIndex >= 0) {
       for (const row of chantierBlocks[reportsIndex] ?? []) {
-        if (!isPerson(row[2] ?? "", firstName, fullName)) continue;
-        const date = row[1] ?? "";
-        const category = row[3] ?? "";
+        // Unified V schema: P (index 15) = type. Only count signalements for badges.
+        if ((row[15] ?? "").trim() !== "signalement") continue;
+        // N (index 13) = Signalé par (Participants), C (index 2) = Créé le
+        if (!isPerson(row[13] ?? "", firstName, fullName)) continue;
+        const date = row[2] ?? "";
+        const category = row[16] ?? ""; // Q = Catégorie
         if (category === "dysfonctionnement" || category === "casse") add("issues", 1, date);
-        if (category === "tache" && row[10] === "planifie") add("plannedIdeas", 1, date);
-        if ((row[12] ?? "").trim()) add("photos", 1, date);
+        if (category === "tache" && (row[18] ?? "") === "planifie") add("plannedIdeas", 1, date); // S = Statut sig.
+        if ((row[9] ?? "").trim()) add("photos", 1, date); // J = Photo avant
       }
     }
 
