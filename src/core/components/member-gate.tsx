@@ -364,18 +364,19 @@ export function MemberGate({
               </div>
             )}
 
-            <div className="mt-2 flex gap-2">
+            <div className="mt-2 space-y-2">
               <input
                 value={newChildFirstName}
                 onChange={(e) => setNewChildFirstName(e.target.value.slice(0, 60))}
-                placeholder="Prénom"
-                className="flex-1 rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                placeholder="Prénom de l'enfant"
+                className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
               />
+              <div className="flex gap-2">
               <input
                 type="date"
                 value={newChildBirthday}
                 onChange={(e) => setNewChildBirthday(e.target.value)}
-                className="w-[9.5rem] shrink-0 rounded-2xl border border-border bg-card px-3 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                className="flex-1 rounded-2xl border border-border bg-card px-3 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
               />
               <button
                 type="button"
@@ -384,6 +385,7 @@ export function MemberGate({
               >
                 <Plus className="h-4 w-4" strokeWidth={2.5} />
               </button>
+              </div>
             </div>
           </div>
         </div>
