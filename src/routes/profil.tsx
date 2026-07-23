@@ -598,32 +598,34 @@ function ProfilPage() {
               />
               <BankPicker value={bankName} onChange={setBankName} />
 
-              <div>
-                <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
-                  <Heart className="h-3 w-3" /> Conjoint·e (optionnel)
+              <div className="rounded-2xl border border-border/60 bg-secondary/30 p-4 space-y-4">
+                <div>
+                  <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                    <Heart className="h-3 w-3" /> Ma famille (optionnel)
+                  </div>
+                  <p className="mt-1 text-[10px] text-muted-foreground/80">
+                    Conjoint·e et enfants — ça te permettra de les ajouter aux résa et aux chantiers plus rapidement.
+                  </p>
                 </div>
-                <select
-                  value={spouseId}
-                  onChange={(e) => setSpouseId(e.target.value)}
-                  className="mt-1.5 w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                >
-                  <option value="">Aucun</option>
-                  {otherMembers.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.firstName} {m.lastName}
-                    </option>
-                  ))}
-                </select>
-              </div>
 
-              <div>
-                <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-                  Mes enfants (optionnel)
+                <div>
+                  <div className="text-[10px] font-medium text-muted-foreground mb-1">Conjoint·e</div>
+                  <select
+                    value={spouseId}
+                    onChange={(e) => setSpouseId(e.target.value)}
+                    className="w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                  >
+                    <option value="">Aucun·e</option>
+                    {otherMembers.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.firstName} {m.lastName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <p className="mt-1 text-[10px] text-muted-foreground/80">
-                  Ils apparaîtront dans la liste à cocher quand tu inscriras du monde à un chantier
-                  ou un séjour.
-                </p>
+
+                <div>
+                  <div className="text-[10px] font-medium text-muted-foreground mb-1">Enfants</div>
 
                 <div className="mt-2 space-y-2">
                   {loadingChildren && (
@@ -680,6 +682,7 @@ function ProfilPage() {
                   >
                     <Plus className="h-4 w-4" strokeWidth={2.5} />
                   </button>
+                </div>
                 </div>
               </div>
             </div>

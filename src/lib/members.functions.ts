@@ -24,6 +24,7 @@ const AddInput = z.object({
   bankName: z.string().min(1).max(80),
   birthday: z.string().min(1).max(20),
   email: z.string().email().max(120),
+  spouseId: z.string().max(36).optional(),
 });
 
 export const listMembers = createServerFn({ method: "POST" })
@@ -164,7 +165,7 @@ export const addMember = createServerFn({ method: "POST" })
           bankName,
           birthday,
           email,
-          "",
+          (data.spouseId ?? "").trim(),
           "",
         ]);
         console.log(

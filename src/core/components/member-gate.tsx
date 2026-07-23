@@ -10,6 +10,7 @@ import {
   Plus,
   Check,
   X,
+  Heart,
 } from "lucide-react";
 import { toast } from "sonner";
 import { FRENCH_BANKS } from "@/lib/french-banks";
@@ -42,6 +43,7 @@ export function MemberGate({
   const [email, setEmail] = useState("");
   const [query, setQuery] = useState("");
 
+  const [spouseId, setSpouseId] = useState("");
   const [pendingChildren, setPendingChildren] = useState<{ firstName: string; birthday: string }[]>(
     [],
   );
@@ -64,6 +66,12 @@ export function MemberGate({
   function removePendingChild(index: number) {
     setPendingChildren((prev) => prev.filter((_, i) => i !== index));
   }
+
+  useEffect(() => {
+    if (mode !== "new" || members !== null) return;
+    refreshMembers(false).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   const MEMBERS_CACHE_TTL_MS = 5 * 60 * 1000;
   const MEMBERS_BACKGROUND_REFRESH_MS = 30 * 1000;
@@ -161,6 +169,7 @@ export function MemberGate({
           bankName: cleanBank,
           birthday,
           email: cleanEmail,
+          spouseId: spouseId || undefined,
         },
       });
       onConfig(res.spreadsheetId);
@@ -302,12 +311,30 @@ export function MemberGate({
           <BankPicker value={bankName} onChange={setBankName} />
 
           <div>
-            <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-              Tes enfants (optionnel)
+            <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+              <Heart className="h-3 w-3" /> Ma famille (optionnel)
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground/80">
-              Tu pourras aussi les ajouter plus tard depuis ton profil.
+              Conjoint·e et enfants — ça te permettra de les ajouter aux résa et aux chantiers plus rapidement.
             </p>
+
+            <div className="mt-2">
+              <div className="text-[10px] font-medium text-muted-foreground mb-1">Conjoint·e</div>
+              <select
+                value={spouseId}
+                onChange={(e) => setSpouseId(e.target.value)}
+                className="w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+              >
+                <option value="">Aucun·e</option>
+                {(members ?? []).map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.firstName} {m.lastName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="mt-3 text-[10px] font-medium text-muted-foreground mb-1">Enfants</div>
 
             {pendingChildren.length > 0 && (
               <div className="mt-2 space-y-2">
