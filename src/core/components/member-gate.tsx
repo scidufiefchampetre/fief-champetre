@@ -323,7 +323,7 @@ export function MemberGate({
               <select
                 value={spouseId}
                 onChange={(e) => setSpouseId(e.target.value)}
-                className="w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                className="input-field"
               >
                 <option value="">Aucun·e</option>
                 {(members ?? []).map((m) => (
@@ -375,14 +375,14 @@ export function MemberGate({
                 value={newChildFirstName}
                 onChange={(e) => setNewChildFirstName(e.target.value.slice(0, 60))}
                 placeholder="Prénom de l'enfant"
-                className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                className="input-field"
               />
               <div className="flex gap-2">
               <input
                 type="date"
                 value={newChildBirthday}
                 onChange={(e) => setNewChildBirthday(e.target.value)}
-                className="flex-1 rounded-2xl border border-border bg-card px-3 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                className="input-field flex-1"
               />
               <button
                 type="button"
@@ -397,13 +397,15 @@ export function MemberGate({
             )}
           </div>
         </div>
-        <button
-          onClick={submitNew}
-          disabled={loading}
-          className="tap lift mt-6 rounded-2xl bg-brand-accent px-4 py-4 text-sm font-semibold text-brand-accent-foreground disabled:opacity-50 shadow-card"
-        >
-          {loading ? "Enregistrement…" : "C'est parti →"}
-        </button>
+        <div className="sticky bottom-0 pt-3 pb-4 bg-background/90 backdrop-blur-md z-10 mt-6">
+          <button
+            onClick={submitNew}
+            disabled={loading}
+            className="tap lift w-full rounded-2xl bg-brand-accent px-4 py-4 text-sm font-semibold text-brand-accent-foreground disabled:opacity-50 shadow-card"
+          >
+            {loading ? "Enregistrement…" : "C'est parti →"}
+          </button>
+        </div>
       </section>
     );
   }
@@ -450,7 +452,7 @@ export function MemberGate({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Rechercher…"
-          className="w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+          className="input-field"
         />
       </div>
       <div className="mt-3 max-h-[55vh] space-y-2 overflow-y-auto pr-1 no-scrollbar">
@@ -522,7 +524,7 @@ export function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         autoCapitalize={autoCapitalize}
-        className="mt-1.5 w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+        className="input-field mt-1.5"
       />
     </label>
   );
@@ -585,7 +587,7 @@ export function BankPicker({ value, onChange }: { value: string; onChange: (v: s
           onChange={(e) => onChange(e.target.value)}
           placeholder="Nom de ta banque"
           autoFocus
-          className="mt-1.5 w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+          className="input-field mt-1.5"
         />
       </label>
     );

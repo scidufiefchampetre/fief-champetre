@@ -1,10 +1,8 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { toast } from "sonner";
+import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 
 import { AppHeader } from "@/core/components/app-header";
-import { useExpenseStore } from "@/core/store/expense-store";
-import { ReportForm } from "@/features/chantiers/components/report-form";
+import { TaskForm } from "@/features/chantiers/components/task-form";
 
 const SignalerSearch = z.object({
   from: z.enum(["admin"]).optional(),
@@ -15,7 +13,7 @@ export const Route = createFileRoute("/signaler")({
   validateSearch: (search: Record<string, unknown>) => SignalerSearch.parse(search),
   head: () => ({
     meta: [
-      { title: "Signaler ou proposer une tâche · Fief Champêtre" },
+      { title: "Proposer une tâche · Fief Champêtre" },
       {
         name: "description",
         content: "Propose une tâche pour les prochains chantiers.",
@@ -25,10 +23,7 @@ export const Route = createFileRoute("/signaler")({
 });
 
 function SignalerPage() {
-  const store = useExpenseStore();
-  const identifiedName = store.member?.firstName ?? "";
   const { from } = Route.useSearch();
-  const navigate = useNavigate();
   const backTarget = from === "admin" ? "/admin" : "/chantiers";
 
   return (
@@ -37,23 +32,17 @@ function SignalerPage() {
         <AppHeader variant="back" backTo={backTarget} />
 
         <div className="animate-rise">
-          <h1 className="page-title">Signaler une tâche.</h1>
+          <h1 className="page-title">Nouvelle tâche.</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Une tâche à faire, un truc cassé, une idée pour le prochain chantier ?{" "}
-            {identifiedName || "Toi"}, dis-nous.
+            Propose une tâche pour les prochains chantiers. Elle sera visible dans le backlog admin.
           </p>
 
           <div className="mt-6">
-            <ReportForm
-              identifiedName={identifiedName}
-              onSubmitted={() => {
-                if (from === "admin") {
-                  toast.success("Tâche créée.");
-                  navigate({ to: "/admin" });
-                  return;
-                }
-                toast.success("Merci, c'est transmis à l'association.");
-              }}
+            <TaskForm
+              chantierId=""
+              startDate=""
+              mode="user"
+              onClose={() => history.back()}
             />
           </div>
         </div>

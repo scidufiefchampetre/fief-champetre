@@ -3,7 +3,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   Check,
   Plus,
@@ -28,6 +27,7 @@ import { toast } from "sonner";
 
 import { AppHeader } from "@/core/components/app-header";
 import { PageShell } from "@/components/ui/page-shell";
+import { Button } from "@/components/ui/button";
 import { SectionLabel } from "@/components/ui/section-label";
 import { EmptyState } from "@/components/ui/empty-state";
 import { TaskItem, AddTaskButton } from "@/features/chantiers/components/task-item";
@@ -68,9 +68,12 @@ import {
   getChantierFiche,
   updateChantierFiche,
   listChantierTasks,
+  listAllChantierTasks,
   addChantierTask,
   deleteChantierTask,
   updateChantierTaskExecution,
+  deleteObsoleteChantierTabs,
+  type ChantierTaskWithContext,
 } from "@/lib/chantier.functions";
 import { chantierDisplayName, getTaskPhase, type ChantierPeriod } from "@/lib/chantier-types";
 import { TaskFormSheet } from "@/features/chantiers/components/task-form";
@@ -87,6 +90,9 @@ import {
   type ChantierReport,
 } from "@/lib/chantier-reports.functions";
 import { ReportForm } from "@/features/chantiers/components/report-form";
+import { listReservations, cancelReservation } from "@/lib/reservations.functions";
+import type { Reservation } from "@/lib/reservation-types";
+import { MonthCalendar, windowRange } from "@/routes/agenda";
 
 export const Route = createFileRoute("/admin")({
   component: AdminPage,
@@ -247,7 +253,12 @@ function AdminPage() {
 
   return (
     <PageShell>
-      <AppHeader variant="back" backTo={space ? "/admin" : "/"} />
+      <AppHeader
+        variant="back"
+        backTo={space ? undefined : "/"}
+        onBack={space ? () => setSpace(null) : undefined}
+        backLabel={space ? "Changer d'espace" : "Accueil"}
+      />
 
       {!space && (
         <div className="animate-rise">
@@ -383,14 +394,7 @@ function AdminPasswordGate({
 
   return (
     <div className="animate-rise">
-      <button
-        onClick={onBack}
-        className="tap flex items-center gap-1.5 text-xs font-semibold text-muted-foreground"
-      >
-        <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2.5} />
-        Changer d'espace
-      </button>
-      <h1 className="page-title mt-3">Admin {SPACE_LABEL[space]}.</h1>
+      <h1 className="page-title">Admin {SPACE_LABEL[space]}.</h1>
       <p className="mt-2 text-xs text-muted-foreground">
         Indique le mot de passe de l'espace {SPACE_LABEL[space]} pour continuer.
       </p>
@@ -400,11 +404,9 @@ function AdminPasswordGate({
           continuer.
         </div>
       )}
-      <form onSubmit={submit} className="mt-4 flex flex-col gap-3">
+      <form onSubmit={submit} className="mt-5 flex flex-col gap-3">
         <label className="block">
-          <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-            Mot de passe
-          </div>
+          <div className="label-micro mb-2">Mot de passe</div>
           <input
             type="password"
             value={value}
@@ -414,17 +416,19 @@ function AdminPasswordGate({
             }}
             autoFocus
             autoComplete="current-password"
-            className="mt-1.5 w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+            className="input-field"
           />
         </label>
         {error && <p className="text-xs font-medium text-destructive">{error}</p>}
-        <button
+        <Button
           type="submit"
+          size="lg"
+          isLoading={checking}
           disabled={checking || !value.trim()}
-          className="tap lift mt-1 flex items-center justify-center rounded-2xl bg-brand-accent px-5 py-3.5 text-sm font-bold text-white disabled:opacity-50"
+          className="w-full mt-1"
         >
           {checking ? "Vérification…" : "Entrer"}
-        </button>
+        </Button>
       </form>
     </div>
   );
@@ -448,9 +452,8 @@ function AdminSpacePanel({
   const list = useServerFn(listReimbursements);
   const [showPaid, setShowPaid] = useState(false);
   const [detail, setDetail] = useState<PendingReimbursement | null>(null);
-  const [openSection, setOpenSection] = useState<"remb" | "chantiers" | "taches">(
-    (initialOpenSection as "remb" | "chantiers" | "taches") ??
-      (space === "Association" ? "chantiers" : "remb"),
+  const [openSection, setOpenSection] = useState<"remb" | "chantiers" | "taches" | "agenda" | null>(
+    (initialOpenSection as "remb" | "chantiers" | "taches" | "agenda" | null) ?? null,
   );
 
   const { data, isLoading } = useQuery({
@@ -477,23 +480,24 @@ function AdminSpacePanel({
 
   return (
     <section className="animate-rise">
-      <div className="flex items-center justify-between">
-        <h1 className="page-title">Admin {SPACE_LABEL[space]}.</h1>
-        <button
-          onClick={onBack}
-          className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-[10px] font-semibold text-muted-foreground transition hover:text-foreground"
-        >
-          <ArrowLeft className="h-3 w-3" /> Changer d'espace
-        </button>
-      </div>
+      <h1 className="page-title">Admin {SPACE_LABEL[space]}.</h1>
 
       {space === "Association" && (
         <>
           <AccordionHeader
+            icon={CalendarDays}
+            label="Agenda"
+            open={openSection === "agenda"}
+            onToggle={() => setOpenSection((s) => (s === "agenda" ? null : "agenda"))}
+          />
+          {openSection === "agenda" && (
+            <AdminAgendaSection spreadsheetId={store.spreadsheetId ?? ""} password={password} />
+          )}
+          <AccordionHeader
             icon={Hammer}
             label="Chantiers"
             open={openSection === "chantiers"}
-            onToggle={() => setOpenSection((s) => (s === "chantiers" ? "remb" : "chantiers"))}
+            onToggle={() => setOpenSection((s) => (s === "chantiers" ? null : "chantiers"))}
           />
           {openSection === "chantiers" && (
             <ChantiersSection
@@ -509,7 +513,7 @@ function AdminSpacePanel({
         icon={Wallet}
         label="Remboursements"
         open={openSection === "remb"}
-        onToggle={() => setOpenSection((s) => (s === "remb" ? s : "remb"))}
+        onToggle={() => setOpenSection((s) => (s === "remb" ? null : "remb"))}
       />
       {openSection === "remb" && (
         <div className="mt-3">
@@ -578,10 +582,10 @@ function AdminSpacePanel({
             icon={ClipboardList}
             label="Tâches à faire"
             open={openSection === "taches"}
-            onToggle={() => setOpenSection((s) => (s === "taches" ? "chantiers" : "taches"))}
+            onToggle={() => setOpenSection((s) => (s === "taches" ? null : "taches"))}
           />
           {openSection === "taches" && (
-            <ChantierBacklogSection password={password} showHeader={false} />
+            <AllTasksAdminSection password={password} />
           )}
         </>
       )}
@@ -770,7 +774,7 @@ function ReimbursementDetailSheet({
                     <button
                       type="button"
                       onClick={() => setConfirmDelete(false)}
-                      className="rounded-xl border border-border py-2.5 text-[13px] font-semibold text-muted-foreground"
+                      className="tap rounded-xl border border-border py-2.5 text-[13px] font-semibold text-muted-foreground hover:bg-secondary transition"
                     >
                       Annuler
                     </button>
@@ -778,7 +782,7 @@ function ReimbursementDetailSheet({
                       type="button"
                       onClick={handleDelete}
                       disabled={deleting}
-                      className="rounded-xl bg-destructive py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
+                      className="tap rounded-xl bg-destructive py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
                     >
                       {deleting ? "Suppression…" : "Confirmer"}
                     </button>
@@ -1020,6 +1024,7 @@ function ChantiersSection({
                 <div className="border-t border-border p-4 space-y-4">
                   <ChantierCardBody
                     chantierId={c.id}
+                    calendarEventId={c.calendarEventId ?? undefined}
                     startDate={c.startDate}
                     endDate={c.endDate}
                     startPeriod={c.startPeriod}
@@ -1180,7 +1185,7 @@ function ChantiersSection({
           <div className="flex items-center gap-2 border-t border-border pt-3">
             <button
               onClick={() => setFormOpen(false)}
-              className="rounded-xl border border-border px-3.5 py-2 text-[12px] font-semibold text-muted-foreground"
+              className="tap rounded-xl border border-border px-3.5 py-2 text-[12px] font-semibold text-muted-foreground hover:bg-secondary transition"
             >
               Annuler
             </button>
@@ -1198,23 +1203,21 @@ function ChantiersSection({
       <Sheet open={createReportOpen} onOpenChange={setCreateReportOpen}>
         <SheetContent
           side="bottom"
-          className="max-h-[92dvh] overflow-y-auto rounded-t-3xl border-t border-border sm:mx-auto sm:max-w-xl"
+          className="max-h-[90dvh] overflow-y-auto rounded-t-3xl px-5 pb-2 pt-6 sm:mx-auto sm:max-w-xl"
         >
-          <SheetHeader className="text-left">
-            <SheetTitle>Nouvelle tâche</SheetTitle>
-            <SheetDescription>
+          <SheetHeader className="mb-5 text-left">
+            <SheetTitle className="page-title">Nouvelle tâche.</SheetTitle>
+            <p className="mt-2 text-sm text-muted-foreground">
               Elle rejoindra la liste des tâches à faire, à piocher depuis un chantier.
-            </SheetDescription>
+            </p>
           </SheetHeader>
-          <div className="mt-4 pb-2">
-            <ReportForm
-              identifiedName=""
-              onSubmitted={() => {
-                setCreateReportOpen(false);
-                queryClient.invalidateQueries({ queryKey: ["chantier-reports-backlog", password] });
-              }}
-            />
-          </div>
+          <ReportForm
+            identifiedName=""
+            onSubmitted={() => {
+              setCreateReportOpen(false);
+              queryClient.invalidateQueries({ queryKey: ["chantier-reports-backlog", password] });
+            }}
+          />
         </SheetContent>
       </Sheet>
     </div>
@@ -1223,6 +1226,7 @@ function ChantiersSection({
 
 function ChantierCardBody({
   chantierId,
+  calendarEventId,
   startDate,
   endDate,
   startPeriod,
@@ -1231,6 +1235,7 @@ function ChantierCardBody({
   onDeleted,
 }: {
   chantierId: string;
+  calendarEventId?: string;
   startDate: string;
   endDate: string;
   startPeriod: ChantierPeriod;
@@ -1355,7 +1360,7 @@ function ChantierCardBody({
   async function handleDelete() {
     setDeleting(true);
     try {
-      await cancelFn({ data: { id: chantierId, password } });
+      await cancelFn({ data: { id: chantierId, calendarEventId, password } });
       toast.success("Chantier supprimé.");
       onDeleted();
       queryClient.invalidateQueries({ queryKey: ["chantiers-admin"] });
@@ -1442,7 +1447,7 @@ function ChantierCardBody({
                 setEditing(false);
                 setPendingTasks([]);
               }}
-              className="rounded-xl border border-border px-3.5 py-2 text-[12px] font-semibold text-muted-foreground"
+              className="tap rounded-xl border border-border px-3.5 py-2 text-[12px] font-semibold text-muted-foreground hover:bg-secondary transition"
             >
               Annuler
             </button>
@@ -1712,8 +1717,13 @@ function ChantierTasksAdmin({
             task={{
               id: `pending-${idx}`,
               label: pt.label,
+              taskStatus: "À faire",
               done: false,
+              percentage: 0,
+              description: "",
               note: "",
+              toBuyItems: [],
+              photoBeforeUrl: "",
               participants: "",
               completedAt: "",
               resultPhotoUrl: "",
@@ -1900,24 +1910,22 @@ function ChantierBacklogSection({
       <Sheet open={createOpen} onOpenChange={setCreateOpen}>
         <SheetContent
           side="bottom"
-          className="max-h-[92dvh] overflow-y-auto rounded-t-3xl border-t border-border sm:mx-auto sm:max-w-xl"
+          className="max-h-[90dvh] overflow-y-auto rounded-t-3xl px-5 pb-2 pt-6 sm:mx-auto sm:max-w-xl"
         >
-          <SheetHeader className="text-left">
-            <SheetTitle>Nouvelle tâche</SheetTitle>
-            <SheetDescription>
+          <SheetHeader className="mb-5 text-left">
+            <SheetTitle className="page-title">Nouvelle tâche.</SheetTitle>
+            <p className="mt-2 text-sm text-muted-foreground">
               Elle rejoindra la liste des tâches à faire, à piocher depuis un chantier.
-            </SheetDescription>
+            </p>
           </SheetHeader>
-          <div className="mt-4 pb-2">
-            <ReportForm
-              identifiedName={identifiedName}
-              onSubmitted={() => {
-                toast.success("Tâche créée.");
-                setCreateOpen(false);
-                queryClient.invalidateQueries({ queryKey: ["chantier-reports-backlog", password] });
-              }}
-            />
-          </div>
+          <ReportForm
+            identifiedName={identifiedName}
+            onSubmitted={() => {
+              toast.success("Tâche créée.");
+              setCreateOpen(false);
+              queryClient.invalidateQueries({ queryKey: ["chantier-reports-backlog", password] });
+            }}
+          />
         </SheetContent>
       </Sheet>
 
@@ -2022,5 +2030,310 @@ function ChantierBacklogSection({
         </SheetContent>
       </Sheet>
     </div>
+  );
+}
+
+function AdminAgendaSection({
+  spreadsheetId,
+  password,
+}: {
+  spreadsheetId: string;
+  password: string;
+}) {
+  const queryClient = useQueryClient();
+  const listFn = useServerFn(listReservations);
+  const cancelResFn = useServerFn(cancelReservation);
+  const cancelChantierFn = useServerFn(cancelChantier);
+
+  const { timeMin, timeMax } = useMemo(windowRange, []);
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-agenda", timeMin, timeMax],
+    queryFn: () => listFn({ data: { spreadsheetId, timeMin, timeMax } }),
+    refetchInterval: 60_000,
+  });
+  const reservations = useMemo(
+    () => (data?.reservations ?? []).filter((r) => r.status === "confirmed"),
+    [data],
+  );
+
+  const [pending, setPending] = useState<Reservation | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  async function handleDelete() {
+    if (!pending) return;
+    setDeleting(true);
+    try {
+      if (pending.type === "chantier") {
+        await cancelChantierFn({
+          data: { id: pending.id, calendarEventId: pending.calendarEventId ?? undefined, password },
+        });
+      } else {
+        await cancelResFn({ data: { id: pending.id, spreadsheetId } });
+      }
+      toast.success("Événement supprimé.");
+      setPending(null);
+      queryClient.invalidateQueries({ queryKey: ["admin-agenda"] });
+      queryClient.invalidateQueries({ queryKey: ["reservations"] });
+      queryClient.invalidateQueries({ queryKey: ["chantiers-admin"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Erreur lors de la suppression.");
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const TYPE_LABEL_FR: Record<string, string> = { personal: "Perso", airbnb: "Airbnb", chantier: "Chantier" };
+
+  return (
+    <div className="mt-3">
+      {isLoading ? (
+        <div className="animate-pulse h-48 rounded-2xl bg-secondary" />
+      ) : (
+        <MonthCalendar
+          reservations={reservations}
+          rangeStart={null}
+          rangeEnd={null}
+          onDayClick={() => {}}
+          onSegmentClick={(r) => setPending(r)}
+        />
+      )}
+
+      <AlertDialog open={!!pending} onOpenChange={(open) => !open && setPending(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer cet événement ?</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                {pending && (
+                  <>
+                    <span className="font-semibold">{TYPE_LABEL_FR[pending.type] ?? pending.type}</span>
+                    {" · "}{pending.reservedBy}
+                    {" · "}{pending.startDate}
+                    {pending.endDate !== pending.startDate ? ` → ${pending.endDate}` : ""}
+                    <br />
+                    <span className="text-[11px] text-muted-foreground">
+                      Supprimé du Sheet, de l'agenda Google et de toutes les données liées.
+                    </span>
+                  </>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={deleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleting ? "Suppression…" : "Supprimer"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+function AllTasksAdminSection({ password }: { password: string }) {
+  const listAll = useServerFn(listAllChantierTasks);
+  const listChantiersAll = useServerFn(listChantiers);
+  const queryClient = useQueryClient();
+
+  const { timeMin, timeMax } = useMemo(() => {
+    const now = new Date();
+    const min = new Date(now); min.setFullYear(min.getFullYear() - 1);
+    const max = new Date(now); max.setFullYear(max.getFullYear() + 2);
+    return { timeMin: min.toISOString(), timeMax: max.toISOString() };
+  }, []);
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["all-chantier-tasks"],
+    queryFn: () => listAll({ data: undefined }),
+    refetchInterval: 60_000,
+  });
+  const { data: chantiersData } = useQuery({
+    queryKey: ["chantiers-admin", timeMin, timeMax],
+    queryFn: () => listChantiersAll({ data: { timeMin, timeMax } }),
+  });
+
+  const allTasks = (data?.tasks ?? []).filter((t) => !t.done);
+  const allChantiers = (chantiersData?.chantiers ?? []).filter((c) => !c.cancelledAt);
+
+  const [addOpen, setAddOpen] = useState(false);
+  const [selectedChantierId, setSelectedChantierId] = useState<string>("");
+  const [taskFormOpen, setTaskFormOpen] = useState(false);
+
+  const selectedChantier = allChantiers.find((c) => c.id === selectedChantierId);
+
+  function openAddFlow() {
+    if (allChantiers.length === 1) {
+      setSelectedChantierId(allChantiers[0].id);
+      setTaskFormOpen(true);
+    } else {
+      setAddOpen(true);
+    }
+  }
+
+  const grouped = new Map<string, ChantierTaskWithContext[]>();
+  for (const t of allTasks) {
+    const arr = grouped.get(t.chantierId) ?? [];
+    arr.push(t);
+    grouped.set(t.chantierId, arr);
+  }
+
+  const sortedGroups = [...grouped.entries()].sort(([, a], [, b]) => {
+    const da = a[0]?.chantierStartDate ?? "";
+    const db = b[0]?.chantierStartDate ?? "";
+    return da.localeCompare(db);
+  });
+
+  return (
+    <div className="mt-3">
+      {isLoading && (
+        <div className="animate-pulse space-y-2">
+          <div className="h-10 rounded-xl bg-secondary" />
+          <div className="h-10 rounded-xl bg-secondary/60" />
+        </div>
+      )}
+      {!isLoading && allTasks.length === 0 && (
+        <div className="rounded-2xl bg-secondary/50 p-4 text-sm text-muted-foreground">
+          Aucune tâche en cours ou à faire.
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {sortedGroups.map(([chantierId, tasks]) => {
+          const startDate = tasks[0]?.chantierStartDate ?? "";
+          const endDate = tasks[0]?.chantierEndDate ?? "";
+          const phase = getTaskPhase(startDate, endDate || startDate);
+          const label = startDate
+            ? new Date(`${startDate}T00:00:00`).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
+            : chantierId.slice(0, 8);
+          return (
+            <div key={chantierId} className="rounded-xl border border-border bg-card overflow-hidden">
+              <div className="px-4 py-2.5 border-b border-border/50 flex items-center gap-2">
+                <Hammer className="h-3.5 w-3.5 text-brand-secondary shrink-0" />
+                <span className="text-[12px] font-bold text-muted-foreground capitalize">{label}</span>
+                <span className="ml-auto text-[10px] font-semibold text-muted-foreground/60">
+                  {tasks.filter((t) => t.taskStatus === "En cours").length > 0 && (
+                    <span className="text-brand-secondary">
+                      {tasks.filter((t) => t.taskStatus === "En cours").length} en cours ·{" "}
+                    </span>
+                  )}
+                  {tasks.filter((t) => t.taskStatus === "À faire").length} à faire
+                </span>
+              </div>
+              <div className="divide-y divide-border/40">
+                {tasks.map((task) => (
+                  <TaskItem
+                    key={task.id}
+                    task={task}
+                    chantierId={chantierId}
+                    startDate={startDate}
+                    phase={phase}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <button
+        type="button"
+        onClick={openAddFlow}
+        className="tap mt-3 flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border px-4 py-3 text-sm font-semibold text-muted-foreground hover:text-foreground hover:border-foreground/30 transition"
+      >
+        <Plus className="h-4 w-4" /> Ajouter une tâche
+      </button>
+
+      {/* Sheet: choisir le chantier */}
+      <Sheet open={addOpen} onOpenChange={setAddOpen}>
+        <SheetContent side="bottom" className="max-h-[75dvh] overflow-y-auto rounded-t-3xl">
+          <SheetHeader className="text-left mb-4">
+            <SheetTitle>Choisir un chantier</SheetTitle>
+            <SheetDescription>À quel chantier ajouter cette tâche ?</SheetDescription>
+          </SheetHeader>
+          <div className="space-y-2 pb-4">
+            {allChantiers.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                onClick={() => {
+                  setSelectedChantierId(c.id);
+                  setAddOpen(false);
+                  setTaskFormOpen(true);
+                }}
+                className="tap flex w-full items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 text-left hover-device:hover:bg-secondary"
+              >
+                <div>
+                  <div className="text-sm font-semibold capitalize">
+                    {new Date(`${c.startDate}T00:00:00`).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
+                    {c.endDate !== c.startDate && ` → ${new Date(`${c.endDate}T00:00:00`).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}`}
+                  </div>
+                  <div className="text-[11px] text-muted-foreground">{chantierDisplayName(c.startDate, c.endDate)}</div>
+                </div>
+                <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              </button>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {selectedChantier && (
+        <TaskFormSheet
+          open={taskFormOpen}
+          onOpenChange={(v) => {
+            setTaskFormOpen(v);
+            if (!v) {
+              setSelectedChantierId("");
+              queryClient.invalidateQueries({ queryKey: ["all-chantier-tasks"] });
+            }
+          }}
+          title="Nouvelle tâche"
+          chantierId={selectedChantier.id}
+          startDate={selectedChantier.startDate}
+          mode="admin"
+          password={password}
+        />
+      )}
+    </div>
+  );
+}
+
+function CleanupTabsButton({ password }: { password: string }) {
+  const deleteTabsFn = useServerFn(deleteObsoleteChantierTabs);
+  const [running, setRunning] = useState(false);
+  const [done, setDone] = useState(false);
+
+  async function run() {
+    setRunning(true);
+    try {
+      const res = await deleteTabsFn({ data: { password } });
+      if (res.deleted.length === 0) {
+        toast.success("Aucun onglet obsolète trouvé.");
+      } else {
+        toast.success(`Onglets supprimés : ${res.deleted.join(", ")}`);
+      }
+      setDone(true);
+    } catch {
+      toast.error("Erreur lors de la suppression des onglets.");
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  if (done) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={run}
+      disabled={running}
+      className="mt-4 w-full rounded-2xl border border-border px-4 py-2.5 text-[12px] font-semibold text-muted-foreground transition hover:text-destructive disabled:opacity-40"
+    >
+      {running ? "Suppression…" : "Supprimer onglets obsolètes (Tâches + Tâches types)"}
+    </button>
   );
 }

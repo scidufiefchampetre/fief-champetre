@@ -281,13 +281,13 @@ function ModifierPage() {
         <div className="sticky bottom-0 mt-8 -mx-5 grid grid-cols-2 gap-3 border-t border-border bg-background/85 px-5 py-4 backdrop-blur">
           <button
             onClick={() => navigate({ to: "/" })}
-            className="rounded-2xl border border-border bg-card px-4 py-3.5 text-sm font-medium hover:bg-secondary"
+            className="tap rounded-2xl border border-border bg-card px-4 py-3.5 text-sm font-semibold hover:bg-secondary"
           >
             Annuler
           </button>
           <button
             onClick={save}
-            className={`rounded-2xl px-4 py-3.5 text-sm font-medium shadow-lift hover:opacity-90 active:scale-[0.98] ${
+            className={`tap lift rounded-2xl px-4 py-3.5 text-sm font-semibold shadow-card ${
               draft.finalSide === "SCI"
                 ? "bg-brand-secondary text-brand-secondary-foreground"
                 : "bg-brand-accent text-brand-accent-foreground"
@@ -306,7 +306,7 @@ function ModifierPage() {
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 onClick={() => setConfirmSwitch(null)}
-                className="rounded-2xl border border-border bg-card px-4 py-3 text-sm font-medium hover:bg-secondary"
+                className="tap rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold hover:bg-secondary"
               >
                 Annuler
               </button>
@@ -315,7 +315,7 @@ function ModifierPage() {
                   patch("finalSide", confirmSwitch);
                   setConfirmSwitch(null);
                 }}
-                className={`rounded-2xl px-4 py-3 text-sm font-medium hover:opacity-90 ${
+                className={`tap lift rounded-2xl px-4 py-3 text-sm font-semibold shadow-card ${
                   confirmSwitch === "SCI"
                     ? "bg-brand-secondary text-brand-secondary-foreground"
                     : "bg-brand-accent text-brand-accent-foreground"
@@ -362,7 +362,7 @@ function Text({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+        className="input-field mt-1.5"
       />
     </label>
   );
@@ -384,7 +384,7 @@ function Textarea({
         value={value}
         rows={2}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full resize-none rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+        className="input-field mt-1.5 py-3 resize-none"
       />
     </label>
   );
@@ -407,7 +407,7 @@ function Select({
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1.5 w-full rounded-xl border border-input bg-background px-3.5 py-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+        className="input-field mt-1.5"
       >
         {options.map((o) => (
           <option key={o} value={o}>

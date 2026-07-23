@@ -128,7 +128,7 @@ function SignalerBugPage() {
                 onChange={(e) => setQuoi(e.target.value)}
                 placeholder="Ex : Le bouton Réserver ne répond pas"
                 maxLength={200}
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary"
+                className="input-field"
               />
             </div>
 
@@ -143,7 +143,7 @@ function SignalerBugPage() {
                     key={opt}
                     type="button"
                     onClick={() => setOu(opt)}
-                    className={`rounded-full px-3 py-1.5 text-[13px] font-semibold border transition ${
+                    className={`tap rounded-full px-3 py-1.5 text-[13px] font-semibold border transition ${
                       ou === opt
                         ? "bg-brand-secondary text-white border-brand-secondary"
                         : "bg-card border-border text-foreground hover:bg-secondary"
@@ -164,7 +164,7 @@ function SignalerBugPage() {
                 placeholder="Ce que tu faisais, ce qui a planté, les étapes pour reproduire…"
                 rows={4}
                 maxLength={2000}
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary resize-none"
+                className="input-field py-3 resize-none"
               />
             </div>
 
@@ -179,7 +179,7 @@ function SignalerBugPage() {
                     key={opt.value}
                     type="button"
                     onClick={() => setGravite(opt.value)}
-                    className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
+                    className={`tap flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
                       gravite === opt.value
                         ? "border-brand-secondary bg-brand-secondary/10"
                         : "border-border bg-card hover:bg-secondary"
@@ -242,9 +242,11 @@ function SignalerBugPage() {
               )}
             </div>
 
-            <button type="submit" disabled={submitting} className="btn-primary w-full">
-              {submitting ? "Envoi en cours…" : "Envoyer le rapport"}
-            </button>
+            <div className="sticky bottom-0 pb-4 pt-2 bg-background/90 backdrop-blur-md z-10">
+              <button type="submit" disabled={submitting} className="btn-primary w-full">
+                {submitting ? "Envoi en cours…" : "Envoyer le rapport"}
+              </button>
+            </div>
           </form>
         </div>
       </div>

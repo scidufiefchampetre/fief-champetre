@@ -68,7 +68,7 @@ export const Route = createFileRoute("/agenda")({
   }),
 });
 
-function windowRange() {
+export function windowRange() {
   const now = new Date();
   const min = new Date(now);
   min.setMonth(min.getMonth() - 1);
@@ -131,7 +131,7 @@ function AgendaPage() {
   const [rangeStart, setRangeStart] = useState<string | null>(null);
   const [rangeEnd, setRangeEnd] = useState<string | null>(null);
   const [detail, setDetail] = useState<Reservation | null>(null);
-  const [chantierDetail, setChantierDetail] = useState<{ id: string; startDate: string } | null>(null);
+  const [chantierDetail, setChantierDetail] = useState<{ id: string; startDate: string; endDate: string } | null>(null);
 
   const { timeMin, timeMax } = useMemo(windowRange, []);
   const { data, isLoading } = useQuery({
@@ -241,7 +241,7 @@ function AgendaPage() {
             onDayClick={handleDayClick}
             onSegmentClick={(r) => {
               if (r.type === "chantier") {
-                setChantierDetail({ id: r.id, startDate: r.startDate });
+                setChantierDetail({ id: r.id, startDate: r.startDate, endDate: r.endDate });
               } else {
                 setDetail(r);
               }
@@ -398,7 +398,9 @@ function AgendaPage() {
             <ChantierBriefCard
               chantierId={chantierDetail.id}
               startDate={chantierDetail.startDate}
+              endDate={chantierDetail.endDate}
               groups={[]}
+              loading={false}
             />
           )}
         </SheetContent>
@@ -422,7 +424,7 @@ interface WeekSegment {
   isTrueEnd: boolean;
 }
 
-function MonthCalendar({
+export function MonthCalendar({
   reservations,
   rangeStart,
   rangeEnd,
@@ -1101,7 +1103,7 @@ function ReservationForm({
                       type="date"
                       value={startDate}
                       onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                      className="input-field"
                     />
                   </ReservationField>
                   <ReservationField label="Départ">
@@ -1109,7 +1111,7 @@ function ReservationForm({
                       type="date"
                       value={endDate}
                       onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                      className="input-field"
                     />
                   </ReservationField>
                 </div>
@@ -1176,7 +1178,7 @@ function ReservationForm({
                       value={mood}
                       onChange={(e) => setMood(e.target.value.slice(0, 200))}
                       placeholder="Ex : anniversaire de Paul, chill en famille…"
-                      className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                      className="input-field"
                     />
                   </ReservationField>
                 </div>
@@ -1187,7 +1189,7 @@ function ReservationForm({
                       type="time"
                       value={arrivalTime}
                       onChange={(e) => setArrivalTime(e.target.value)}
-                      className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                      className="input-field"
                     />
                   </ReservationField>
                 </div>
@@ -1232,7 +1234,7 @@ function ReservationForm({
                         value={chantierTask}
                         onChange={(e) => setChantierTask(e.target.value)}
                         placeholder="Choisis une tâche ou tape-en une nouvelle…"
-                        className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                        className="input-field"
                       />
                       <datalist id="chantier-task-catalog">
                         {taskCatalog.map((t) => (
@@ -1266,15 +1268,17 @@ function ReservationForm({
                 </FormSection>
               )}
 
-              <button
-                onClick={handleSubmit}
-                disabled={
-                  submitting || !!blockingOverlap || willBlockBecausePrivatizing || !identifiedName
-                }
-                className="tap lift w-full rounded-2xl bg-brand-secondary py-3.5 text-sm font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                {submitting ? "Réservation…" : "Confirmer la réservation"}
-              </button>
+              <div className="sticky bottom-0 pb-4 pt-2 bg-background/90 backdrop-blur-md z-10">
+                <button
+                  onClick={handleSubmit}
+                  disabled={
+                    submitting || !!blockingOverlap || willBlockBecausePrivatizing || !identifiedName
+                  }
+                  className="tap lift w-full rounded-2xl bg-brand-secondary py-4 text-sm font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  {submitting ? "Réservation…" : "Confirmer la réservation"}
+                </button>
+              </div>
             </div>
           </>
         )}

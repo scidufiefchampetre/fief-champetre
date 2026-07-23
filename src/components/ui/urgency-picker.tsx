@@ -20,7 +20,7 @@ export function UrgencyPicker({
               key={u}
               type="button"
               onClick={() => onChange(u)}
-              className={`flex flex-1 items-center justify-center rounded-xl px-1 py-3 text-center transition min-h-[44px] ${
+              className={`tap flex flex-1 items-center justify-center rounded-xl px-1 py-3 text-center transition min-h-[44px] ${
                 active ? "bg-foreground text-background" : "bg-secondary text-muted-foreground"
               }`}
             >

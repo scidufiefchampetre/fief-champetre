@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
 import { Camera, ChevronDown, Plus, ShoppingCart, Users, X } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { useQueryClient } from "@tanstack/react-query";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useDraftStore } from "@/core/store/draft-store";
 import { UrgencyPicker } from "@/components/ui/urgency-picker";
 import type { ReportUrgency } from "@/lib/chantier-reports.functions";
+import { addChantierTask, addUnplannedChantierTask } from "@/lib/chantier.functions";
 import { parseDurationToMinutes, durationLabel } from "./task-execution-form";
 
 type LocalPhoto = { name: string; previewUrl: string; dataBase64: string; mimeType: string };
@@ -30,6 +32,7 @@ export function TaskForm({
   onClose,
   onCreated,
   preview = false,
+  initialLabel = "",
 }: {
   chantierId: string;
   startDate: string;
@@ -38,10 +41,14 @@ export function TaskForm({
   onClose: () => void;
   onCreated?: () => void;
   preview?: boolean;
+  initialLabel?: string;
 }) {
-  const draftStore = useDraftStore();
+  const addUser = useServerFn(addUnplannedChantierTask);
+  const addAdmin = useServerFn(addChantierTask);
+  const queryClient = useQueryClient();
 
-  const [label, setLabel] = useState("");
+  const [label, setLabel] = useState(initialLabel);
+  const [saving, setSaving] = useState(false);
   const [durationRaw, setDurationRaw] = useState("");
   const [peopleCount, setPeopleCount] = useState<number | "">("");
 
@@ -86,77 +93,96 @@ export function TaskForm({
     });
   }
 
-  function handleAddToList() {
-    if (!canSubmit) return;
+  async function handleAddToList() {
+    if (!canSubmit || saving) return;
     if (preview) {
       toast.success("Aperçu : aucune donnée enregistrée.");
       onCreated?.();
       onClose();
       return;
     }
-    draftStore.push({
-      type: "task",
-      displayLabel: label.trim(),
-      payload: {
-        mode,
-        chantierId,
-        startDate,
-        label: label.trim(),
-        password,
-        estimatedDurationMinutes: durationMinutes || undefined,
-        estimatedPeopleCount: typeof peopleCount === "number" ? peopleCount : undefined,
-        urgency: urgency || undefined,
-      },
-    });
-    toast.success(`"${label.trim()}" ajoutée à la liste.`);
-    // Réinitialise le formulaire pour permettre l'ajout en série
-    setLabel("");
-    setDurationRaw("");
-    setPeopleCount("");
-    setDescription("");
-    setToBuyItems([]);
-    setUrgency("");
-    setPhoto(null);
-    setDetailsOpen(false);
-    onCreated?.();
+    setSaving(true);
+    try {
+      if (mode === "admin" && password) {
+        await addAdmin({
+          data: {
+            chantierId,
+            startDate,
+            label: label.trim(),
+            password,
+            estimatedDurationMinutes: durationMinutes || undefined,
+            estimatedPeopleCount: typeof peopleCount === "number" ? peopleCount : undefined,
+            urgency: urgency || undefined,
+          },
+        });
+      } else {
+        await addUser({
+          data: {
+            chantierId,
+            startDate,
+            label: label.trim(),
+            urgency: urgency || undefined,
+            estimatedDurationMinutes: durationMinutes || undefined,
+            estimatedPeopleCount: typeof peopleCount === "number" ? peopleCount : undefined,
+          },
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: ["chantier-tasks"] });
+      toast.success(`"${label.trim()}" enregistrée.`);
+      setLabel("");
+      setDurationRaw("");
+      setPeopleCount("");
+      setDescription("");
+      setToBuyItems([]);
+      setUrgency("");
+      setPhoto(null);
+      setDetailsOpen(false);
+      onCreated?.();
+      onClose();
+    } catch (e) {
+      console.error(e);
+      toast.error("Erreur lors de l'enregistrement.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
-    <div>
+    <div className="flex flex-col">
       {/* ── Nom ── */}
-      <div className="pb-3 border-b border-border">
-        <div className="label-micro mb-1">Nom</div>
+      <div className="pb-4 border-b border-border">
+        <div className="label-micro mb-2">Nom</div>
         <input
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleAddToList()}
           autoFocus
           placeholder="Nom de la tâche *"
-          className="w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-muted-foreground/40"
+          className="w-full bg-transparent text-base font-semibold outline-none placeholder:text-muted-foreground/40 leading-snug"
         />
       </div>
 
       {/* ── Durée + Personnes ── */}
       <div className="flex items-stretch border-b border-border">
-        <div className="flex-1 py-3 pr-3">
-          <div className="label-micro mb-1 flex items-center gap-1">⏱ Durée *</div>
+        <div className="flex-1 py-4 pr-4">
+          <div className="label-micro mb-2 flex items-center gap-1">⏱ Durée *</div>
           <input
             value={durationRaw}
             onChange={(e) => setDurationRaw(e.target.value)}
             placeholder="ex: 2h, 1 jour, 30 min"
             className="w-full bg-transparent text-[14px] font-semibold outline-none placeholder:text-muted-foreground/40"
           />
-          <div className="mt-0.5 h-3.5 text-[10px] font-medium">
+          <div className="mt-1 h-4 text-[10px] font-semibold">
             {!durationRaw && <span className="text-brand-accent">Requis</span>}
-            {durationRaw && durationValid && <span className="text-success">≈ {hint?.label}</span>}
+            {durationRaw && durationValid && <span className="text-success-foreground">≈ {hint?.label}</span>}
             {durationRaw && !durationValid && (
               <span className="text-destructive/70">Non reconnu</span>
             )}
           </div>
         </div>
-        <div className="w-px bg-border self-stretch my-3" />
-        <div className="flex-1 py-3 pl-3">
-          <div className="label-micro mb-1 flex items-center gap-1">
+        <div className="w-px bg-border self-stretch my-4" />
+        <div className="flex-1 py-4 pl-4">
+          <div className="label-micro mb-2 flex items-center gap-1">
             <Users className="h-3 w-3" /> Personnes *
           </div>
           <div className="flex items-center gap-1">
@@ -173,7 +199,7 @@ export function TaskForm({
             />
             <span className="shrink-0 text-[10px] text-muted-foreground">pers.</span>
           </div>
-          <div className="mt-0.5 h-3.5 text-[10px] font-medium">
+          <div className="mt-1 h-4 text-[10px] font-semibold">
             {(peopleCount === "" || peopleCount === 0) && (
               <span className="text-brand-accent">Requis</span>
             )}
@@ -185,7 +211,7 @@ export function TaskForm({
       <button
         type="button"
         onClick={() => setDetailsOpen((v) => !v)}
-        className="flex w-full items-center gap-1.5 py-3 text-[11px] font-semibold text-muted-foreground border-b border-border"
+        className="tap flex w-full items-center gap-1.5 py-4 text-[11px] font-semibold text-muted-foreground border-b border-border hover:text-foreground transition"
       >
         <ChevronDown
           className={`h-3.5 w-3.5 transition-transform ${detailsOpen ? "rotate-180" : ""}`}
@@ -197,10 +223,10 @@ export function TaskForm({
       {detailsOpen && (
         <div>
           {/* Description */}
-          <div className="flex items-start gap-3 py-3 border-b border-border">
+          <div className="flex items-start gap-3 py-4 border-b border-border">
             <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-[13px]">📋</div>
             <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-2">
                 <div className="label-micro">Description</div>
                 <div className="text-[9px] text-muted-foreground/50">optionnel</div>
               </div>
@@ -208,14 +234,14 @@ export function TaskForm({
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Contexte, contraintes…"
-                rows={2}
-                className="w-full resize-none bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/40"
+                rows={3}
+                className="w-full resize-none bg-transparent text-[13px] leading-relaxed outline-none placeholder:text-muted-foreground/40"
               />
             </div>
           </div>
 
           {/* À acheter — chips */}
-          <div className="flex items-start gap-3 py-3 border-b border-border">
+          <div className="flex items-start gap-3 py-4 border-b border-border">
             <div className="mt-0.5 shrink-0 text-muted-foreground/60">
               <ShoppingCart className="h-4 w-4" />
             </div>
@@ -225,17 +251,17 @@ export function TaskForm({
                 <div className="text-[9px] text-muted-foreground/50">optionnel</div>
               </div>
               {toBuyItems.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mb-2">
+                <div className="flex flex-wrap gap-1.5 mb-3">
                   {toBuyItems.map((item, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2.5 py-0.5 text-[11px] font-medium"
+                      className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2.5 py-1 text-[11px] font-medium"
                     >
                       {item}
                       <button
                         type="button"
                         onClick={() => setToBuyItems((prev) => prev.filter((_, idx) => idx !== i))}
-                        className="ml-0.5 text-muted-foreground hover:text-foreground transition"
+                        className="tap ml-0.5 text-muted-foreground hover:text-foreground transition"
                       >
                         <X className="h-2.5 w-2.5" />
                       </button>
@@ -243,7 +269,7 @@ export function TaskForm({
                   ))}
                 </div>
               )}
-              <div className="flex items-center gap-2 border-t border-border/60 pt-2">
+              <div className="flex items-center gap-2 border-t border-border/60 pt-2.5">
                 <span className="text-[13px] font-bold text-brand-accent">+</span>
                 <input
                   ref={toBuyRef}
@@ -256,13 +282,13 @@ export function TaskForm({
                     }
                   }}
                   placeholder="Ajouter un article…"
-                  className="flex-1 bg-transparent text-[12px] outline-none placeholder:text-muted-foreground/40"
+                  className="flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/40"
                 />
                 {toBuyInput.trim() && (
                   <button
                     type="button"
                     onClick={addToBuyItem}
-                    className="text-[10px] font-semibold text-brand-accent"
+                    className="tap text-[11px] font-semibold text-brand-accent"
                   >
                     Ajouter
                   </button>
@@ -272,12 +298,12 @@ export function TaskForm({
           </div>
 
           {/* Photo */}
-          <div className="flex items-start gap-3 py-3 border-b border-border">
+          <div className="flex items-start gap-3 py-4 border-b border-border">
             <div className="mt-0.5 shrink-0 text-muted-foreground/60">
               <Camera className="h-4 w-4" />
             </div>
             <div className="flex-1">
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-2">
                 <div className="label-micro">Photo avant</div>
                 <div className="text-[9px] text-muted-foreground/50">optionnel</div>
               </div>
@@ -286,18 +312,18 @@ export function TaskForm({
                   <img
                     src={photo.previewUrl}
                     alt="Avant"
-                    className="h-16 w-16 rounded-lg object-cover"
+                    className="h-20 w-20 rounded-xl object-cover"
                   />
                   <button
                     type="button"
                     onClick={() => setPhoto(null)}
-                    className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-destructive transition"
+                    className="tap absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-destructive transition"
                   >
                     <X className="h-3 w-3" />
                   </button>
                 </div>
               ) : (
-                <label className="flex cursor-pointer items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition">
+                <label className="flex cursor-pointer items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition">
                   <span className="underline underline-offset-2">Joindre une photo…</span>
                   <input
                     type="file"
@@ -312,8 +338,8 @@ export function TaskForm({
           </div>
 
           {/* Urgence */}
-          <div className="py-3">
-            <div className="label-micro mb-2">Urgence</div>
+          <div className="py-4">
+            <div className="label-micro mb-3">Urgence</div>
             <UrgencyPicker
               value={urgency}
               onChange={(v) => setUrgency((prev) => (prev === v ? "" : v))}
@@ -322,22 +348,22 @@ export function TaskForm({
         </div>
       )}
 
-      {/* ── Actions ── */}
-      <div className="flex items-center gap-2 pt-4">
+      {/* ── Actions sticky ── */}
+      <div className="sticky bottom-0 mt-2 flex items-center gap-2 bg-background/90 pb-4 pt-3 backdrop-blur-md">
         <button
           type="button"
           onClick={onClose}
-          className="rounded-2xl border border-border px-4 py-2.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground transition min-h-11"
+          className="tap rounded-2xl border border-border bg-card px-4 py-3.5 text-[13px] font-semibold text-muted-foreground hover:bg-secondary transition"
         >
           Fermer
         </button>
         <button
           type="button"
           onClick={handleAddToList}
-          disabled={!canSubmit}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-brand-accent px-4 py-2.5 text-[13px] font-semibold text-brand-accent-foreground transition disabled:opacity-40 min-h-11"
+          disabled={!canSubmit || saving}
+          className="tap lift flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-brand-accent px-4 py-3.5 text-[13px] font-semibold text-brand-accent-foreground shadow-card disabled:opacity-40"
         >
-          <Plus className="h-4 w-4" /> Ajouter à la liste
+          {saving ? "Enregistrement…" : <><Plus className="h-4 w-4" /> Enregistrer</>}
         </button>
       </div>
     </div>
@@ -348,22 +374,27 @@ export function TaskFormSheet({
   open,
   onOpenChange,
   title = "Nouvelle tâche",
+  initialLabel,
   ...formProps
 }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   title?: string;
-} & Omit<React.ComponentProps<typeof TaskForm>, "onClose">) {
+  initialLabel?: string;
+} & Omit<React.ComponentProps<typeof TaskForm>, "onClose" | "initialLabel">) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="max-h-[85vh] overflow-y-auto rounded-t-3xl px-5 pb-10 pt-5"
+        className="max-h-[90vh] overflow-y-auto rounded-t-3xl px-5 pb-2 pt-6"
       >
-        <SheetHeader className="mb-4">
-          <SheetTitle className="text-left text-[17px] font-bold">{title}</SheetTitle>
+        <SheetHeader className="mb-5">
+          <SheetTitle className="page-title text-left">{title}.</SheetTitle>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Propose une tâche pour les prochains chantiers. Elle sera visible dans le backlog admin.
+          </p>
         </SheetHeader>
-        <TaskForm {...formProps} onClose={() => onOpenChange(false)} />
+        <TaskForm {...formProps} initialLabel={initialLabel} onClose={() => onOpenChange(false)} />
       </SheetContent>
     </Sheet>
   );

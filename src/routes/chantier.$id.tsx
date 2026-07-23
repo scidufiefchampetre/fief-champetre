@@ -388,7 +388,7 @@ function ChantierPage() {
               <button
                 type="button"
                 onClick={() => setDutiesOpen((value) => !value)}
-                className="w-full rounded-xl bg-brand-secondary px-2.5 py-2 text-[11px] font-semibold text-brand-secondary-foreground"
+                className="tap lift w-full rounded-2xl bg-brand-secondary px-2.5 py-2.5 text-[11px] font-semibold text-brand-secondary-foreground shadow-card"
               >
                 {dutiesOpen ? "Fermer l'intendance" : "S'inscrire à l'intendance"}
               </button>
@@ -436,7 +436,7 @@ function ChantierPage() {
             <button
               type="button"
               onClick={() => setDutiesOpen(false)}
-              className="mt-3 w-full rounded-xl border border-border px-3 py-2.5 text-[12px] font-semibold text-muted-foreground"
+              className="tap mt-3 w-full rounded-xl border border-border px-3 py-2.5 text-[12px] font-semibold text-muted-foreground hover:bg-secondary transition"
             >
               J'aiderai une prochaine fois
             </button>
@@ -648,7 +648,7 @@ function FicheChantierCard({
         </div>
         <button
           onClick={() => setExpanded((v) => !v)}
-          className="mt-3 flex w-full items-center justify-between rounded-xl border border-border px-3 py-2.5 text-[12px] font-semibold"
+          className="tap mt-3 flex w-full items-center justify-between rounded-xl border border-border px-3 py-2.5 text-[12px] font-semibold hover:bg-secondary transition"
         >
           <span>{expanded ? "Masquer l'organisation" : "Voir l'organisation du week-end"}</span>
           {expanded ? (
@@ -894,7 +894,7 @@ function FicheTasksUser({
             <button
               type="button"
               onClick={() => setAllTasksOpen(true)}
-              className="mt-3 w-full rounded-xl bg-secondary py-2.5 text-[13px] font-semibold text-brand-secondary"
+              className="tap mt-3 w-full rounded-xl bg-secondary py-2.5 text-[13px] font-semibold text-brand-secondary hover:brightness-95 transition"
             >
               Voir plus ({hiddenCount} tâche{hiddenCount > 1 ? "s" : ""})
             </button>
@@ -1548,7 +1548,7 @@ function RegistrationWizard({
               type="button"
               onClick={finishRegistration}
               disabled={submitting}
-              className="rounded-2xl bg-brand-secondary px-4 py-2 text-[11px] font-semibold text-brand-secondary-foreground disabled:opacity-60"
+              className="tap lift rounded-2xl bg-brand-secondary px-4 py-2 text-[11px] font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-60"
             >
               {submitting ? "Validation…" : "Confirmer mon inscription"}
             </button>
@@ -1979,7 +1979,7 @@ function WizardDuties({
           type="button"
           onClick={saveStandalone}
           disabled={saving}
-          className="mt-3 w-full rounded-xl bg-brand-secondary px-3 py-2.5 text-[12px] font-semibold text-brand-secondary-foreground transition-all active:scale-[0.98] disabled:opacity-60"
+          className="tap lift mt-3 w-full rounded-2xl bg-brand-secondary px-3 py-3 text-[12px] font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-60"
         >
           {saving ? "Validation…" : "Valider l'intendance"}
         </button>

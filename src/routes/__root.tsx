@@ -15,7 +15,6 @@ import { reportLovableError } from "../core/lovable-error-reporting";
 import { useExpenseStore } from "../core/store/expense-store";
 import { AppHeader } from "../core/components/app-header";
 import { MemberGate } from "../core/components/member-gate";
-import { DraftBar } from "../components/ui/draft-bar";
 
 function NotFoundComponent() {
   return (
@@ -139,7 +138,7 @@ function RootComponent() {
           <Outlet />
         </IdentificationGate>
       </div>
-      <DraftBar />
+      {/* DraftBar removed — tasks now save directly */}
       <Toaster position="top-center" richColors closeButton={false} />
     </QueryClientProvider>
   );

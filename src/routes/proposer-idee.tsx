@@ -94,7 +94,7 @@ function ProposerIdeePage() {
                 onChange={(e) => setTitre(e.target.value)}
                 placeholder="Ex : Pouvoir exporter la liste des participants"
                 maxLength={200}
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary"
+                className="input-field"
               />
             </div>
 
@@ -107,7 +107,7 @@ function ProposerIdeePage() {
                 placeholder="Ce que tu essaies de faire, ce qui te manque aujourd'hui…"
                 rows={3}
                 maxLength={2000}
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary resize-none"
+                className="input-field py-3 resize-none"
               />
             </div>
 
@@ -120,7 +120,7 @@ function ProposerIdeePage() {
                 placeholder="Comment tu l'imagines, comment ça devrait marcher…"
                 rows={3}
                 maxLength={2000}
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary resize-none"
+                className="input-field py-3 resize-none"
               />
             </div>
 
@@ -135,7 +135,7 @@ function ProposerIdeePage() {
                     key={opt.value}
                     type="button"
                     onClick={() => setPriorite(opt.value)}
-                    className={`flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
+                    className={`tap flex w-full items-center gap-3 rounded-xl border px-4 py-3 text-left transition ${
                       priorite === opt.value
                         ? "border-brand-secondary bg-brand-secondary/10"
                         : "border-border bg-card hover:bg-secondary"
@@ -161,9 +161,11 @@ function ProposerIdeePage() {
               </div>
             </div>
 
-            <button type="submit" disabled={submitting} className="btn-primary w-full">
-              {submitting ? "Envoi en cours…" : "Envoyer l'idée"}
-            </button>
+            <div className="sticky bottom-0 pb-4 pt-2 bg-background/90 backdrop-blur-md z-10">
+              <button type="submit" disabled={submitting} className="btn-primary w-full">
+                {submitting ? "Envoi en cours…" : "Envoyer l'idée"}
+              </button>
+            </div>
           </form>
         </div>
       </div>

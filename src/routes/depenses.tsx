@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, ExternalLink, RefreshCw, UserPlus, LogOut } from "lucide-react";
+import { ArrowRight, ExternalLink, RefreshCw, UserPlus, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import { listExpenses, type ExpenseRow } from "@/lib/expenses.functions";
 import { listMembers, type Member } from "@/lib/members.functions";
@@ -110,7 +110,7 @@ function IdentifyGate() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Rechercher ton prénom…"
-          className="w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base placeholder:text-muted-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+          className="input-field"
         />
       </div>
 

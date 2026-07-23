@@ -112,29 +112,28 @@ export function ReportForm({
   }
 
   return (
-    <div>
+    <div className="flex flex-col">
       {/* ── Nom ── */}
-      <div className="pb-3 border-b border-border">
-        <div className="label-micro mb-1">Nom</div>
+      <div className="pb-4 border-b border-border">
+        <div className="label-micro mb-2">Nom</div>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           autoFocus
           placeholder="Nom de la tâche *"
-          className="w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-muted-foreground/40"
+          className="w-full bg-transparent text-base font-semibold outline-none placeholder:text-muted-foreground/40 leading-snug"
         />
       </div>
 
       {/* ── Lieu (spécifique au signalement) ── */}
       {showLocation && (
-        <div className="pb-3 border-b border-border pt-3">
-          <div className="label-micro mb-1">Lieu *</div>
+        <div className="py-4 border-b border-border">
+          <div className="label-micro mb-2">Lieu *</div>
           <input
             value={location}
             onChange={(e) => setLocation(e.target.value)}
             placeholder="Ex : toit de la grange, cabane à outils…"
-            className="w-full bg-transparent text-[15px] font-medium outline-none placeholder:text-muted-foreground/40"
-            autoFocus
+            className="w-full bg-transparent text-base font-semibold outline-none placeholder:text-muted-foreground/40 leading-snug"
           />
         </div>
       )}
@@ -143,21 +142,21 @@ export function ReportForm({
       {showMain && (
         <>
           <div className="flex items-stretch border-b border-border">
-            <div className="flex-1 py-3 pr-3">
-              <div className="label-micro mb-1 flex items-center gap-1">⏱ Durée</div>
+            <div className="flex-1 py-4 pr-4">
+              <div className="label-micro mb-2 flex items-center gap-1">⏱ Durée</div>
               <input
                 value={timeEstimate}
                 onChange={(e) => setTimeEstimate(e.target.value)}
                 placeholder="ex: 2h, 1 jour, 30 min"
                 className="w-full bg-transparent text-[14px] font-semibold outline-none placeholder:text-muted-foreground/40"
               />
-              <div className="mt-0.5 h-3.5 text-[10px] font-medium">
+              <div className="mt-1 h-4 text-[10px] font-semibold">
                 {!timeEstimate && <span className="text-muted-foreground/50">optionnel</span>}
               </div>
             </div>
-            <div className="w-px bg-border self-stretch my-3" />
-            <div className="flex-1 py-3 pl-3">
-              <div className="label-micro mb-1 flex items-center gap-1">
+            <div className="w-px bg-border self-stretch my-4" />
+            <div className="flex-1 py-4 pl-4">
+              <div className="label-micro mb-2 flex items-center gap-1">
                 <Users className="h-3 w-3" /> Personnes
               </div>
               <div className="flex items-center gap-1">
@@ -174,7 +173,7 @@ export function ReportForm({
                 />
                 <span className="shrink-0 text-[10px] text-muted-foreground">pers.</span>
               </div>
-              <div className="mt-0.5 h-3.5 text-[10px] font-medium">
+              <div className="mt-1 h-4 text-[10px] font-semibold">
                 <span className="text-muted-foreground/50">optionnel</span>
               </div>
             </div>
@@ -184,7 +183,7 @@ export function ReportForm({
           <button
             type="button"
             onClick={() => setDetailsOpen((v) => !v)}
-            className="flex w-full items-center gap-1.5 py-3 text-[11px] font-semibold text-muted-foreground border-b border-border"
+            className="tap flex w-full items-center gap-1.5 py-4 text-[11px] font-semibold text-muted-foreground border-b border-border hover:text-foreground transition"
           >
             <ChevronDown
               className={`h-3.5 w-3.5 transition-transform ${detailsOpen ? "rotate-180" : ""}`}
@@ -196,10 +195,10 @@ export function ReportForm({
           {detailsOpen && (
             <div>
               {/* Description */}
-              <div className="flex items-start gap-3 py-3 border-b border-border">
+              <div className="flex items-start gap-3 py-4 border-b border-border">
                 <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-[13px]">📋</div>
                 <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="label-micro">Description</div>
                     <div className="text-[9px] text-muted-foreground/50">optionnel</div>
                   </div>
@@ -207,19 +206,19 @@ export function ReportForm({
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Contexte, contraintes…"
-                    rows={2}
-                    className="w-full resize-none bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/40"
+                    rows={3}
+                    className="w-full resize-none bg-transparent text-[13px] leading-relaxed outline-none placeholder:text-muted-foreground/40"
                   />
                 </div>
               </div>
 
               {/* Photo */}
-              <div className="flex items-start gap-3 py-3 border-b border-border">
+              <div className="flex items-start gap-3 py-4 border-b border-border">
                 <div className="mt-0.5 shrink-0 text-muted-foreground/60">
                   <Camera className="h-4 w-4" />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center justify-between mb-2">
                     <div className="label-micro">Photo</div>
                     <div className="text-[9px] text-muted-foreground/50">optionnel</div>
                   </div>
@@ -228,18 +227,18 @@ export function ReportForm({
                       <img
                         src={photo.previewUrl}
                         alt="Aperçu"
-                        className="h-16 w-16 rounded-lg object-cover"
+                        className="h-20 w-20 rounded-xl object-cover"
                       />
                       <button
                         type="button"
                         onClick={() => setPhoto(null)}
-                        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-destructive transition"
+                        className="tap absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-destructive transition"
                       >
                         <X className="h-3 w-3" />
                       </button>
                     </div>
                   ) : (
-                    <label className="flex cursor-pointer items-center gap-1.5 text-[12px] text-muted-foreground hover:text-foreground transition">
+                    <label className="flex cursor-pointer items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition">
                       <ImagePlus className="h-3.5 w-3.5" />
                       <span className="underline underline-offset-2">Joindre une photo…</span>
                       <input
@@ -258,8 +257,8 @@ export function ReportForm({
               </div>
 
               {/* Urgence */}
-              <div className="py-3">
-                <div className="label-micro mb-2">Urgence</div>
+              <div className="py-4">
+                <div className="label-micro mb-3">Urgence</div>
                 <UrgencyPicker
                   value={urgency}
                   onChange={(v) => setUrgency((prev) => (prev === v ? "" : v))}
@@ -268,12 +267,12 @@ export function ReportForm({
             </div>
           )}
 
-          {/* ── Actions ── */}
-          <div className="pt-4 pb-6">
+          {/* ── Action sticky ── */}
+          <div className="sticky bottom-0 mt-2 bg-background/90 pb-4 pt-3 backdrop-blur-md">
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="tap lift flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-accent px-4 py-3.5 text-sm font-semibold text-brand-accent-foreground disabled:opacity-50 shadow-card"
+              className="tap lift flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-accent px-4 py-3.5 text-sm font-bold text-brand-accent-foreground shadow-card disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
               {submitting ? "Envoi…" : "Envoyer"}
