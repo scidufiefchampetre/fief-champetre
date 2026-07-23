@@ -237,9 +237,13 @@ function Home() {
     try {
       const base64 = store.file.dataUrl.split(",")[1] ?? "";
       const trimmedNote = personalNote.trim();
+      const isAsso = store.expense.finalSide?.toLowerCase().includes("asso");
+      const expense = isAsso
+        ? store.expense
+        : { ...store.expense, chantierId: undefined, chantierStartDate: undefined, chantierLabel: undefined };
       const result = await doExport({
         data: {
-          expense: store.expense,
+          expense,
           file: { name: store.file.name, mimeType: store.file.mimeType, dataBase64: base64 },
           spreadsheetId: store.spreadsheetId,
           personalNote: trimmedNote,
@@ -321,12 +325,6 @@ function Home() {
         {phase === "card" && store.expense && (
           <div className={flying ? "animate-fly" : "animate-rise space-y-3"}>
             <ExpenseCard expense={store.expense} fileName={store.file?.name} />
-            <ChantierExpenseAssociation
-              expense={store.expense}
-              chantiers={chantiersData?.chantiers ?? []}
-              loading={chantiersLoading}
-              onChange={store.updateExpense}
-            />
             {missingFields.length > 0 && (
               <div className="flex items-start gap-2 rounded-2xl border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-[12px] text-destructive">
                 <span className="mt-0.5">⚠️</span>
@@ -358,7 +356,14 @@ function Home() {
               <PlacePrompt
                 onPick={(place) => store.updateExpense({ place, needsPlaceChoice: false })}
               />
-            ) : null}
+            ) : (
+              <ChantierExpenseAssociation
+                expense={store.expense}
+                chantiers={chantiersData?.chantiers ?? []}
+                loading={chantiersLoading}
+                onChange={store.updateExpense}
+              />
+            )}
             {!store.expense.needsPlaceChoice && !store.expense.needsClarification && (
               <div className="rounded-2xl border border-border bg-card">
                 {!noteOpen && !personalNote ? (
@@ -541,23 +546,23 @@ function ClarificationPrompt({
   onPick: (opt: ClarificationOption) => void;
 }) {
   return (
-    <div className="rounded-3xl bg-foreground text-background p-4 shadow-lift animate-rise">
+    <div className="rounded-2xl border border-border bg-card p-4 animate-rise">
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="h-1.5 w-1.5 rounded-full bg-background/80 animate-soft-pulse" />
-        <span className="text-[9px] font-medium uppercase tracking-widest text-background/60">
+        <span className="h-1.5 w-1.5 rounded-full bg-brand-secondary/80 animate-soft-pulse" />
+        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
           Une précision
         </span>
       </div>
-      <div className="text-[15px] font-semibold leading-snug">{question}</div>
+      <div className="text-[15px] font-semibold leading-snug text-foreground">{question}</div>
       <div className="mt-3 grid grid-cols-1 gap-1.5">
         {options.map((opt, i) => (
           <button
             key={i}
             onClick={() => onPick(opt)}
-            className="tap lift w-full rounded-xl bg-background/15 text-left px-3 py-2.5 text-[13px] font-medium flex items-center justify-between gap-3 shadow-card"
+            className="tap lift w-full rounded-xl bg-secondary text-left px-3 py-2.5 text-[13px] font-medium flex items-center justify-between gap-3 hover:bg-secondary/80"
           >
-            <span className="text-background leading-tight">{opt.label}</span>
-            <span className="shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-full bg-background/25 text-background">
+            <span className="text-foreground leading-tight">{opt.label}</span>
+            <span className="shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
               {opt.side === "Association" ? "Asso" : "SCI"}
             </span>
           </button>
@@ -569,20 +574,20 @@ function ClarificationPrompt({
 
 function PlacePrompt({ onPick }: { onPick: (place: Place) => void }) {
   return (
-    <div className="rounded-3xl bg-foreground text-background p-4 shadow-lift animate-rise">
+    <div className="rounded-2xl border border-border bg-card p-4 animate-rise">
       <div className="flex items-center gap-1.5 mb-1.5">
-        <span className="h-1.5 w-1.5 rounded-full bg-background/80 animate-soft-pulse" />
-        <span className="text-[9px] font-medium uppercase tracking-widest text-background/60">
+        <span className="h-1.5 w-1.5 rounded-full bg-brand-secondary/80 animate-soft-pulse" />
+        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
           Une précision
         </span>
       </div>
-      <div className="text-[15px] font-semibold leading-snug">Pour quel lieu&nbsp;?</div>
+      <div className="text-[15px] font-semibold leading-snug text-foreground">Pour quel lieu&nbsp;?</div>
       <div className="mt-3 grid grid-cols-3 auto-rows-fr gap-1.5">
         {PLACES.map((p) => (
           <button
             key={p}
             onClick={() => onPick(p)}
-            className="tap lift rounded-xl bg-background/15 px-2.5 py-2.5 text-[12px] font-semibold text-background text-center leading-tight shadow-card"
+            className="tap lift rounded-xl bg-secondary px-2.5 py-2.5 text-[12px] font-semibold text-foreground text-center leading-tight hover:bg-secondary/80"
           >
             {p}
           </button>
@@ -672,14 +677,14 @@ function ChantierExpenseAssociation({
   }
 
   return (
-    <section className="animate-rise rounded-3xl bg-foreground p-4 text-background shadow-lift">
+    <section className="animate-rise rounded-2xl border border-border bg-card p-4">
       <div className="mb-1.5 flex items-center gap-1.5">
-        <span className="h-1.5 w-1.5 animate-soft-pulse rounded-full bg-background/80" />
-        <span className="text-[9px] font-medium uppercase tracking-widest text-background/60">
+        <span className="h-1.5 w-1.5 animate-soft-pulse rounded-full bg-brand-secondary/80" />
+        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
           Une précision
         </span>
       </div>
-      <div className="text-[15px] font-semibold leading-snug">
+      <div className="text-[15px] font-semibold leading-snug text-foreground">
         Est-ce que la facture correspond à un repas chantier&nbsp;?
       </div>
 
@@ -688,14 +693,14 @@ function ChantierExpenseAssociation({
           <button
             type="button"
             onClick={chooseChantierMeal}
-            className="tap lift rounded-xl bg-background/15 px-3 py-2.5 text-[12px] font-semibold text-background shadow-card"
+            className="tap lift rounded-xl bg-secondary px-3 py-2.5 text-[12px] font-semibold text-foreground hover:bg-secondary/80"
           >
             Oui, chantier
           </button>
           <button
             type="button"
             onClick={dismiss}
-            className="tap lift rounded-xl bg-background/15 px-3 py-2.5 text-[12px] font-semibold text-background shadow-card"
+            className="tap lift rounded-xl bg-secondary px-3 py-2.5 text-[12px] font-semibold text-foreground hover:bg-secondary/80"
           >
             Non
           </button>
@@ -703,10 +708,10 @@ function ChantierExpenseAssociation({
       )}
 
       {isChantierMeal && (
-        <div className="mt-3 border-t border-background/20 pt-3">
+        <div className="mt-3 border-t border-border pt-3">
           <label
             htmlFor="expense-chantier"
-            className="mb-1.5 block text-[9px] font-medium uppercase tracking-widest text-background/60"
+            className="mb-1.5 block text-[9px] font-medium uppercase tracking-widest text-muted-foreground"
           >
             Chantier concerné
           </label>
@@ -715,7 +720,7 @@ function ChantierExpenseAssociation({
             value={expense.chantierId ?? ""}
             onChange={(event) => selectChantier(event.target.value)}
             disabled={loading}
-            className="h-10 w-full rounded-xl border border-background/20 bg-background px-3 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-brand-accent/40 disabled:opacity-50"
+            className="h-10 w-full rounded-xl border border-border bg-secondary px-3 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-brand-accent/40 disabled:opacity-50"
           >
             <option value="">{loading ? "Chargement…" : "Choisir un chantier"}</option>
             {available.map((chantier) => (
@@ -726,14 +731,14 @@ function ChantierExpenseAssociation({
             ))}
           </select>
           {!loading && !expense.chantierId && (
-            <p className="mt-1.5 text-[9px] font-semibold text-background/70">
+            <p className="mt-1.5 text-[9px] font-semibold text-muted-foreground">
               Choisis le chantier avant de valider.
             </p>
           )}
           <button
             type="button"
             onClick={dismiss}
-            className="mt-2 text-[9px] font-semibold text-background/60 underline-offset-2 hover:underline"
+            className="mt-2 text-[9px] font-semibold text-muted-foreground underline-offset-2 hover:underline"
           >
             Ce n’est pas un repas chantier
           </button>
