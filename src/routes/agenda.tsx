@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
@@ -40,6 +40,7 @@ import {
 } from "@/lib/pricing";
 import { useExpenseStore } from "@/core/store/expense-store";
 import { AppHeader } from "@/core/components/app-header";
+import { ChantierBriefCard } from "@/features/chantiers/components/chantier-brief-card";
 import { PageShell } from "@/components/ui/page-shell";
 import { Toggle } from "@/core/components/toggle";
 import { FormSection, ReservationField, NumberStepper } from "@/components/reservation-form-ui";
@@ -125,12 +126,12 @@ const TYPE_STYLES: Record<ReservationType, { bg: string; fg: string; icon: typeo
 function AgendaPage() {
   const store = useExpenseStore();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
   const list = useServerFn(listReservations);
   const [formOpen, setFormOpen] = useState(false);
   const [rangeStart, setRangeStart] = useState<string | null>(null);
   const [rangeEnd, setRangeEnd] = useState<string | null>(null);
   const [detail, setDetail] = useState<Reservation | null>(null);
+  const [chantierDetail, setChantierDetail] = useState<{ id: string; startDate: string } | null>(null);
 
   const { timeMin, timeMax } = useMemo(windowRange, []);
   const { data, isLoading } = useQuery({
@@ -240,11 +241,7 @@ function AgendaPage() {
             onDayClick={handleDayClick}
             onSegmentClick={(r) => {
               if (r.type === "chantier") {
-                void navigate({
-                  to: "/chantier/$id",
-                  params: { id: r.id },
-                  search: { startDate: r.startDate, demo: false, signupDemo: false, focus: undefined },
-                });
+                setChantierDetail({ id: r.id, startDate: r.startDate });
               } else {
                 setDetail(r);
               }
@@ -390,6 +387,22 @@ function AgendaPage() {
       />
 
       <ReservationDetailSheet reservation={detail} onOpenChange={(v) => !v && setDetail(null)} />
+
+      <Sheet open={!!chantierDetail} onOpenChange={(v) => !v && setChantierDetail(null)}>
+        <SheetContent side="bottom" className="max-h-[92dvh] overflow-y-auto rounded-t-3xl p-0">
+          <SheetHeader className="sr-only">
+            <SheetTitle>Fiche chantier</SheetTitle>
+            <SheetDescription>Détail du chantier</SheetDescription>
+          </SheetHeader>
+          {chantierDetail && (
+            <ChantierBriefCard
+              chantierId={chantierDetail.id}
+              startDate={chantierDetail.startDate}
+              groups={[]}
+            />
+          )}
+        </SheetContent>
+      </Sheet>
     </PageShell>
   );
 }
