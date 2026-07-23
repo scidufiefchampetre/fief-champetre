@@ -1,16 +1,40 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "@tanstack/react-router";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import { ArrowRight, CalendarDays, ChevronDown, HardHat } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 
 import { FEATURES } from "@/core/config/features";
 import { APP_MODULES, type AppModuleLink } from "@/core/navigation/app-modules";
 import { HomeBadgesPanel } from "./home-badges-panel";
+import { listChantiers } from "@/lib/chantier.functions";
+import { listReservations } from "@/lib/reservations.functions";
+import { chantierTitle, fmtChantierDate } from "@/features/chantiers/components/chantier-list-card";
+import { getPaymentStatus, PAYMENT_BADGE_STYLE } from "@/lib/pricing";
 
 interface PersonalHomeDashboardProps {
   firstName: string | null;
   lastName: string | null;
   spreadsheetId: string | null;
   onPickInvoice: () => void;
+}
+
+function fmtDateShort(iso: string) {
+  if (!iso) return "";
+  return new Date(`${iso}T00:00:00`).toLocaleDateString("fr-FR", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+}
+
+function daysUntil(iso: string) {
+  const d = Math.ceil((new Date(`${iso}T00:00:00`).getTime() - Date.now()) / 86_400_000);
+  return d;
+}
+
+function normalize(v: string) {
+  return v.trim().toLocaleLowerCase("fr-FR");
 }
 
 export function PersonalHomeDashboard({
@@ -28,6 +52,68 @@ export function PersonalHomeDashboard({
         ? "text-[clamp(3.75rem,13vw,6rem)]"
         : "text-[clamp(4.75rem,16vw,7.5rem)]";
 
+  const enabled = !!firstName && !!spreadsheetId;
+
+  const loadChantiers = useServerFn(listChantiers);
+  const loadReservations = useServerFn(listReservations);
+
+  const chantierRange = useMemo(() => {
+    const now = new Date();
+    const min = new Date(now);
+    min.setDate(min.getDate() - 1);
+    const max = new Date(now);
+    max.setFullYear(max.getFullYear() + 2);
+    return { timeMin: min.toISOString(), timeMax: max.toISOString() };
+  }, []);
+
+  const reservationRange = useMemo(() => {
+    const now = new Date();
+    const min = new Date(now);
+    min.setDate(min.getDate() - 1);
+    const max = new Date(now);
+    max.setMonth(max.getMonth() + 12);
+    return { timeMin: min.toISOString(), timeMax: max.toISOString() };
+  }, []);
+
+  const { data: chantiersData } = useQuery({
+    queryKey: ["chantiers-home", chantierRange.timeMin, chantierRange.timeMax],
+    queryFn: () => loadChantiers({ data: chantierRange }),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const { data: reservationsData } = useQuery({
+    queryKey: ["reservations", "mine", reservationRange.timeMin, reservationRange.timeMax],
+    queryFn: () => loadReservations({ data: { spreadsheetId: spreadsheetId!, timeMin: reservationRange.timeMin, timeMax: reservationRange.timeMax } }),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+
+  const nextChantier = useMemo(() => {
+    const all = chantiersData?.chantiers ?? [];
+    return all
+      .filter((c) => !c.cancelledAt && c.endDate >= todayIso)
+      .sort((a, b) => a.startDate.localeCompare(b.startDate))[0] ?? null;
+  }, [chantiersData, todayIso]);
+
+  const nextReservation = useMemo(() => {
+    if (!firstName) return null;
+    const all = reservationsData?.reservations ?? [];
+    return all
+      .filter(
+        (r) =>
+          r.type === "personal" &&
+          r.status === "confirmed" &&
+          r.endDate >= todayIso &&
+          normalize(r.reservedBy) === normalize(firstName),
+      )
+      .sort((a, b) => a.startDate.localeCompare(b.startDate))[0] ?? null;
+  }, [reservationsData, firstName, todayIso]);
+
+  const showContextCards = enabled && (nextChantier !== null || nextReservation !== null);
+
   return (
     <section className="flex flex-1 flex-col animate-rise">
       <div className="py-2">
@@ -38,7 +124,100 @@ export function PersonalHomeDashboard({
         <p className="mt-5 text-[12px] text-muted-foreground">Tu veux faire quoi ?</p>
       </div>
 
-      <div className="mt-4 grid gap-2.5">
+      {showContextCards && (
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          {nextChantier && (
+            <Link
+              to="/chantier/$id"
+              params={{ id: nextChantier.id }}
+              search={{ startDate: nextChantier.startDate, demo: false, signupDemo: false, focus: undefined }}
+              className="tap group flex flex-col gap-1.5 rounded-2xl border border-brand-accent/30 bg-brand-accent/8 p-3 transition hover-device:hover:border-brand-accent/50 hover-device:hover:bg-brand-accent/12"
+            >
+              <div className="flex items-center justify-between gap-1">
+                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-brand-accent/20">
+                  <HardHat className="h-3.5 w-3.5 text-brand-accent" strokeWidth={2} />
+                </span>
+                <span className="text-[8px] font-bold uppercase tracking-[0.1em] text-brand-accent">
+                  {daysUntil(nextChantier.startDate) <= 0
+                    ? "En cours"
+                    : daysUntil(nextChantier.startDate) === 1
+                      ? "Demain"
+                      : `J-${daysUntil(nextChantier.startDate)}`}
+                </span>
+              </div>
+              <div>
+                <div className="text-[11px] font-black leading-tight text-foreground">
+                  {chantierTitle(nextChantier.startDate, nextChantier.endDate)}
+                </div>
+                <div className="mt-0.5 text-[8px] font-medium text-muted-foreground">
+                  <span className="capitalize">{fmtDateShort(nextChantier.startDate)}</span>
+                </div>
+              </div>
+              <div className="mt-auto flex items-center justify-end gap-0.5 text-[8px] font-bold text-brand-accent">
+                Voir <ArrowRight className="h-2.5 w-2.5 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </Link>
+          )}
+
+          {nextReservation && (
+            <Link
+              to="/mes-reservations"
+              className="tap group flex flex-col gap-1.5 rounded-2xl border border-brand-secondary/30 bg-brand-secondary/8 p-3 transition hover-device:hover:border-brand-secondary/50 hover-device:hover:bg-brand-secondary/12"
+            >
+              <div className="flex items-center justify-between gap-1">
+                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-brand-secondary/20">
+                  <CalendarDays className="h-3.5 w-3.5 text-brand-secondary" />
+                </span>
+                {(() => {
+                  const ps = getPaymentStatus(nextReservation);
+                  return (
+                    <span className={`rounded-full px-1.5 py-0.5 text-[7px] font-bold uppercase tracking-wide ${PAYMENT_BADGE_STYLE[ps.status]}`}>
+                      {ps.label}
+                    </span>
+                  );
+                })()}
+              </div>
+              <div>
+                <div className="text-[11px] font-black leading-tight text-foreground">
+                  Séjour prévu
+                </div>
+                <div className="mt-0.5 text-[8px] font-medium text-muted-foreground">
+                  <span className="capitalize">{fmtDateShort(nextReservation.startDate)}</span>
+                  {" → "}
+                  <span className="capitalize">{fmtDateShort(nextReservation.endDate)}</span>
+                </div>
+              </div>
+              <div className="mt-auto flex items-center justify-end gap-0.5 text-[8px] font-bold text-brand-secondary">
+                Voir <ArrowRight className="h-2.5 w-2.5 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </Link>
+          )}
+
+          {nextChantier && !nextReservation && (
+            <Link
+              to="/agenda"
+              className="tap group flex flex-col gap-1.5 rounded-2xl border border-border bg-card p-3 transition hover-device:hover:bg-secondary/50"
+            >
+              <div className="flex items-center justify-between gap-1">
+                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-secondary">
+                  <CalendarDays className="h-3.5 w-3.5 text-muted-foreground" />
+                </span>
+              </div>
+              <div>
+                <div className="text-[11px] font-black leading-tight text-foreground">Réserver</div>
+                <div className="mt-0.5 text-[8px] font-medium text-muted-foreground">
+                  Voir l'agenda
+                </div>
+              </div>
+              <div className="mt-auto flex items-center justify-end gap-0.5 text-[8px] font-bold text-muted-foreground">
+                Voir <ArrowRight className="h-2.5 w-2.5 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </Link>
+          )}
+        </div>
+      )}
+
+      <div className={`${showContextCards ? "mt-3" : "mt-4"} grid gap-2.5`}>
         {APP_MODULES.map((module) => {
           const ModuleIcon = module.icon;
           const isOpen = expanded === module.key;

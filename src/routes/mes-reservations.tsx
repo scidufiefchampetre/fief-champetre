@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { RefreshCw, Users, Pencil, X } from "lucide-react";
+import { RefreshCw, Users, Pencil, X, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 
 import {
@@ -39,6 +39,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { FormSection, ReservationField, NumberStepper } from "@/components/reservation-form-ui";
+import { ListCard } from "@/components/ui/list-card";
 
 export const Route = createFileRoute("/mes-reservations")({
   component: MesReservationsPage,
@@ -323,47 +324,51 @@ function ReservationBreakdownCard({
   }
 
   return (
-    <div className="rounded-2xl border border-border bg-card overflow-hidden transition hover:border-foreground/20">
-      <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-border">
-        <div>
-          <div className="text-[13px] font-bold">
-            {fmtRange(reservation.startDate, reservation.endDate)}
-          </div>
-          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
-            <Users className="h-3 w-3" /> {reservation.adults + reservation.children} pers
-            {reservation.privatized && (
-              <span className="font-semibold text-foreground">· Privatisé</span>
-            )}
-          </div>
-        </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <span
-            className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${PAYMENT_BADGE_STYLE[paymentStatus.status]}`}
-          >
-            {paymentStatus.label}
-          </span>
-          {canEdit && (
-            <>
-              <button
-                onClick={() => onEdit(reservation)}
-                className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground transition"
-                aria-label="Modifier la réservation"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-              <button
-                onClick={() => setConfirmOpen(true)}
-                disabled={cancelling}
-                className="flex h-7 w-7 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-destructive transition disabled:opacity-40"
-                aria-label="Annuler la réservation"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </>
+    <>
+    <ListCard
+      as="div"
+      icon={<CalendarDays className="h-4.5 w-4.5" />}
+      title={fmtRange(reservation.startDate, reservation.endDate)}
+      badge={
+        <span
+          className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${PAYMENT_BADGE_STYLE[paymentStatus.status]}`}
+        >
+          {paymentStatus.label}
+        </span>
+      }
+      meta1={
+        <>
+          <Users className="h-3 w-3 shrink-0" />
+          <span>{reservation.adults + reservation.children} pers</span>
+          {reservation.privatized && (
+            <span className="font-semibold text-foreground">· Privatisé</span>
           )}
-        </div>
-      </div>
-      <div className="px-4 py-3 space-y-1.5">
+        </>
+      }
+      meta2={
+        canEdit ? (
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => onEdit(reservation)}
+              className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground transition"
+              aria-label="Modifier la réservation"
+            >
+              <Pencil className="h-3 w-3" />
+            </button>
+            <button
+              onClick={() => setConfirmOpen(true)}
+              disabled={cancelling}
+              className="flex h-6 w-6 items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-destructive transition disabled:opacity-40"
+              aria-label="Annuler la réservation"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ) : undefined
+      }
+      chevron={false}
+    >
+      <div className="border-t border-border/60 px-3.5 py-3 space-y-1.5">
         <div className="flex justify-between text-[12px]">
           <span className="text-muted-foreground">{breakdown.nuiteesDetail}</span>
           <span className="font-semibold tabular-nums">{fmtEur(breakdown.nuiteesAmount)}</span>
@@ -383,25 +388,26 @@ function ReservationBreakdownCard({
           <span className="tabular-nums">{fmtEur(breakdown.total)}</span>
         </div>
       </div>
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Annuler cette réservation ?</AlertDialogTitle>
-            <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={cancelling}>Garder</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleCancel}
-              disabled={cancelling}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {cancelling ? "Annulation…" : "Annuler la réservation"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+    </ListCard>
+    <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Annuler cette réservation ?</AlertDialogTitle>
+          <AlertDialogDescription>Cette action est irréversible.</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel disabled={cancelling}>Garder</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleCancel}
+            disabled={cancelling}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            {cancelling ? "Annulation…" : "Annuler la réservation"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
 
