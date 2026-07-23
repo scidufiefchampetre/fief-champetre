@@ -126,7 +126,7 @@ export const exportExpense = createServerFn({ method: "POST" })
       paidByLabel,
       e.paymentMethod,
       memberIban,
-      e.reimbursementStatus ?? "",
+      e.reimbursementStatus ?? (e.paidBy === "Membre" ? "À rembourser" : ""),
       e.reimbursementSide ?? "",
       e.comment,
       personalNote,

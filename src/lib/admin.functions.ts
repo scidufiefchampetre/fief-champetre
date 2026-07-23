@@ -82,8 +82,9 @@ export const listReimbursements = createServerFn({ method: "POST" })
         const paidBy = (r[8] ?? "").trim();
         if (paidBy === "SCI" || paidBy === "Association" || !paidBy) return false;
         const status = (r[11] ?? "").trim();
-        if (data.status === "pending") return status === "À rembourser";
-        return status === "À rembourser" || status === "Remboursé";
+        const isPending = status === "À rembourser" || status === "";
+        if (data.status === "pending") return isPending;
+        return isPending || status === "Remboursé";
       })
       .map((r) => ({
         id: (r[17] ?? "").trim(),
@@ -94,7 +95,7 @@ export const listReimbursements = createServerFn({ method: "POST" })
         amountTTC: Number((r[3] ?? "0").toString().replace(",", ".")) || 0,
         iban: r[10] ?? "",
         comment: r[13] ?? "",
-        reimbursementStatus: (r[11] ?? "").trim(),
+        reimbursementStatus: (r[11] ?? "").trim() || "À rembourser",
         fileLink: r[15] ?? "",
       }))
       .sort((a, b) => a.invoiceDate.localeCompare(b.invoiceDate));
