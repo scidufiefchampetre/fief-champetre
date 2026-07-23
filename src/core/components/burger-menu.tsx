@@ -19,9 +19,9 @@ import {
   Bug,
   Lightbulb,
 } from "lucide-react";
+
 import { useExpenseStore } from "@/core/store/expense-store";
 import { useProfileSummary } from "@/core/hooks/use-profile-summary";
-import { APP_MODULES } from "@/core/navigation/app-modules";
 
 function fmtEur(n: number) {
   return `${n.toFixed(0)} €`;
@@ -107,63 +107,7 @@ export function BurgerMenu() {
           <SheetDescription className="sr-only">Menu</SheetDescription>
         </SheetHeader>
 
-        <nav className="mt-6 flex-1 overflow-y-auto px-4 space-y-2">
-          {APP_MODULES.map((mod) => {
-            const isOpen = expanded === mod.key;
-            const ModIcon = mod.icon;
-            return (
-              <div key={mod.key} className="rounded-2xl overflow-hidden">
-                <button
-                  onClick={() => setExpanded(isOpen ? null : mod.key)}
-                  className="flex w-full items-center gap-3 bg-card p-4 text-left transition hover:bg-secondary"
-                >
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-secondary/15">
-                    <ModIcon className="h-5 w-5 text-brand-secondary" strokeWidth={2} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-sm font-bold leading-tight">{mod.label}</div>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {mod.links.length} options
-                    </p>
-                  </div>
-                  <ChevronDown
-                    className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
-                    strokeWidth={2.5}
-                  />
-                </button>
-                {isOpen && (
-                  <div className="border-t border-border bg-secondary/30 p-2 space-y-1">
-                    {mod.links.map((l) => (
-                      <Link
-                        key={l.to}
-                        to={l.to}
-                        onClick={close}
-                        className="group flex items-center gap-3 rounded-xl p-3 transition hover:bg-card active:scale-[0.99]"
-                      >
-                        <l.icon
-                          className="h-4 w-4 shrink-0 text-muted-foreground"
-                          strokeWidth={2}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="text-[13px] font-semibold leading-tight">{l.label}</div>
-                          <p className="text-[10px] text-muted-foreground mt-0.5">
-                            {l.description}
-                          </p>
-                        </div>
-                        <ArrowRight
-                          className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5"
-                          strokeWidth={2.5}
-                        />
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
-
-        <div className="border-t border-border px-4 py-4 space-y-2 shrink-0">
+        <div className="mt-6 flex-1 overflow-y-auto px-4 space-y-2">
           {store.member && <ProfilePreviewCard open={open} onNavigate={close} />}
           <div className="rounded-2xl overflow-hidden">
             <button
