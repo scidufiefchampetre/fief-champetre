@@ -59,8 +59,24 @@ export const listChildren = createServerFn({ method: "POST" })
     const rows = await getRows(spreadsheetId, `${MEMBERS_TAB}!A2:V`);
     const rowIndex = findMemberRowIndex(rows, data.parentFirstName, data.parentLastName);
     if (rowIndex === -1) return { children: [] };
-    const children = childSlots(rows[rowIndex]).filter((c): c is Child => c !== null);
-    return { children };
+
+    const ownChildren = childSlots(rows[rowIndex]).filter((c): c is Child => c !== null);
+
+    // Partage automatique avec le conjoint : on remonte aussi ses enfants
+    const spouseId = (rows[rowIndex][8] ?? "").trim();
+    let spouseChildren: Child[] = [];
+    if (spouseId) {
+      const spouseRowIndex = rows.findIndex((r) => (r[0] ?? "").trim() === spouseId);
+      if (spouseRowIndex !== -1) {
+        spouseChildren = childSlots(rows[spouseRowIndex]).filter((c): c is Child => c !== null);
+      }
+    }
+
+    // Dédoublonnage par prénom (insensible à la casse)
+    const seen = new Set(ownChildren.map((c) => norm(c.firstName)));
+    const merged = [...ownChildren, ...spouseChildren.filter((c) => !seen.has(norm(c.firstName)))];
+
+    return { children: merged };
   });
 
 const AddInput = z.object({

@@ -336,6 +336,12 @@ export function MemberGate({
 
             <div className="mt-3 text-[10px] font-medium text-muted-foreground mb-1">Enfants</div>
 
+            {spouseId ? (
+              <div className="rounded-xl bg-secondary/60 px-3 py-2.5 text-xs text-muted-foreground">
+                Les enfants ont déjà été ajoutés par ton·ta conjoint·e et apparaîtront automatiquement.
+              </div>
+            ) : (
+            <>
             {pendingChildren.length > 0 && (
               <div className="mt-2 space-y-2">
                 {pendingChildren.map((c, i) => (
@@ -387,6 +393,8 @@ export function MemberGate({
               </button>
               </div>
             </div>
+            </>
+            )}
           </div>
         </div>
         <button
