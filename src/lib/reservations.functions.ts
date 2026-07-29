@@ -27,7 +27,7 @@ const TYPE_BY_COLOR: Record<string, ReservationType> = {
   "5": "chantier",
 };
 
-const RESERVATIONS_RANGE = "A2:S";
+const RESERVATIONS_RANGE = "A2:T";
 
 function quoteTab(title: string) {
   return `'${title.replace(/'/g, "''")}'`;
@@ -71,6 +71,7 @@ function rowToReservation(row: string[]): Reservation | null {
     calendarEventId: row[16] || null,
     cancelledAt: row[17] || null,
     arrivalTime: row[18] ?? "",
+    departureTime: row[19] ?? "",
   };
 }
 
@@ -95,6 +96,7 @@ function reservationToRow(r: Reservation): unknown[] {
     r.calendarEventId ?? "",
     r.cancelledAt ?? "",
     r.arrivalTime,
+    r.departureTime,
   ];
 }
 
@@ -135,6 +137,7 @@ function fallbackReservationFromEvent(event: {
     calendarEventId: event.id,
     cancelledAt: event.extendedProperties.cancelledAt || null,
     arrivalTime: event.extendedProperties.arrivalTime ?? "",
+    departureTime: event.extendedProperties.departureTime ?? "",
   };
 }
 
@@ -350,6 +353,10 @@ const CreateInput = z.object({
     .string()
     .regex(/^\d{2}:\d{2}$/)
     .optional(),
+  departureTime: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .optional(),
 });
 
 // Fenêtre de vérification des conflits : 6 mois en arrière, 18 mois en avant.
@@ -423,6 +430,7 @@ export const createReservation = createServerFn({ method: "POST" })
           privatized: String(data.privatized),
           mood: data.mood,
           arrivalTime: data.arrivalTime ?? "",
+          departureTime: data.departureTime ?? "",
         },
       });
     } catch (error) {
@@ -455,6 +463,7 @@ export const createReservation = createServerFn({ method: "POST" })
       calendarEventId: calendarEvent.id,
       cancelledAt: null,
       arrivalTime: data.arrivalTime ?? "",
+      departureTime: data.departureTime ?? "",
     };
 
     // L'onglet Réservations ne contient que le perso — Airbnb est géré en
@@ -640,6 +649,7 @@ export const updateReservation = createServerFn({ method: "POST" })
             privatized: String(updated.privatized),
             mood: updated.mood,
             arrivalTime: updated.arrivalTime,
+            departureTime: updated.departureTime,
           },
         });
       } catch (error) {
@@ -679,6 +689,7 @@ export const updateReservation = createServerFn({ method: "POST" })
               privatized: String(current.privatized),
               mood: current.mood,
               arrivalTime: current.arrivalTime,
+            departureTime: current.departureTime,
             },
           });
         } catch (rollbackError) {

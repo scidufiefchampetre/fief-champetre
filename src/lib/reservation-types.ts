@@ -15,6 +15,7 @@ export interface Reservation {
   mood: string;
   preheat: boolean;
   arrivalTime: string; // "HH:MM", optionnel — chaîne vide si non renseigné
+  departureTime: string; // "HH:MM", optionnel — chaîne vide si non renseigné
   nuiteesAmount: number;
   electricityAmount: number | null; // null tant que pas saisi
   totalAmount: number;

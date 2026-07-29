@@ -48,7 +48,7 @@ export const CHANTIER_HEADERS = [
 
 // Onglets partagés (toutes données de tous les chantiers, col A = ID Chantier)
 export const INSCRIPTIONS_TAB = "Inscriptions";
-export const TACHES_TAB = "Tâches chantier";
+export const MISSIONS_TAB = "Missions";
 export const INTENDANCE_TAB = "Intendance";
 
 export const INSCRIPTION_HEADERS = [
@@ -66,31 +66,32 @@ export const INSCRIPTION_HEADERS = [
 ];
 export const INSCRIPTION_LAST_COL = "K";
 
-export const TACHE_HEADERS = [
-  "ID Chantier",    // A — empty = backlog
-  "ID",             // B — UUID
-  "Créé le",        // C
-  "Tâche",          // D — label
-  "Urgence",        // E
-  "Statut",         // F — "À faire" | "En cours" | "Terminé"
-  "Pourcentage",    // G — 0-100
-  "Description",    // H
-  "À acheter",      // I — JSON array stringified
-  "Photo avant",    // J — URL
-  "Photo après",    // K — URL
-  "Durée (min)",    // L
-  "Nb personnes",   // M
-  "Participants",   // N
-  "Terminé le",     // O
-  "Type",           // P — "tache" | "signalement"
-  "Catégorie",      // Q — for signalements
-  "Lieu",           // R — for signalements
-  "Statut sig.",    // S — for signalements: "ouvert" | "planifié"
-  "Temps estimé",   // T — for signalements (text)
-  "Jours-homme",    // U — for signalements (number)
-  "Budget estimé",  // V — for signalements (number)
+// Schéma unifié tâches + signalements (20 cols A-T).
+// Type (T) = "tache" | "signalement" — Statut (I) vaut
+// "À faire"/"En cours"/"Terminé" pour les tâches et "ouvert"/"planifie" pour les signalements.
+export const MISSION_HEADERS = [
+  "ID Chantier",  // A(0)
+  "ID",           // B(1)
+  "Créé le",      // C(2)
+  "Titre",        // D(3)
+  "Urgence",      // E(4)
+  "Catégorie",    // F(5)
+  "Lieu",         // G(6)
+  "Description",  // H(7)
+  "Statut",       // I(8)
+  "Pourcentage",  // J(9)
+  "À acheter",    // K(10)
+  "Photo avant",  // L(11)
+  "Photo après",  // M(12)
+  "Durée (min)",  // N(13)
+  "Nb personnes", // O(14)
+  "Participants", // P(15)
+  "Terminé le",   // Q(16)
+  "Budget estimé",// R(17)
+  "Signalé par",  // S(18)
+  "Type",         // T(19)
 ];
-export const TACHE_LAST_COL = "V";
+export const MISSION_LAST_COL = "T";
 
 export const INTENDANCE_HEADERS = [
   "ID Chantier",
@@ -102,6 +103,12 @@ export const INTENDANCE_HEADERS = [
   "Personne",
 ];
 export const INTENDANCE_LAST_COL = "G";
+
+// Onglet enfants — dans le classeur Admin (même classeur que Membres).
+// Chaque ligne = un enfant, lié à son parent par ID Membre parent.
+export const FAMILLE_TAB = "Famille";
+export const FAMILLE_HEADERS = ["ID", "Créé le", "ID Parent 1", "Prénom", "Naissance", "ID Parent 2"];
+export const FAMILLE_LAST_COL = "F";
 
 export function tabForSide(side: string): string {
   const s = (side || "").toLowerCase();
@@ -176,6 +183,7 @@ export const RESERVATION_HEADERS = [
   "ID événement Calendar",
   "Annulée le",
   "Heure d'arrivée",
+  "Heure de départ",  // T(19) — ajout pour corriger le bug de lecture
 ];
 
 async function sheetsAuthHeaders(): Promise<Record<string, string>> {
@@ -736,6 +744,7 @@ async function ensureAllTabs(spreadsheetId: string) {
     EXPENSE_HEADERS,
     MEMBER_HEADERS,
     RESERVATION_HEADERS,
+    FAMILLE_HEADERS,
   ])}`;
   const cached = schemaCache.get(schemaKey);
   if (cached && cached.expiresAt > Date.now()) return cached.promise;
@@ -746,7 +755,8 @@ async function ensureAllTabs(spreadsheetId: string) {
       { title: SCI_TAB, headers: EXPENSE_HEADERS, width: "V" },
       { title: ASSO_TAB, headers: EXPENSE_HEADERS, width: "V" },
       { title: MEMBERS_TAB, headers: MEMBER_HEADERS, width: "V" },
-      { title: RESERVATIONS_TAB, headers: RESERVATION_HEADERS, width: "S" },
+      { title: RESERVATIONS_TAB, headers: RESERVATION_HEADERS, width: "T" },
+      { title: FAMILLE_TAB, headers: FAMILLE_HEADERS, width: FAMILLE_LAST_COL },
     ];
     const missing = tabs.filter((tab) => !titles.has(tab.title));
     for (const tab of missing) {
@@ -905,6 +915,41 @@ export async function resolveSpreadsheetId(existing: string | null): Promise<str
   return ensureSpreadsheet(null);
 }
 
+// Nom de l'ancien onglet Tâches — conservé pour la migration one-shot.
+const OLD_TACHES_TAB = "Tâches chantier";
+
+// Migration one-shot : transforme les lignes de l'ancien onglet "Tâches chantier"
+// (22 cols A-V) vers le nouveau schéma "Missions" (20 cols A-T).
+function migrateOldTaskRow(old: string[]): string[] {
+  const type = (old[15] ?? "").trim(); // ancienne col P = Type
+  const isSignalement = type === "signalement";
+  const row = new Array(20).fill("");
+  row[0] = old[0] ?? "";  // A: ID Chantier
+  row[1] = old[1] ?? "";  // B: ID
+  row[2] = old[2] ?? "";  // C: Créé le
+  row[3] = old[3] ?? "";  // D: Titre (ancienne col D = Tâche)
+  row[4] = old[4] ?? "";  // E: Urgence
+  row[5] = old[16] ?? ""; // F: Catégorie (ancienne col Q)
+  row[6] = old[17] ?? ""; // G: Lieu (ancienne col R)
+  row[7] = old[7] ?? "";  // H: Description
+  // I: Statut — tâches depuis col F(5), signalements depuis col S(18)
+  row[8] = isSignalement ? (old[18] ?? "") : (old[5] ?? "");
+  row[9] = old[6] ?? "";  // J: Pourcentage (ancienne col G)
+  row[10] = old[8] ?? ""; // K: À acheter (ancienne col I)
+  row[11] = old[9] ?? ""; // L: Photo avant (ancienne col J)
+  row[12] = old[10] ?? "";// M: Photo après (ancienne col K)
+  row[13] = old[11] ?? "";// N: Durée (min) (ancienne col L)
+  row[14] = old[12] ?? "";// O: Nb personnes (ancienne col M)
+  // P: Participants — tâches depuis col N(13), vide pour signalements
+  row[15] = isSignalement ? "" : (old[13] ?? "");
+  row[16] = old[14] ?? "";// Q: Terminé le (ancienne col O)
+  row[17] = old[21] ?? "";// R: Budget estimé (ancienne col V)
+  // S: Signalé par — pour les signalements, ancienne col N(13) = "Signalé par"
+  row[18] = isSignalement ? (old[13] ?? "") : "";
+  row[19] = old[15] ?? "";// T: Type (ancienne col P)
+  return row;
+}
+
 /**
  * Classeur séparé pour les chantiers (et leurs onglets de tâches
  * dynamiques), placé dans le même dossier Drive que les factures. L'API
@@ -976,6 +1021,17 @@ export async function ensureChantiersSpreadsheet(existing: string | null): Promi
     );
   } else {
     await ensureTabExists(id, CHANTIER_TAB, CHANTIER_HEADERS, "L"); // 12 cols A→L
+    // Migration one-shot : "Tâches chantier" (22 cols) → "Missions" (20 cols)
+    const titlesNow = await fetchSheetTitles(id);
+    if (titlesNow.has(OLD_TACHES_TAB) && !titlesNow.has(MISSIONS_TAB)) {
+      const oldRows = await getRows(id, `${OLD_TACHES_TAB}!A2:V`);
+      await addTab(id, MISSIONS_TAB, MISSION_HEADERS, MISSION_LAST_COL);
+      if (oldRows.length > 0) {
+        const newRows = oldRows.map(migrateOldTaskRow);
+        await appendRows(id, `${MISSIONS_TAB}!A:${MISSION_LAST_COL}`, newRows);
+      }
+      await deleteSheetTab(id, OLD_TACHES_TAB);
+    }
   }
   cachedChantiersSpreadsheetId = id;
   return id;

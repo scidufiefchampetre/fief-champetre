@@ -15,7 +15,7 @@ import {
 import { toast } from "sonner";
 import { FRENCH_BANKS } from "@/lib/french-banks";
 import { listMembers, addMember, type Member } from "@/lib/members.functions";
-import { addChild } from "@/lib/children.functions";
+import { addChild, linkSpouseChildren, listChildrenByMemberId, type Child } from "@/lib/children.functions";
 import { useExpenseStore, type StoredMember } from "@/core/store/expense-store";
 
 type MemberMode = "choose" | "new" | "existing";
@@ -33,7 +33,10 @@ export function MemberGate({
   const list = useServerFn(listMembers);
   const create = useServerFn(addMember);
   const createChild = useServerFn(addChild);
+  const linkChildren = useServerFn(linkSpouseChildren);
+  const fetchSpouseChildren = useServerFn(listChildrenByMemberId);
   const [members, setMembers] = useState<Member[] | null>(null);
+  const [spouseChildren, setSpouseChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -72,6 +75,15 @@ export function MemberGate({
     refreshMembers(false).catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
+
+  // When spouse is selected, fetch their children to display them
+  useEffect(() => {
+    if (!spouseId) { setSpouseChildren([]); return; }
+    fetchSpouseChildren({ data: { spreadsheetId, memberId: spouseId } })
+      .then((res) => setSpouseChildren(res.children))
+      .catch(() => setSpouseChildren([]));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [spouseId]);
 
   const MEMBERS_CACHE_TTL_MS = 5 * 60 * 1000;
   const MEMBERS_BACKGROUND_REFRESH_MS = 30 * 1000;
@@ -173,15 +185,17 @@ export function MemberGate({
         },
       });
       onConfig(res.spreadsheetId);
+      const newMemberId = res.member.id;
+      // Add each new child linked to both parents when applicable
       for (const child of pendingChildren) {
         try {
           await createChild({
             data: {
               spreadsheetId: res.spreadsheetId,
-              parentFirstName: res.member.firstName,
-              parentLastName: res.member.lastName,
+              parent1Id: newMemberId,
               firstName: child.firstName,
               birthday: child.birthday,
+              parent2Id: spouseId || undefined,
             },
           });
         } catch (e) {
@@ -189,6 +203,20 @@ export function MemberGate({
           toast.error(
             `L'ajout de ${child.firstName} a échoué, tu pourras le refaire depuis ton profil.`,
           );
+        }
+      }
+      // Link existing spouse children to this new member
+      if (spouseId) {
+        try {
+          await linkChildren({
+            data: {
+              spreadsheetId: res.spreadsheetId,
+              spouseMemberId: spouseId,
+              newMemberId,
+            },
+          });
+        } catch (e) {
+          console.error("linkSpouseChildren failed", e);
         }
       }
       onMember(res.member);
@@ -336,12 +364,35 @@ export function MemberGate({
 
             <div className="mt-3 text-[10px] font-medium text-muted-foreground mb-1">Enfants</div>
 
-            {spouseId ? (
-              <div className="rounded-xl bg-secondary/60 px-3 py-2.5 text-xs text-muted-foreground">
-                Les enfants ont déjà été ajoutés par ton·ta conjoint·e et apparaîtront automatiquement.
+            {/* Spouse's existing children (read-only) */}
+            {spouseChildren.length > 0 && (
+              <div className="mt-2 space-y-1.5">
+                <div className="text-[10px] font-semibold text-muted-foreground">
+                  Enfants de ton·ta conjoint·e (déjà enregistrés)
+                </div>
+                {spouseChildren.map((c) => (
+                  <div
+                    key={c.id}
+                    className="flex items-center gap-2 rounded-xl border border-border/60 bg-secondary/40 px-3 py-2"
+                  >
+                    <Check className="h-3.5 w-3.5 shrink-0 text-brand-secondary" />
+                    <div className="text-sm">
+                      <span className="font-semibold">{c.firstName}</span>
+                      {c.birthday && (
+                        <span className="ml-1.5 text-[11px] text-muted-foreground">
+                          né(e) le {c.birthday}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <p className="text-[10px] text-muted-foreground/70">
+                  Ils seront automatiquement liés à ton profil.
+                </p>
               </div>
-            ) : (
-            <>
+            )}
+
+            {/* New children to add */}
             {pendingChildren.length > 0 && (
               <div className="mt-2 space-y-2">
                 {pendingChildren.map((c, i) => (
@@ -393,8 +444,6 @@ export function MemberGate({
               </button>
               </div>
             </div>
-            </>
-            )}
           </div>
         </div>
         <div className="sticky bottom-0 pt-3 pb-4 bg-background/90 backdrop-blur-md z-10 mt-6">

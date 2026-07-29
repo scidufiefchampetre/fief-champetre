@@ -1,7 +1,15 @@
 import { useState } from "react";
-import { Camera, Check, Clock, Image, Plus, Trash2, User, X } from "lucide-react";
+import { Camera, Check, Clock, Image, Plus, ShoppingCart, Trash2, User, X } from "lucide-react";
 import type { ChantierTask, TaskPhase } from "@/lib/chantier-types";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TaskExecutionForm } from "./task-execution-form";
+
+const URGENCY_LABEL: Record<string, string> = {
+  tres_urgent: "🔴 Très urgent",
+  urgent: "🟠 Urgent",
+  important: "🟡 Important",
+  must_have: "🔵 Must-have",
+};
 
 export type TaskItemTask = ChantierTask & {
   estimatedPeopleCount?: number;
@@ -35,6 +43,7 @@ export function TaskItem({
   preview?: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [photoBefore, setPhotoBefore] = useState<string | null>(task.photoBeforeUrl ?? null);
 
   const isPending = task.isPending ?? false;
@@ -75,14 +84,16 @@ export function TaskItem({
           {task.done && !isPending && <Check className="h-3 w-3" strokeWidth={3} />}
         </span>
 
-        {/* Label */}
-        <span
-          className={`min-w-0 flex-1 truncate text-[13px] ${
+        {/* Label — tap to see details */}
+        <button
+          type="button"
+          onClick={() => setDetailOpen(true)}
+          className={`min-w-0 flex-1 truncate text-left text-[13px] ${
             task.done ? "line-through text-muted-foreground/60" : "text-foreground"
           }`}
         >
           {task.label}
-        </span>
+        </button>
 
         {/* Badge photo discret */}
         {hasPhoto && !open && (
@@ -170,6 +181,115 @@ export function TaskItem({
           )}
         </div>
       )}
+
+      {/* Sheet de détail — clic sur le label */}
+      <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
+        <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-3xl px-5 pb-10 pt-6">
+          <SheetHeader className="mb-4">
+            <div className="flex items-start gap-3">
+              <span
+                className={`mt-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border ${
+                  task.done
+                    ? "border-brand-secondary bg-brand-secondary text-brand-secondary-foreground"
+                    : "border-foreground/20 bg-background"
+                }`}
+              >
+                {task.done && <Check className="h-3 w-3" strokeWidth={3} />}
+              </span>
+              <SheetTitle className={`text-left text-xl font-black leading-snug ${task.done ? "line-through text-muted-foreground/60" : ""}`}>
+                {task.label}
+              </SheetTitle>
+            </div>
+            <div className="ml-8 mt-2 flex flex-wrap gap-1.5">
+              {task.taskStatus && (
+                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  {task.taskStatus}
+                </span>
+              )}
+              {task.urgency && URGENCY_LABEL[task.urgency] && (
+                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold">
+                  {URGENCY_LABEL[task.urgency]}
+                </span>
+              )}
+              {people > 0 && (
+                <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  <User className="h-2.5 w-2.5" /> ~{people} pers.
+                </span>
+              )}
+              {duration > 0 && (
+                <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                  <Clock className="h-2.5 w-2.5" /> ~{durationLabelShort(duration)}
+                </span>
+              )}
+            </div>
+          </SheetHeader>
+
+          <div className="space-y-4">
+            {task.description && (
+              <div>
+                <div className="label-micro mb-1.5">Description</div>
+                <p className="text-[13px] leading-relaxed text-muted-foreground">{task.description}</p>
+              </div>
+            )}
+
+            {task.toBuyItems && task.toBuyItems.length > 0 && (
+              <div>
+                <div className="label-micro mb-1.5 flex items-center gap-1">
+                  <ShoppingCart className="h-2.5 w-2.5" /> À acheter
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {task.toBuyItems.map((item, i) => (
+                    <span
+                      key={i}
+                      className="rounded-full border border-border bg-secondary px-2.5 py-1 text-[11px] font-medium"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {(task.photoBeforeUrl || photoBefore) && (
+              <div>
+                <div className="label-micro mb-1.5">Photo avant</div>
+                <img
+                  src={task.photoBeforeUrl || photoBefore || ""}
+                  alt="Photo avant"
+                  className="max-h-48 w-full rounded-xl object-cover"
+                />
+              </div>
+            )}
+
+            {task.resultPhotoUrl && (
+              <div>
+                <div className="label-micro mb-1.5">Photo résultat</div>
+                <img
+                  src={task.resultPhotoUrl}
+                  alt="Photo résultat"
+                  className="max-h-48 w-full rounded-xl object-cover"
+                />
+              </div>
+            )}
+
+            {!task.description && !task.toBuyItems?.length && !task.photoBeforeUrl && !photoBefore && (
+              <p className="text-[13px] text-muted-foreground">
+                Aucun détail supplémentaire pour cette tâche.
+              </p>
+            )}
+
+            {!task.done && buttonLabel && (
+              <button
+                type="button"
+                onClick={() => { setDetailOpen(false); setOpen(true); }}
+                className="tap lift mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-secondary px-4 py-3.5 text-[13px] font-semibold text-brand-secondary-foreground shadow-card"
+              >
+                {buttonLabel}
+              </button>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

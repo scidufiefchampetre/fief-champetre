@@ -41,9 +41,11 @@ import {
 import { useExpenseStore } from "@/core/store/expense-store";
 import { AppHeader } from "@/core/components/app-header";
 import { ChantierBriefCard } from "@/features/chantiers/components/chantier-brief-card";
+import { TaskFormSheet } from "@/features/chantiers/components/task-form";
 import { PageShell } from "@/components/ui/page-shell";
 import { Toggle } from "@/core/components/toggle";
 import { FormSection, ReservationField, NumberStepper } from "@/components/reservation-form-ui";
+import { DateRangeField, TimePicker } from "@/components/ui/form-primitives";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -957,9 +959,12 @@ function ReservationForm({
   const [mood, setMood] = useState("");
   const [preheat, setPreheat] = useState(false);
   const [arrivalTime, setArrivalTime] = useState("");
+  const [departureTime, setDepartureTime] = useState("");
   const [doingChantier, setDoingChantier] = useState(false);
-  const [chantierTask, setChantierTask] = useState("");
-  const [chantierDays, setChantierDays] = useState(1);
+  const [contributions, setContributions] = useState<{ id: string; label: string; days: number }[]>([]);
+  const [catalogOpen, setCatalogOpen] = useState(false);
+  const [addFormOpen, setAddFormOpen] = useState(false);
+  const [addFormLabel, setAddFormLabel] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const { data: taskCatalogData } = useQuery({
@@ -1006,9 +1011,12 @@ function ReservationForm({
     setMood("");
     setPreheat(false);
     setArrivalTime("");
+    setDepartureTime("");
     setDoingChantier(false);
-    setChantierTask("");
-    setChantierDays(1);
+    setContributions([]);
+    setCatalogOpen(false);
+    setAddFormOpen(false);
+    setAddFormLabel("");
     setReceipt(null);
   }
 
@@ -1041,22 +1049,27 @@ function ReservationForm({
           mood,
           preheat,
           arrivalTime: arrivalTime || undefined,
+          departureTime: departureTime || undefined,
         },
       });
       if (!res.ok) {
         toast.error(res.reason);
         return;
       }
-      if (doingChantier && chantierTask.trim() && chantierDays > 0) {
+      if (doingChantier && contributions.length > 0) {
         try {
-          await logContribution({
-            data: {
-              reservationId: res.reservation.id,
-              person: identifiedName,
-              taskLabel: chantierTask.trim(),
-              days: chantierDays,
-            },
-          });
+          await Promise.all(
+            contributions.map((c) =>
+              logContribution({
+                data: {
+                  reservationId: res.reservation.id,
+                  person: identifiedName,
+                  taskLabel: c.label,
+                  days: c.days,
+                },
+              }),
+            ),
+          );
         } catch (e) {
           console.error(e);
           toast.error("La réservation est créée, mais l'enregistrement du chantier a échoué.");
@@ -1075,12 +1088,12 @@ function ReservationForm({
 
   return (
     <Sheet open={open} onOpenChange={handleClose}>
-      <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-3xl">
+      <SheetContent side="bottom" className="flex h-[100dvh] flex-col rounded-t-3xl">
         {receipt ? (
           <ReservationReceipt reservation={receipt} onClose={() => handleClose(false)} />
         ) : (
           <>
-            <SheetHeader>
+            <SheetHeader className="shrink-0">
               <SheetTitle className="text-2xl font-bold tracking-tight">
                 Nouvelle réservation
               </SheetTitle>
@@ -1089,7 +1102,8 @@ function ReservationForm({
               </SheetDescription>
             </SheetHeader>
 
-            <div className="mt-4 space-y-5 px-1 pb-6">
+            <div className="mt-4 flex-1 overflow-y-auto">
+            <div className="space-y-5 px-1 pb-6">
               <FormSection step={1} title="Qui & quand">
                 <ReservationField label="Toi">
                   <div className="flex items-center gap-2 rounded-2xl border border-border bg-secondary/50 px-4 py-3 text-base font-semibold">
@@ -1097,23 +1111,13 @@ function ReservationForm({
                   </div>
                 </ReservationField>
 
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  <ReservationField label="Arrivée">
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="input-field"
-                    />
-                  </ReservationField>
-                  <ReservationField label="Départ">
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="input-field"
-                    />
-                  </ReservationField>
+                <div className="mt-3">
+                  <DateRangeField
+                    startDate={startDate}
+                    endDate={endDate}
+                    onStartChange={setStartDate}
+                    onEndChange={setEndDate}
+                  />
                 </div>
                 <p className="mt-1.5 text-[10px] text-muted-foreground">
                   Choisies sur le calendrier, modifiables ici si besoin.
@@ -1183,14 +1187,12 @@ function ReservationForm({
                   </ReservationField>
                 </div>
 
-                <div className="mt-3">
+                <div className="mt-3 space-y-3">
                   <ReservationField label="Heure d'arrivée (optionnel)">
-                    <input
-                      type="time"
-                      value={arrivalTime}
-                      onChange={(e) => setArrivalTime(e.target.value)}
-                      className="input-field"
-                    />
+                    <TimePicker value={arrivalTime} onChange={setArrivalTime} />
+                  </ReservationField>
+                  <ReservationField label="Heure de départ (optionnel)">
+                    <TimePicker value={departureTime} onChange={setDepartureTime} />
                   </ReservationField>
                 </div>
 
@@ -1210,43 +1212,162 @@ function ReservationForm({
                   />
                 </div>
 
-                <div className="mt-3 flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
-                  <div>
-                    <div className="text-[13px] font-semibold flex items-center gap-1.5">
-                      <Hammer className="h-3.5 w-3.5" /> Je viens aussi faire du chantier
+                <div className="mt-3 overflow-hidden rounded-2xl border border-border bg-card">
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div>
+                      <div className="text-[13px] font-semibold flex items-center gap-1.5">
+                        <Hammer className="h-3.5 w-3.5" /> Je viens aussi faire du chantier
+                      </div>
+                      <div className="text-[11px] text-muted-foreground">
+                        Compte des jours dans ta contribution
+                      </div>
                     </div>
-                    <div className="text-[11px] text-muted-foreground">
-                      Compte des jours dans ta contribution
-                    </div>
+                    <Toggle
+                      checked={doingChantier}
+                      onChange={() => setDoingChantier(!doingChantier)}
+                      label="Je viens aussi faire du chantier"
+                    />
                   </div>
-                  <Toggle
-                    checked={doingChantier}
-                    onChange={() => setDoingChantier(!doingChantier)}
-                    label="Je viens aussi faire du chantier"
-                  />
-                </div>
 
-                {doingChantier && (
-                  <div className="mt-3 rounded-2xl border border-border bg-card p-4 space-y-3">
-                    <ReservationField label="Tâche">
-                      <input
-                        list="chantier-task-catalog"
-                        value={chantierTask}
-                        onChange={(e) => setChantierTask(e.target.value)}
-                        placeholder="Choisis une tâche ou tape-en une nouvelle…"
-                        className="input-field"
-                      />
-                      <datalist id="chantier-task-catalog">
-                        {taskCatalog.map((t) => (
-                          <option key={t.id} value={t.label} />
-                        ))}
-                      </datalist>
-                    </ReservationField>
-                    <ReservationField label="Nombre de jours">
-                      <NumberStepper value={chantierDays} onChange={setChantierDays} min={1} />
-                    </ReservationField>
+                  <div
+                    className={`grid transition-[grid-template-rows] duration-300 ease-in-out ${doingChantier ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                  >
+                    <div className="overflow-hidden">
+                      <div className="border-t border-border p-4 space-y-3">
+                        {/* Liste des tâches ajoutées */}
+                        {contributions.length > 0 && (
+                          <div className="space-y-2">
+                            {contributions.map((c) => (
+                              <div
+                                key={c.id}
+                                className="flex items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-2"
+                              >
+                                <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
+                                  {c.label}
+                                </span>
+                                <div className="flex shrink-0 items-center gap-1">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setContributions((prev) =>
+                                        prev.map((x) =>
+                                          x.id === c.id
+                                            ? { ...x, days: Math.max(1, x.days - 1) }
+                                            : x,
+                                        ),
+                                      )
+                                    }
+                                    className="tap flex h-6 w-6 items-center justify-center rounded-full bg-card text-sm font-bold border border-border"
+                                  >
+                                    −
+                                  </button>
+                                  <span className="w-6 text-center text-[13px] font-bold tabular-nums">
+                                    {c.days}j
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setContributions((prev) =>
+                                        prev.map((x) =>
+                                          x.id === c.id ? { ...x, days: x.days + 1 } : x,
+                                        ),
+                                      )
+                                    }
+                                    className="tap flex h-6 w-6 items-center justify-center rounded-full bg-card text-sm font-bold border border-border"
+                                  >
+                                    +
+                                  </button>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    setContributions((prev) => prev.filter((x) => x.id !== c.id))
+                                  }
+                                  className="tap ml-1 text-muted-foreground hover:text-destructive transition"
+                                >
+                                  <X className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Bouton "Ajouter une tâche" → catalog sheet */}
+                        <button
+                          type="button"
+                          onClick={() => setCatalogOpen(true)}
+                          className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground transition"
+                        >
+                          <Plus className="h-3.5 w-3.5" /> Ajouter une tâche
+                        </button>
+
+                        {/* Step 1: Catalog picker */}
+                        <Sheet open={catalogOpen} onOpenChange={setCatalogOpen}>
+                          <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto rounded-t-3xl px-5 pb-10 pt-5">
+                            <SheetHeader className="mb-4">
+                              <SheetTitle className="text-left text-[17px] font-bold">Ajouter une tâche</SheetTitle>
+                            </SheetHeader>
+                            <div className="space-y-3">
+                              <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-2">
+                                Choisir dans le catalogue
+                              </div>
+                              <div className="rounded-xl border border-border bg-card divide-y divide-border overflow-hidden">
+                                {taskCatalog.length === 0 && (
+                                  <div className="px-4 py-3 text-[13px] text-muted-foreground">Chargement…</div>
+                                )}
+                                {taskCatalog.map((t) => (
+                                  <button
+                                    key={t.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setAddFormLabel(t.label);
+                                      setCatalogOpen(false);
+                                      setAddFormOpen(true);
+                                    }}
+                                    className="flex w-full items-center justify-between px-4 py-3 text-left text-[14px] font-medium hover:bg-secondary/50 transition"
+                                  >
+                                    {t.label}
+                                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                  </button>
+                                ))}
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAddFormLabel("");
+                                  setCatalogOpen(false);
+                                  setAddFormOpen(true);
+                                }}
+                                className="tap lift w-full rounded-2xl border border-border bg-card px-4 py-3 text-left text-[14px] font-semibold text-muted-foreground hover:text-foreground transition"
+                              >
+                                + Créer une nouvelle tâche
+                              </button>
+                            </div>
+                          </SheetContent>
+                        </Sheet>
+
+                        {/* Step 2: Task form sheet */}
+                        <TaskFormSheet
+                          open={addFormOpen}
+                          onOpenChange={(v) => { setAddFormOpen(v); if (!v) setAddFormLabel(""); }}
+                          title={addFormLabel ? `Tâche : ${addFormLabel}` : "Nouvelle tâche"}
+                          subtitle="Décris la tâche que tu vas faire pendant ton séjour chantier."
+                          initialLabel={addFormLabel}
+                          onConfirmed={(label, durationMinutes) => {
+                            setContributions((prev) => [
+                              ...prev,
+                              {
+                                id: crypto.randomUUID(),
+                                label,
+                                days: Math.max(1, Math.round(durationMinutes / 480)),
+                              },
+                            ]);
+                          }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                )}
+                </div>
               </FormSection>
 
               {breakdown && (
@@ -1268,17 +1389,18 @@ function ReservationForm({
                 </FormSection>
               )}
 
-              <div className="sticky bottom-0 pb-4 pt-2 bg-background/90 backdrop-blur-md z-10">
-                <button
-                  onClick={handleSubmit}
-                  disabled={
-                    submitting || !!blockingOverlap || willBlockBecausePrivatizing || !identifiedName
-                  }
-                  className="tap lift w-full rounded-2xl bg-brand-secondary py-4 text-sm font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  {submitting ? "Réservation…" : "Confirmer la réservation"}
-                </button>
-              </div>
+            </div>
+            </div>
+            <div className="shrink-0 pb-4 pt-2 bg-background px-6">
+              <button
+                onClick={handleSubmit}
+                disabled={
+                  submitting || !!blockingOverlap || willBlockBecausePrivatizing || !identifiedName
+                }
+                className="tap lift w-full rounded-2xl bg-brand-secondary py-4 text-sm font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {submitting ? "Réservation…" : "Confirmer la réservation"}
+              </button>
             </div>
           </>
         )}

@@ -21,6 +21,7 @@ import {
   DUTY_ROLE_LABEL,
   DUTY_SLOT_LABEL,
   listChantierDuties,
+  type ChantierDuty,
   type DutyRole,
 } from "@/lib/chantier-duties.functions";
 
@@ -43,6 +44,102 @@ function dateRange(startDate: string, endDate: string) {
 
 function dutyIcon(role: DutyRole) {
   return role === "courses" ? ShoppingCart : role === "cuisine" ? ChefHat : Baby;
+}
+
+const DUTY_ROLES_ORDER: DutyRole[] = ["courses", "cuisine", "garde"];
+
+function DutiesSection({ duties }: { duties: ChantierDuty[] }) {
+  const [view, setView] = useState<"chrono" | "role">("chrono");
+
+  const byRole = useMemo(() => {
+    const map = new Map<DutyRole, ChantierDuty[]>();
+    for (const duty of duties) {
+      const list = map.get(duty.role) ?? [];
+      list.push(duty);
+      map.set(duty.role, list);
+    }
+    return map;
+  }, [duties]);
+
+  if (!duties.length) {
+    return (
+      <div className="mt-1.5 text-[10px] text-muted-foreground">Aucune mission choisie</div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between">
+        <div className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+          Ton intendance
+        </div>
+        {duties.length > 1 && (
+          <div
+            className="flex gap-0.5 rounded-full bg-secondary p-0.5"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
+          >
+            {(["chrono", "role"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                onClick={() => setView(v)}
+                className={`rounded-full px-2 py-0.5 text-[8px] font-bold transition ${
+                  view === v
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {v === "chrono" ? "Chrono" : "Missions"}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {view === "chrono" ? (
+        <div className="mt-2 space-y-1.5">
+          {duties.map((duty) => {
+            const DutyIcon = dutyIcon(duty.role);
+            return (
+              <div key={duty.id} className="flex items-center gap-2 text-[10px]">
+                <DutyIcon className="h-3.5 w-3.5 shrink-0 text-brand-accent" />
+                <span className="font-bold">{DUTY_ROLE_LABEL[duty.role]}</span>
+                <span className="text-muted-foreground">
+                  {fmtDate(duty.date)} · {DUTY_SLOT_LABEL[duty.role][duty.slot]}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="mt-2 space-y-2">
+          {DUTY_ROLES_ORDER.map((role) => {
+            const roleDuties = byRole.get(role);
+            if (!roleDuties?.length) return null;
+            const DutyIcon = dutyIcon(role);
+            return (
+              <div key={role} className="flex items-start gap-2">
+                <DutyIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-accent" />
+                <div className="min-w-0 flex-1">
+                  <div className="text-[10px] font-bold">{DUTY_ROLE_LABEL[role]}</div>
+                  <div className="mt-0.5 flex flex-wrap gap-1">
+                    {roleDuties.map((d) => (
+                      <span
+                        key={d.id}
+                        className="rounded-full bg-secondary px-2 py-0.5 text-[9px] text-muted-foreground"
+                      >
+                        {fmtDate(d.date)} · {DUTY_SLOT_LABEL[role][d.slot]}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 function MesChantiersPage() {
@@ -200,29 +297,7 @@ function MesChantiersPage() {
                   </div>
                 </div>
                 <div className="border-t border-border/70 px-4 py-3">
-                  <div className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
-                    Ton intendance
-                  </div>
-                  {duties.length ? (
-                    <div className="mt-2 space-y-1.5">
-                      {duties.map((duty) => {
-                        const DutyIcon = dutyIcon(duty.role);
-                        return (
-                          <div key={duty.id} className="flex items-center gap-2 text-[10px]">
-                            <DutyIcon className="h-3.5 w-3.5 text-brand-accent" />
-                            <span className="font-bold">{DUTY_ROLE_LABEL[duty.role]}</span>
-                            <span className="text-muted-foreground">
-                              {fmtDate(duty.date)} · {DUTY_SLOT_LABEL[duty.role][duty.slot]}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ) : (
-                    <div className="mt-1.5 text-[10px] text-muted-foreground">
-                      Aucune mission choisie
-                    </div>
-                  )}
+                  <DutiesSection duties={duties} />
                 </div>
               </Link>
             );

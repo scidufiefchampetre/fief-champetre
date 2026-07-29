@@ -161,8 +161,12 @@ function ProposerIdeePage() {
               </div>
             </div>
 
-            <div className="sticky bottom-0 pb-4 pt-2 bg-background/90 backdrop-blur-md z-10">
-              <button type="submit" disabled={submitting} className="btn-primary w-full">
+            <div className="sticky bottom-0 bg-background/90 pb-4 pt-3 backdrop-blur-md">
+              <button
+                type="submit"
+                disabled={submitting}
+                className="tap lift flex w-full items-center justify-center rounded-2xl bg-brand-secondary px-4 py-3.5 text-sm font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-50"
+              >
                 {submitting ? "Envoi en cours…" : "Envoyer l'idée"}
               </button>
             </div>

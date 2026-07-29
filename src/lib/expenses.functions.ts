@@ -32,8 +32,8 @@ export const listExpenses = createServerFn({ method: "POST" })
       await import("../core/google/google.server");
     const spreadsheetId = await ensureSpreadsheet(data.spreadsheetId);
     const [sciRows, assoRows] = await Promise.all([
-      getRows(spreadsheetId, `${SCI_TAB}!A2:R`).catch(() => [] as string[][]),
-      getRows(spreadsheetId, `${ASSO_TAB}!A2:R`).catch(() => [] as string[][]),
+      getRows(spreadsheetId, `${SCI_TAB}!A2:V`).catch(() => [] as string[][]),
+      getRows(spreadsheetId, `${ASSO_TAB}!A2:V`).catch(() => [] as string[][]),
     ]);
     const toExp = (r: string[], side: "SCI" | "Association"): ExpenseRow => ({
       id: r[17] ?? "",

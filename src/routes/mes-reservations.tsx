@@ -39,6 +39,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { FormSection, ReservationField, NumberStepper } from "@/components/reservation-form-ui";
+import { DateRangeField } from "@/components/ui/form-primitives";
 import { ListCard } from "@/components/ui/list-card";
 
 export const Route = createFileRoute("/mes-reservations")({
@@ -501,8 +502,8 @@ function EditReservationSheet({
 
   return (
     <Sheet open={!!reservation} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-3xl">
-        <SheetHeader>
+      <SheetContent side="bottom" className="flex h-[100dvh] flex-col rounded-t-3xl px-5 pb-0 pt-6">
+        <SheetHeader className="shrink-0 mb-4">
           <SheetTitle className="text-2xl font-bold tracking-tight">
             Modifier la réservation
           </SheetTitle>
@@ -511,96 +512,88 @@ function EditReservationSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="mt-4 space-y-5 px-1 pb-6">
-          <FormSection step={1} title="Quand">
-            <div className="grid grid-cols-2 gap-3">
-              <ReservationField label="Arrivée">
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                />
-              </ReservationField>
-              <ReservationField label="Départ">
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full rounded-2xl border border-border bg-card px-3 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                />
-              </ReservationField>
-            </div>
-
-            {blockingOverlap && (
-              <p className="mt-2 rounded-xl bg-destructive/5 border border-destructive/20 px-3 py-2 text-[11px] text-destructive">
-                Ces dates chevauchent une privatisation. Choisis d'autres dates.
-              </p>
-            )}
-            {willBlockBecausePrivatizing && (
-              <p className="mt-2 rounded-xl bg-destructive/5 border border-destructive/20 px-3 py-2 text-[11px] text-destructive">
-                D'autres réservations existent déjà sur ces dates. Impossible de privatiser.
-              </p>
-            )}
-            {!blockingOverlap && externalOverlap && (
-              <p className="mt-2 rounded-xl bg-destructive/10 border border-destructive/30 px-3 py-2 text-[11px] font-bold text-destructive">
-                ⚠️ Ces dates chevauchent{" "}
-                {externalOverlap.type === "airbnb" ? "une location Airbnb" : "un chantier"}. Vérifie
-                avant de confirmer.
-              </p>
-            )}
-          </FormSection>
-
-          <FormSection step={2} title="Détails du séjour">
-            <div className="grid grid-cols-2 gap-3">
-              <ReservationField label="Adultes (16 ans et +)">
-                <NumberStepper value={adults} onChange={setAdults} min={0} />
-              </ReservationField>
-              <ReservationField label="Enfants (- 16 ans)">
-                <NumberStepper value={children} onChange={setChildren} min={0} />
-              </ReservationField>
-            </div>
-
-            <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
-              <div>
-                <div className="text-sm font-semibold">Privatisation complète</div>
-                <div className="text-[11px] text-muted-foreground">
-                  250€ forfait, personne d'autre ne peut réserver
-                </div>
-              </div>
-              <Toggle
-                checked={privatized}
-                onChange={() => setPrivatized(!privatized)}
-                label="Privatisation complète"
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-5 pb-6">
+            <FormSection step={1} title="Quand">
+              <DateRangeField
+                startDate={startDate}
+                endDate={endDate}
+                onStartChange={setStartDate}
+                onEndChange={setEndDate}
               />
-            </div>
 
-            <div className="mt-3">
-              <ReservationField label="Mood / thème du week-end (optionnel)">
-                <input
-                  value={mood}
-                  onChange={(e) => setMood(e.target.value)}
-                  placeholder="Ex : anniversaire de Paul, chill en famille…"
-                  className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
-                />
-              </ReservationField>
-            </div>
-          </FormSection>
+              {blockingOverlap && (
+                <p className="mt-2 rounded-xl bg-destructive/5 border border-destructive/20 px-3 py-2 text-[11px] text-destructive">
+                  Ces dates chevauchent une privatisation. Choisis d'autres dates.
+                </p>
+              )}
+              {willBlockBecausePrivatizing && (
+                <p className="mt-2 rounded-xl bg-destructive/5 border border-destructive/20 px-3 py-2 text-[11px] text-destructive">
+                  D'autres réservations existent déjà sur ces dates. Impossible de privatiser.
+                </p>
+              )}
+              {!blockingOverlap && externalOverlap && (
+                <p className="mt-2 rounded-xl bg-destructive/10 border border-destructive/30 px-3 py-2 text-[11px] font-bold text-destructive">
+                  ⚠️ Ces dates chevauchent{" "}
+                  {externalOverlap.type === "airbnb" ? "une location Airbnb" : "un chantier"}. Vérifie
+                  avant de confirmer.
+                </p>
+              )}
+            </FormSection>
 
-          {breakdown && (
-            <div className="rounded-2xl bg-secondary/50 p-4">
-              <div className="flex justify-between text-[12px]">
-                <span className="text-muted-foreground">{breakdown.nuiteesDetail}</span>
-                <span className="font-semibold tabular-nums">
-                  {fmtEur(breakdown.nuiteesAmount)}
-                </span>
+            <FormSection step={2} title="Détails du séjour">
+              <div className="space-y-3">
+                <ReservationField label="Adultes (16 ans et +)">
+                  <NumberStepper value={adults} onChange={setAdults} min={0} />
+                </ReservationField>
+                <ReservationField label="Enfants (- 16 ans)">
+                  <NumberStepper value={children} onChange={setChildren} min={0} />
+                </ReservationField>
               </div>
-              <p className="mt-1.5 text-[10px] text-muted-foreground">
-                L'électricité s'ajoutera après le séjour, saisie par le trésorier.
-              </p>
-            </div>
-          )}
 
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
+                <div>
+                  <div className="text-sm font-semibold">Privatisation complète</div>
+                  <div className="text-[11px] text-muted-foreground">
+                    250€ forfait, personne d'autre ne peut réserver
+                  </div>
+                </div>
+                <Toggle
+                  checked={privatized}
+                  onChange={() => setPrivatized(!privatized)}
+                  label="Privatisation complète"
+                />
+              </div>
+
+              <div className="mt-3">
+                <ReservationField label="Mood / thème du week-end (optionnel)">
+                  <input
+                    value={mood}
+                    onChange={(e) => setMood(e.target.value)}
+                    placeholder="Ex : anniversaire de Paul, chill en famille…"
+                    className="input-field"
+                  />
+                </ReservationField>
+              </div>
+            </FormSection>
+
+            {breakdown && (
+              <div className="rounded-2xl bg-secondary/50 p-4">
+                <div className="flex justify-between text-[12px]">
+                  <span className="text-muted-foreground">{breakdown.nuiteesDetail}</span>
+                  <span className="font-semibold tabular-nums">
+                    {fmtEur(breakdown.nuiteesAmount)}
+                  </span>
+                </div>
+                <p className="mt-1.5 text-[10px] text-muted-foreground">
+                  L'électricité s'ajoutera après le séjour, saisie par le trésorier.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="shrink-0 pb-4 pt-2">
           <button
             onClick={handleSubmit}
             disabled={saving || !!blockingOverlap || willBlockBecausePrivatizing}

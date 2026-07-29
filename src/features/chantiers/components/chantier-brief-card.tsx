@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState, useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import {
   Baby,
@@ -11,24 +11,25 @@ import {
   LogIn,
   LogOut,
   Moon,
+  Pencil,
   ShoppingCart,
   Sun,
   User,
   Users,
   Utensils,
   ReceiptText,
+  Wallet,
 } from "lucide-react";
 
 import {
   getChantierFiche,
   listChantierExpenses,
   listChantierTasks,
+  updateChantierFiche,
 } from "@/lib/chantier.functions";
 import { listTaskCatalog } from "@/lib/chantier-contributions.functions";
 import {
   listChantierDuties,
-  DUTY_ROLE_LABEL,
-  DUTY_ROLE_SLOTS,
   DUTY_SLOT_LABEL,
   type DutyRole,
   type DutySlotKey,
@@ -40,7 +41,7 @@ import {
   type RegistrationPersonType,
 } from "@/lib/chantier-registrations.functions";
 import { MEAL_PRICE_PER_ADULT } from "@/lib/pricing";
-import { getTaskPhase, type ChantierPeriod } from "@/lib/chantier-types";
+import { getTaskPhase, chantierDisplayName, type ChantierPeriod } from "@/lib/chantier-types";
 import type { ChantierTask } from "@/lib/chantier-types";
 import { TaskItem, AddTaskButton } from "./task-item";
 import { TaskFormSheet } from "./task-form";
@@ -68,6 +69,7 @@ interface ChantierBriefCardProps {
   startPeriod?: ChantierPeriod;
   endPeriod?: ChantierPeriod;
   onDutyVacancyClick?: (target: { role: DutyRole; date?: string; slot?: DutySlotKey }) => void;
+  openDaysSection?: number;
 }
 
 export function PersonPill({
@@ -85,7 +87,7 @@ export function PersonPill({
   return (
     <span
       title={name}
-      className={`inline-flex h-6 w-[76px] shrink-0 items-center justify-center rounded-full px-2 text-[10px] font-semibold ${style}`}
+      className={`inline-flex h-6 w-[76px] min-w-0 items-center justify-center rounded-full px-2 text-[10px] font-semibold ${style}`}
     >
       <span className="block min-w-0 truncate">{name}</span>
     </span>
@@ -94,7 +96,7 @@ export function PersonPill({
 
 function DutyVacancyPill({ onClick }: { onClick?: () => void }) {
   const className =
-    "inline-flex h-6 w-[76px] shrink-0 items-center justify-center rounded-full border border-brand-accent/25 bg-brand-accent/15 px-2 text-[10px] font-semibold text-brand-accent transition-colors hover:bg-brand-accent/25";
+    "inline-flex h-6 w-[76px] min-w-0 items-center justify-center whitespace-nowrap rounded-full border border-brand-accent/25 bg-brand-accent/15 px-2 text-[9px] font-semibold text-brand-accent transition-colors hover:bg-brand-accent/25";
   if (onClick)
     return (
       <button type="button" onClick={onClick} className={className}>
@@ -126,7 +128,7 @@ function CompactPersonPill({
   );
 }
 
-type BriefSection = "missions" | "people" | "days" | "duties";
+type BriefSection = "missions" | "people" | "days";
 
 function BriefSectionHeader({
   icon: Icon,
@@ -275,6 +277,18 @@ function formatExactDate(date: string) {
   return label.charAt(0).toUpperCase() + label.slice(1);
 }
 
+function formatShortDate(date: string) {
+  if (!date) return "";
+  const d = new Date(`${date}T00:00:00`);
+  if (isNaN(d.getTime())) return "";
+  const label = d.toLocaleDateString("fr-FR", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
 function formatDay(date: string) {
   return new Date(`${date}T00:00:00`).toLocaleDateString("fr-FR", {
     weekday: "long",
@@ -287,6 +301,40 @@ function formatEuro(value: number) {
   return `${value.toFixed(2).replace(".", ",")} €`;
 }
 
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function computeArrival(meals: AttendedMeal[]): string | null {
+  if (!meals.length) return null;
+  const sorted = [...meals].sort(
+    (a, b) => a.date.localeCompare(b.date) || (a.meal === "dejeuner" ? -1 : 1),
+  );
+  const first = sorted[0];
+  const day = new Date(`${first.date}T00:00:00`).toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const when = first.meal === "dejeuner" ? "avant déjeuner" : "avant dîner";
+  return `${capitalize(day)}, ${when}`;
+}
+
+function computeDeparture(meals: AttendedMeal[]): string | null {
+  if (!meals.length) return null;
+  const sorted = [...meals].sort(
+    (a, b) => a.date.localeCompare(b.date) || (a.meal === "dejeuner" ? -1 : 1),
+  );
+  const last = sorted[sorted.length - 1];
+  const day = new Date(`${last.date}T00:00:00`).toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+  const when = last.meal === "diner" ? "après dîner" : "après déjeuner";
+  return `${capitalize(day)}, ${when}`;
+}
+
 export function ChantierBriefCard({
   chantierId,
   startDate,
@@ -297,7 +345,9 @@ export function ChantierBriefCard({
   startPeriod = "",
   endPeriod = "",
   onDutyVacancyClick,
+  openDaysSection = 0,
 }: ChantierBriefCardProps) {
+  const queryClient = useQueryClient();
   const daysUntilStart = startDate
     ? Math.ceil((new Date(`${startDate}T00:00:00`).getTime() - Date.now()) / 86_400_000)
     : Number.POSITIVE_INFINITY;
@@ -306,13 +356,36 @@ export function ChantierBriefCard({
   const [formOpen, setFormOpen] = useState(false);
   const [formInitialLabel, setFormInitialLabel] = useState("");
   const [selectedDay, setSelectedDay] = useState("");
-  const [openDutyRole, setOpenDutyRole] = useState<DutyRole | null>(null);
   const [activeSection, setActiveSection] = useState<BriefSection | null>(null);
-  const [presenceFilter, setPresenceFilter] = useState<"all" | "children">("all");
-  const [expandedPresenceGroup, setExpandedPresenceGroup] = useState<string | null>(null);
   const [objectiveOpen, setObjectiveOpen] = useState(false);
+  useEffect(() => {
+    if (openDaysSection > 0) setActiveSection("days");
+  }, [openDaysSection]);
+
+  type PersonWithFamily = RegistrationGroup["members"][0] & {
+    family: RegistrationGroup["members"];
+  };
+  const [selectedPerson, setSelectedPerson] = useState<PersonWithFamily | null>(null);
+  const [showAllPeople, setShowAllPeople] = useState(false);
+  const [ficheEditOpen, setFicheEditOpen] = useState(false);
+  const [ficheEditText, setFicheEditText] = useState("");
+  const [ficheEditPassword, setFicheEditPassword] = useState("");
+  const [ficheEditSaving, setFicheEditSaving] = useState(false);
+  const [ficheEditError, setFicheEditError] = useState("");
+
+  const enrichedPeople = useMemo(
+    () =>
+      groups.flatMap((group) =>
+        group.members.map((member) => ({
+          ...member,
+          family: group.members.filter((m) => m.id !== member.id),
+        })),
+      ),
+    [groups],
+  );
 
   const getFiche = useServerFn(getChantierFiche);
+  const saveFiche = useServerFn(updateChantierFiche);
   const listTasks = useServerFn(listChantierTasks);
   const getCatalog = useServerFn(listTaskCatalog);
   const listDuties = useServerFn(listChantierDuties);
@@ -510,42 +583,18 @@ export function ChantierBriefCard({
         urgency: "" as const,
       }))
     : (tasksData?.tasks ?? []);
-  const applicableDutyRoles = [
-    "courses",
-    "cuisine",
-    ...(children.length ? ["garde"] : []),
-  ] as DutyRole[];
-  const expectedDutySlots =
-    days.length *
-    applicableDutyRoles.reduce((total, role) => total + DUTY_ROLE_SLOTS[role].length, 0);
-  const coveredDutySlots = new Set(
-    duties
-      .filter((duty) => applicableDutyRoles.includes(duty.role) && duty.personName)
-      .map((duty) => `${duty.role}-${duty.date}-${duty.slot}`),
-  ).size;
-  const missingDutySlots = Math.max(0, expectedDutySlots - coveredDutySlots);
-  const dutyCoverage =
-    expectedDutySlots > 0 ? Math.round((coveredDutySlots / expectedDutySlots) * 100) : 0;
-
-  function roleStatus(role: DutyRole) {
-    const names = Array.from(
-      new Set(
-        duties
-          .filter((duty) => duty.role === role)
-          .map((duty) => duty.personName)
-          .filter(Boolean),
-      ),
-    );
-    const expected = days.length * DUTY_ROLE_SLOTS[role].length;
-    const covered = duties.filter((duty) => duty.role === role).length;
-    return { names, complete: expected > 0 && covered >= expected };
-  }
-
-  const roleIcons: Record<DutyRole, typeof ShoppingCart> = {
-    courses: ShoppingCart,
-    cuisine: ChefHat,
-    garde: Baby,
-  };
+  const missingDutySlots = (() => {
+    const roles = ["courses", "cuisine", ...(children.length > 0 ? ["garde"] : [])];
+    let count = 0;
+    for (const date of days) {
+      for (const role of roles) {
+        for (const slot of ["matin", "apres_midi"]) {
+          if (!duties.some((d) => d.role === role && d.date === date && d.slot === slot && d.personName)) count++;
+        }
+      }
+    }
+    return count;
+  })();
   const description = demo
     ? "Objectif principal : terminer la chambre nord et préparer le salon. Plusieurs équipes avanceront aussi sur la cuisine, les volets, l'atelier et les extérieurs selon la météo et les compétences disponibles."
     : ficheData?.description ||
@@ -579,7 +628,7 @@ export function ChantierBriefCard({
         </div>
         <div className="mt-1.5 flex min-w-0 items-center justify-between gap-2">
           <h1 className="min-w-0 text-[22px] font-black leading-[1.1] sm:text-[24px]">
-            {formatMonthYear(startDate)}
+            {chantierDisplayName(startDate, endDate)}
           </h1>
           {daysUntilStart > 0 && (
             <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-accent/10 px-2 py-1 text-[7px] font-bold uppercase tracking-[0.08em] text-brand-accent">
@@ -588,28 +637,47 @@ export function ChantierBriefCard({
             </span>
           )}
         </div>
-        <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[10px] font-semibold text-muted-foreground">
-          <CalendarDays className="h-3.5 w-3.5 shrink-0 text-brand-secondary" />
-          <span className="text-foreground">{formatExactDate(startDate)}</span>
-          {startPeriod && (
-            <span className="inline-flex items-center gap-0.5 text-brand-secondary">
-              {startPeriod === "soir" ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
-              {PERIOD_LABEL[startPeriod]}
-            </span>
-          )}
-          <ChevronRight className="h-3 w-3 shrink-0 text-brand-secondary" />
-          <span className="text-foreground">{formatExactDate(endDate)}</span>
-          {endPeriod && (
-            <span className="inline-flex items-center gap-0.5 text-brand-secondary">
-              {endPeriod === "soir" ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
-              {PERIOD_LABEL[endPeriod]}
-            </span>
+        <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+          <div className="flex items-center gap-1.5 text-[10px]">
+            <LogIn className="h-3.5 w-3.5 shrink-0 text-success-foreground" />
+            <span className="font-bold text-muted-foreground">Arrivée</span>
+            <span className="font-semibold text-foreground">{formatShortDate(startDate)}</span>
+            {startPeriod && (
+              <span className="inline-flex items-center gap-0.5 font-semibold text-brand-secondary">
+                {startPeriod === "soir" ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
+                <span>{PERIOD_LABEL[startPeriod]}</span>
+              </span>
+            )}
+          </div>
+          {formatShortDate(endDate) && (
+            <div className="flex items-center gap-1.5 text-[10px]">
+              <LogOut className="h-3.5 w-3.5 shrink-0 text-brand-accent" />
+              <span className="font-bold text-muted-foreground">Départ</span>
+              <span className="font-semibold text-foreground">{formatShortDate(endDate)}</span>
+              {endPeriod && (
+                <span className="inline-flex items-center gap-0.5 font-semibold text-brand-secondary">
+                  {endPeriod === "soir" ? <Moon className="h-3 w-3" /> : <Sun className="h-3 w-3" />}
+                  <span>{PERIOD_LABEL[endPeriod]}</span>
+                </span>
+              )}
+            </div>
           )}
         </div>
         <div className="mt-3 rounded-xl border border-brand-secondary/15 bg-card/75 p-3">
           <div className="min-w-0">
-            <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-brand-secondary">
-              Objectif principal
+            <div className="flex items-center justify-between gap-2">
+              <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-brand-secondary">
+                Objectif principal
+              </div>
+              {!demo && (
+                <button
+                  type="button"
+                  onClick={() => { setFicheEditText(description); setFicheEditPassword(""); setFicheEditError(""); setFicheEditOpen(true); }}
+                  className="flex h-5 w-5 items-center justify-center rounded-md text-muted-foreground transition hover:bg-brand-secondary/10 hover:text-brand-secondary"
+                >
+                  <Pencil className="h-3 w-3" />
+                </button>
+              )}
             </div>
             <p className="mt-1 text-[17px] font-extrabold leading-[1.22] tracking-[-0.015em] text-foreground">
               {displayedObjective}
@@ -635,10 +703,60 @@ export function ChantierBriefCard({
           </div>
         </div>
 
+        <Sheet open={ficheEditOpen} onOpenChange={setFicheEditOpen}>
+          <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-3xl px-5 pb-10 pt-6">
+            <SheetHeader className="mb-4">
+              <SheetTitle className="text-left text-[17px] font-bold">Objectif principal</SheetTitle>
+            </SheetHeader>
+            <div className="space-y-3">
+              <textarea
+                value={ficheEditText}
+                onChange={(e) => setFicheEditText(e.target.value)}
+                placeholder="Décris l'objectif principal du chantier. La première phrase sera affichée en titre, le reste en détail."
+                rows={6}
+                className="w-full resize-none rounded-xl border border-border bg-secondary/30 px-3 py-2.5 text-[13px] leading-5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary/40"
+              />
+              <p className="text-[9px] text-muted-foreground">
+                La première phrase (jusqu'au premier point) sera affichée en titre. Le reste apparaîtra dans "Lire la suite".
+              </p>
+              <input
+                type="password"
+                value={ficheEditPassword}
+                onChange={(e) => { setFicheEditPassword(e.target.value); setFicheEditError(""); }}
+                placeholder="Mot de passe admin"
+                className="w-full rounded-xl border border-border bg-secondary/30 px-3 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary/40"
+              />
+              {ficheEditError && (
+                <p className="text-[11px] font-semibold text-destructive">{ficheEditError}</p>
+              )}
+              <button
+                type="button"
+                disabled={ficheEditSaving || !ficheEditText.trim() || !ficheEditPassword}
+                onClick={async () => {
+                  setFicheEditSaving(true);
+                  setFicheEditError("");
+                  try {
+                    await saveFiche({ data: { chantierId, startDate, description: ficheEditText.trim(), password: ficheEditPassword } });
+                    void queryClient.invalidateQueries({ queryKey: ["chantier-fiche", chantierId, startDate] });
+                    setFicheEditOpen(false);
+                  } catch (err) {
+                    setFicheEditError(err instanceof Error ? err.message : "Erreur lors de la sauvegarde.");
+                  } finally {
+                    setFicheEditSaving(false);
+                  }
+                }}
+                className="tap w-full rounded-xl bg-brand-secondary py-3 text-[13px] font-bold text-brand-secondary-foreground disabled:opacity-40"
+              >
+                {ficheEditSaving ? "Enregistrement…" : "Enregistrer"}
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+
         <div className="mt-3 grid grid-cols-2 gap-2">
           <div className="flex min-h-[142px] flex-col rounded-2xl border border-brand-secondary/10 bg-card/90 p-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-secondary/10 text-brand-secondary">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-secondary/10 text-brand-secondary">
                 <Users className="h-4 w-4" />
               </span>
               <span className="text-[11px] font-semibold text-muted-foreground">Participants</span>
@@ -657,13 +775,13 @@ export function ChantierBriefCard({
                   <span className="text-[24px] font-black leading-none">{people.length}</span>
                   <span className="text-[10px] font-medium text-muted-foreground">personnes</span>
                 </div>
-                <div className="mt-1 flex items-center gap-2 text-[9px] text-muted-foreground">
-                  <span className="inline-flex items-center gap-1">
-                    <User className="h-2.5 w-2.5 text-brand-secondary" />
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                    <User className="h-2.5 w-2.5 shrink-0 text-brand-secondary" />
                     {members.length + guests.length} adultes
                   </span>
-                  <span className="inline-flex items-center gap-1">
-                    <Baby className="h-2.5 w-2.5 text-brand-accent" />
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                    <Baby className="h-2.5 w-2.5 shrink-0 text-brand-accent" />
                     {children.length} enfants
                   </span>
                 </div>
@@ -680,14 +798,14 @@ export function ChantierBriefCard({
           </div>
           <div className="flex min-h-[142px] flex-col rounded-2xl border border-brand-secondary/10 bg-card/90 p-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand-accent/15 text-brand-accent">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-accent/15 text-brand-accent">
                 <Utensils className="h-4 w-4" />
               </span>
-              <span className="text-[11px] font-semibold text-muted-foreground">
-                Budget &amp; dépenses
+              <span className="min-w-0 truncate text-[11px] font-semibold text-muted-foreground">
+                Budget
               </span>
             </div>
-            {loading || expensesLoading ? (
+            {loading ? (
               <div
                 className="mt-3 space-y-2 animate-pulse"
                 aria-label="Chargement du budget chantier"
@@ -697,30 +815,21 @@ export function ChantierBriefCard({
               </div>
             ) : (
               <>
-                <div className="mt-2 grid grid-cols-2 gap-2">
-                  <div>
-                    <div className="text-[7px] font-bold uppercase tracking-wide text-muted-foreground">
-                      Prévu
-                    </div>
-                    <div className="mt-0.5 text-[16px] font-black leading-none tabular-nums">
-                      {formatEuro(totalBudget)}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-1 text-[7px] font-bold uppercase tracking-wide text-muted-foreground">
-                      <ReceiptText className="h-2.5 w-2.5" />
-                      Engagé
-                    </div>
-                    <div className="mt-0.5 text-[16px] font-black leading-none tabular-nums">
-                      {formatEuro(expensesTotal)}
-                    </div>
-                  </div>
+                <div className="mt-2 flex items-baseline gap-1.5">
+                  <span className="whitespace-nowrap text-[24px] font-black leading-none tabular-nums">
+                    {Math.round(totalBudget)} €
+                  </span>
+                  <span className="whitespace-nowrap text-[10px] font-medium text-muted-foreground">total</span>
                 </div>
-                <div className="mt-2 text-[8px] text-muted-foreground">
-                  {expensesCount} facture{expensesCount > 1 ? "s" : ""} ·{" "}
-                  {budgetDifference >= 0
-                    ? `${formatEuro(budgetDifference)} disponibles`
-                    : `${formatEuro(Math.abs(budgetDifference))} au-dessus`}
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] text-muted-foreground">
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                    <ReceiptText className="h-2.5 w-2.5 shrink-0 text-brand-accent" />
+                    {Math.round(expensesTotal)} € dép.
+                  </span>
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                    <Wallet className="h-2.5 w-2.5 shrink-0 text-brand-secondary" />
+                    {Math.round(Math.abs(budgetDifference))} € {budgetDifference >= 0 ? "rest." : "dépass."}
+                  </span>
                 </div>
               </>
             )}
@@ -740,8 +849,8 @@ export function ChantierBriefCard({
         <section className="rounded-xl border border-border bg-card px-3">
           <BriefSectionHeader
             icon={ClipboardList}
-            title="Missions à cocher"
-            summary={`${tasks.length} mission${tasks.length > 1 ? "s" : ""} · ${tasks.filter((task) => task.done).length} terminée${tasks.filter((task) => task.done).length > 1 ? "s" : ""}`}
+            title="Tâches"
+            summary={`${tasks.length} tâche${tasks.length > 1 ? "s" : ""} · ${tasks.filter((task) => task.done).length} terminée${tasks.filter((task) => task.done).length > 1 ? "s" : ""}`}
             alert={tasks.length === 0 ? "À compléter" : undefined}
             open={activeSection === "missions"}
             onClick={() =>
@@ -858,183 +967,181 @@ export function ChantierBriefCard({
             }
           />
           {activeSection === "people" && (
-            <div className="border-t border-border/60 pb-3 pt-2.5">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex rounded-lg bg-secondary/50 p-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setPresenceFilter("all")}
-                    className={`rounded-md px-2.5 py-1 text-[9px] font-semibold ${presenceFilter === "all" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
-                  >
-                    Tous
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPresenceFilter("children")}
-                    className={`rounded-md px-2.5 py-1 text-[9px] font-semibold ${presenceFilter === "children" ? "bg-card text-foreground shadow-sm" : "text-muted-foreground"}`}
-                  >
-                    Enfants · {children.length}
-                  </button>
-                </div>
-                <span className="text-[9px] text-muted-foreground">Arrivée → départ</span>
-              </div>
-              <div className="mt-2 space-y-2">
-                {presenceDayBands.map((visibleDays, bandIndex) => (
-                  <div
-                    key={visibleDays[0] || bandIndex}
-                    className="overflow-hidden rounded-lg border border-border"
-                  >
-                    <div
-                      className="grid items-stretch bg-secondary/25"
-                      style={{ gridTemplateColumns: `clamp(96px, 32vw, 132px) minmax(0, 1fr)` }}
-                    >
-                      <span className="flex items-center px-2 text-[8px] font-bold uppercase tracking-wider text-muted-foreground">
-                        {presenceFilter === "children" ? "Enfants" : "Inscrits"}
-                      </span>
-                      <span className="relative h-9 border-l border-border/70">
-                        <span
-                          className="absolute inset-y-0 left-5 right-5 grid sm:left-8 sm:right-8"
-                          style={{
-                            gridTemplateColumns: `repeat(${Math.max(visibleDays.length, 1)}, minmax(0, 1fr))`,
-                          }}
+            <div className="border-t border-border/60 pb-3 pt-3">
+              {enrichedPeople.length === 0 ? (
+                <p className="py-2 text-sm text-muted-foreground">Aucun inscrit pour le moment.</p>
+              ) : (() => {
+                const MAX_VISIBLE = 18;
+                const visible = showAllPeople ? enrichedPeople : enrichedPeople.slice(0, MAX_VISIBLE);
+                const overflow = enrichedPeople.length - MAX_VISIBLE;
+                return (
+                  <div className="flex flex-wrap gap-1.5">
+                    {visible.map((person) => {
+                      const isChild = isChildType(person.personType);
+                      const isGuest = person.personType.startsWith("guest");
+                      const firstName = person.personName.split(" ")[0];
+                      const pillStyle = isChild
+                        ? "bg-secondary text-muted-foreground"
+                        : isGuest
+                          ? "border border-border bg-card text-foreground"
+                          : "bg-brand-secondary/15 text-brand-secondary";
+                      return (
+                        <button
+                          key={person.id}
+                          type="button"
+                          onClick={() => setSelectedPerson(person)}
+                          className={`tap inline-flex h-7 items-center gap-1 rounded-full px-3 text-[11px] font-semibold ${pillStyle}`}
                         >
-                          {visibleDays.map((date, dayIndex) => {
-                            const parsed = new Date(`${date}T00:00:00`);
-                            return (
-                              <span
-                                key={date}
-                                className={`border-r border-border/70 py-1 text-center text-[8px] font-bold uppercase text-muted-foreground last:border-r-0 ${dayIndex % 2 === 0 ? "bg-card/65" : "bg-secondary/40"}`}
-                              >
-                                {parsed.toLocaleDateString("fr-FR", { weekday: "short" })}
-                                <span className="block text-[10px] text-foreground">
-                                  {parsed.getDate()}
-                                </span>
-                              </span>
-                            );
-                          })}
-                        </span>
-                      </span>
-                    </div>
-                    <div className="divide-y divide-border/60">
-                      {presenceFilter === "children"
-                        ? children.map((child) => (
-                            <div
-                              key={child.id}
-                              className="grid min-h-9 items-stretch bg-card"
-                              style={{
-                                gridTemplateColumns: `clamp(96px, 32vw, 132px) minmax(0, 1fr)`,
-                              }}
-                              title={`${child.personName} — ${presenceWindow(child.meals)}`}
-                            >
-                              <span className="flex items-center bg-card px-2">
-                                <CompactPersonPill
-                                  name={child.personName}
-                                  personType={child.personType}
-                                />
-                              </span>
-                              <PresenceTrack
-                                days={visibleDays}
-                                span={presenceSpan(child.meals, visibleDays)}
-                              />
-                            </div>
-                          ))
-                        : groups.map((group) => {
-                            const relevantMembers = group.members;
-                            const registrant =
-                              group.members[0]?.registeredBy ||
-                              group.members[0]?.personName ||
-                              "Groupe";
-                            const bookingMember =
-                              group.members.find(
-                                (member) =>
-                                  member.personName.trim().toLocaleLowerCase("fr-FR") ===
-                                  registrant.trim().toLocaleLowerCase("fr-FR"),
-                              ) || group.members[0];
-                            const rowKey = `${group.groupId}-${bandIndex}`;
-                            const expanded = expandedPresenceGroup === rowKey;
-                            return (
-                              <div key={group.groupId} className="bg-card">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    setExpandedPresenceGroup((current) =>
-                                      current === rowKey ? null : rowKey,
-                                    )
-                                  }
-                                  className="grid min-h-9 w-full items-stretch text-left"
-                                  style={{
-                                    gridTemplateColumns: `clamp(96px, 32vw, 132px) minmax(0, 1fr)`,
-                                  }}
-                                >
-                                  <span className="flex min-w-0 items-center gap-1 bg-card px-2 py-1.5">
-                                    <span className="min-w-0 flex-1">
-                                      <span className="flex items-center gap-1">
-                                        <CompactPersonPill
-                                          name={registrant}
-                                          personType={bookingMember.personType}
-                                        />
-                                        {group.members.length > 1 && (
-                                          <span className="shrink-0 text-[7px] font-semibold text-muted-foreground">
-                                            +{group.members.length - 1}
-                                          </span>
-                                        )}
-                                      </span>
-                                    </span>
-                                    <ChevronDown
-                                      className={`h-3 w-3 shrink-0 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`}
-                                    />
-                                  </span>
-                                  <PresenceTrack
-                                    days={visibleDays}
-                                    span={presenceSpan(bookingMember.meals, visibleDays)}
-                                  />
-                                </button>
-                                {expanded && (
-                                  <div className="border-t border-border/45 bg-secondary/15 px-3 py-2">
-                                    <div className="flex items-center gap-2">
-                                      <span className="shrink-0 text-[7px] font-semibold text-muted-foreground">
-                                        Participants
-                                      </span>
-                                      <div className="flex min-w-0 flex-wrap gap-1.5">
-                                        {relevantMembers.map((member) => (
-                                          <CompactPersonPill
-                                            key={member.id}
-                                            name={member.personName}
-                                            personType={member.personType}
-                                          />
-                                        ))}
-                                      </div>
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            );
-                          })}
-                    </div>
+                          {firstName}
+                          {isChild && (
+                            <span className="text-[8px] font-medium opacity-60">enfant</span>
+                          )}
+                          {isGuest && !isChild && (
+                            <span className="text-[8px] font-medium opacity-60">woofer</span>
+                          )}
+                        </button>
+                      );
+                    })}
+                    {!showAllPeople && overflow > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => setShowAllPeople(true)}
+                        className="tap inline-flex h-7 items-center rounded-full border border-border bg-secondary px-3 text-[11px] font-bold text-muted-foreground"
+                      >
+                        +{overflow} autres
+                      </button>
+                    )}
                   </div>
-                ))}
-              </div>
-              <p className="mt-2 text-[8px] text-muted-foreground">
-                {presenceFilter === "children"
-                  ? "Une ligne par enfant"
-                  : "Une ligne par inscription"}{" "}
-                · horaires estimés d’après les repas sélectionnés.
+                );
+              })()}
+              <p className="mt-3 text-[8px] text-muted-foreground">
+                Clique sur un participant pour voir ses horaires d’arrivée et de départ.
               </p>
+
+              <Sheet open={!!selectedPerson} onOpenChange={(open) => { if (!open) setSelectedPerson(null); }}>
+                <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-3xl px-5 pb-10 pt-6">
+                  {selectedPerson && (() => {
+                    const isChild = isChildType(selectedPerson.personType);
+                    const isGuest = selectedPerson.personType.startsWith("guest");
+                    const initials =
+                      selectedPerson.personName
+                        .split(" ")
+                        .map((w) => w[0] ?? "")
+                        .slice(0, 2)
+                        .join("")
+                        .toUpperCase() || "?";
+                    const avatarBg = isChild
+                      ? "bg-secondary text-foreground"
+                      : isGuest
+                        ? "border border-border bg-card text-foreground"
+                        : "bg-brand-secondary/15 text-brand-secondary";
+                    const arrival = computeArrival(selectedPerson.meals);
+                    const departure = computeDeparture(selectedPerson.meals);
+                    return (
+                      <div>
+                        <div className="flex items-center gap-4">
+                          <span className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-2xl font-black ${avatarBg}`}>
+                            {initials}
+                          </span>
+                          <div>
+                            <div className="text-2xl font-black">{selectedPerson.personName}</div>
+                            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                              {isChild ? (
+                                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold">Enfant</span>
+                              ) : isGuest ? (
+                                <span className="rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-semibold">Woofer</span>
+                              ) : (
+                                <span className="rounded-full bg-brand-secondary/15 px-2.5 py-0.5 text-[10px] font-semibold text-brand-secondary">Membre</span>
+                              )}
+                              {selectedPerson.mode === "teletravail" && (
+                                <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">💻 Télétravail</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {selectedPerson.registeredBy !== selectedPerson.personName && (
+                          <p className="mt-3 text-[11px] text-muted-foreground">
+                            Inscrit·e par <strong className="text-foreground">{selectedPerson.registeredBy}</strong>
+                          </p>
+                        )}
+
+                        <div className="mt-4 space-y-3 rounded-2xl bg-secondary/35 p-4">
+                          {!arrival ? (
+                            <p className="text-[12px] text-muted-foreground">Aucun repas renseigné.</p>
+                          ) : (
+                            <>
+                              <div className="flex items-start gap-3">
+                                <LogIn className="mt-0.5 h-4 w-4 shrink-0 text-success-foreground" />
+                                <div>
+                                  <div className="label-micro mb-0.5">Arrivée</div>
+                                  <div className="text-[13px] font-semibold">{arrival}</div>
+                                </div>
+                              </div>
+                              {departure && (
+                                <div className="flex items-start gap-3">
+                                  <LogOut className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" />
+                                  <div>
+                                    <div className="label-micro mb-0.5">Départ</div>
+                                    <div className="text-[13px] font-semibold">{departure}</div>
+                                  </div>
+                                </div>
+                              )}
+                              {selectedPerson.meals.length > 0 && (
+                                <div className="border-t border-border/40 pt-3 text-[11px] text-muted-foreground">
+                                  {selectedPerson.meals.length} repas prévu{selectedPerson.meals.length > 1 ? "s" : ""}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+
+                        {selectedPerson.family.length > 0 && (
+                          <div className="mt-4">
+                            <div className="label-micro mb-2">Vient avec</div>
+                            <div className="flex flex-wrap gap-2">
+                              {selectedPerson.family.map((fm) => (
+                                <PersonPill
+                                  key={fm.id}
+                                  name={fm.personName}
+                                  kind={
+                                    isChildType(fm.personType)
+                                      ? "child"
+                                      : fm.personType.startsWith("guest")
+                                        ? "guest"
+                                        : "member"
+                                  }
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </SheetContent>
+              </Sheet>
             </div>
           )}
         </section>
 
-        <section className="rounded-xl border border-border bg-card px-3">
+        <section id="chantier-intendance" className="rounded-xl border border-border bg-card px-3">
           <BriefSectionHeader
             icon={CalendarDays}
-            title="Le chantier jour par jour"
+            title="Intendance"
             summary={
               loading
                 ? "Chargement des présences…"
-                : `${days.length} jours · ${totalAdults} adultes · ${totalChildren} enfants · ${formatEuro(totalBudget)}`
+                : `${days.length} jour${days.length > 1 ? "s" : ""} · ${Math.round(totalBudget)} € repas`
             }
             alert={
-              !loading && people.length > 0 && totalBudget === 0 ? "Budget à compléter" : undefined
+              !loading && people.length > 0
+                ? missingDutySlots > 0
+                  ? `${missingDutySlots} créneau${missingDutySlots > 1 ? "x" : ""} libre${missingDutySlots > 1 ? "s" : ""}`
+                  : totalBudget === 0
+                    ? "Budget à compléter"
+                    : undefined
+                : undefined
             }
             open={activeSection === "days"}
             onClick={() =>
@@ -1043,6 +1150,19 @@ export function ChantierBriefCard({
           />
           {activeSection === "days" && (
             <div className="border-t border-border/60 pb-3 pt-2.5">
+              {missingDutySlots > 0 && onDutyVacancyClick && (
+                <div className="mb-3 flex items-center gap-2.5 rounded-xl bg-brand-accent/10 px-3 py-2.5">
+                  <ChefHat className="h-4 w-4 shrink-0 text-brand-accent" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[12px] font-bold text-brand-accent">
+                      {missingDutySlots} créneau{missingDutySlots > 1 ? "x" : ""} d'intendance à prendre
+                    </div>
+                    <div className="text-[9px] text-brand-accent/70">
+                      Déplie un jour et clique sur « ↗ À prendre » pour t'inscrire
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="space-y-1.5">
                 {days.map((date) => {
                   const movement = dayMovement(date);
@@ -1051,8 +1171,12 @@ export function ChantierBriefCard({
                   const parsed = new Date(`${date}T00:00:00`);
                   const lunch = mealCount(date, "dejeuner");
                   const dinner = mealCount(date, "diner");
-                  const courseDuty = duties.find(
-                    (duty) => duty.role === "courses" && duty.date === date,
+                  const courseLunch = duties.find(
+                    (duty) => duty.role === "courses" && duty.date === date && duty.slot === "matin",
+                  );
+                  const courseDinner = duties.find(
+                    (duty) =>
+                      duty.role === "courses" && duty.date === date && duty.slot === "apres_midi",
                   );
                   const kitchenLunch = duties.find(
                     (duty) =>
@@ -1150,26 +1274,13 @@ export function ChantierBriefCard({
                               </div>
                             </div>
                           </div>
-                          <div className="mt-2 flex items-center gap-2 rounded-lg bg-secondary/35 px-2.5 py-1.5">
-                            <ShoppingCart className="h-3.5 w-3.5 text-muted-foreground" />
-                            <span className="flex-1 text-[10px] font-semibold">
-                              Courses · ce jour
-                            </span>
-                            {courseDuty ? (
-                              <PersonPill name={courseDuty.personName} />
-                            ) : (
-                              <DutyVacancyPill
-                                onClick={vacancyAction({ role: "courses", date, slot: "matin" })}
-                              />
-                            )}
-                          </div>
                           <div className="mt-2 grid grid-cols-2 gap-2">
                             {(
                               [
-                                ["Déjeuner", lunch],
-                                ["Dîner", dinner],
-                              ] as const
-                            ).map(([label, meal]) => (
+                                ["Déjeuner", lunch, courseLunch, kitchenLunch, childcareMorning, "matin"] as const,
+                                ["Dîner", dinner, courseDinner, kitchenDinner, childcareAfternoon, "apres_midi"] as const,
+                              ]
+                            ).map(([label, meal, courseSlot, kitchenSlot, childcareSlot, slot]) => (
                               <div
                                 key={label}
                                 className="rounded-lg bg-card px-2.5 py-2 shadow-sm ring-1 ring-border/60"
@@ -1183,7 +1294,7 @@ export function ChantierBriefCard({
                                     )}
                                     {label}
                                   </span>
-                                  <span className="text-[11px] font-black text-brand-secondary">
+                                  <span className="whitespace-nowrap text-[11px] font-black text-brand-secondary">
                                     {formatEuro(meal.budget)}
                                   </span>
                                 </div>
@@ -1196,61 +1307,44 @@ export function ChantierBriefCard({
                                 <div className="text-[9px] text-muted-foreground">
                                   {meal.adults} adultes · {meal.children} enfants
                                 </div>
-                                <div className="mt-2 flex items-center justify-between gap-1 border-t border-border/60 pt-1.5">
-                                  <span className="flex items-center gap-1 text-[8px] font-semibold text-muted-foreground">
-                                    <ChefHat className="h-2.5 w-2.5" /> Cuisine
-                                  </span>
-                                  {label === "Déjeuner" ? (
-                                    kitchenLunch ? (
-                                      <PersonPill name={kitchenLunch.personName} />
+                                <div className="mt-2 space-y-1 border-t border-border/60 pt-1.5">
+                                  <div className="flex min-w-0 items-center justify-between gap-1">
+                                    <span className="flex shrink-0 items-center gap-1 text-[8px] font-semibold text-muted-foreground">
+                                      <ShoppingCart className="h-2.5 w-2.5" /> Courses
+                                    </span>
+                                    {courseSlot ? (
+                                      <PersonPill name={courseSlot.personName} />
                                     ) : (
                                       <DutyVacancyPill
-                                        onClick={vacancyAction({
-                                          role: "cuisine",
-                                          date,
-                                          slot: "matin",
-                                        })}
+                                        onClick={vacancyAction({ role: "courses", date, slot })}
                                       />
-                                    )
-                                  ) : kitchenDinner ? (
-                                    <PersonPill name={kitchenDinner.personName} />
-                                  ) : (
-                                    <DutyVacancyPill
-                                      onClick={vacancyAction({
-                                        role: "cuisine",
-                                        date,
-                                        slot: "apres_midi",
-                                      })}
-                                    />
-                                  )}
-                                </div>
-                                <div className="mt-1 flex items-center justify-between gap-1">
-                                  <span className="flex items-center gap-1 text-[8px] font-semibold text-muted-foreground">
-                                    <Baby className="h-2.5 w-2.5" /> Garde{" "}
-                                    {label === "Déjeuner" ? "matin" : "après-midi"}
-                                  </span>
-                                  {label === "Déjeuner" ? (
-                                    childcareMorning ? (
-                                      <PersonPill name={childcareMorning.personName} />
+                                    )}
+                                  </div>
+                                  <div className="flex min-w-0 items-center justify-between gap-1">
+                                    <span className="flex shrink-0 items-center gap-1 text-[8px] font-semibold text-muted-foreground">
+                                      <ChefHat className="h-2.5 w-2.5" /> Cuisine
+                                    </span>
+                                    {kitchenSlot ? (
+                                      <PersonPill name={kitchenSlot.personName} />
                                     ) : (
                                       <DutyVacancyPill
-                                        onClick={vacancyAction({
-                                          role: "garde",
-                                          date,
-                                          slot: "matin",
-                                        })}
+                                        onClick={vacancyAction({ role: "cuisine", date, slot })}
                                       />
-                                    )
-                                  ) : childcareAfternoon ? (
-                                    <PersonPill name={childcareAfternoon.personName} />
-                                  ) : (
-                                    <DutyVacancyPill
-                                      onClick={vacancyAction({
-                                        role: "garde",
-                                        date,
-                                        slot: "apres_midi",
-                                      })}
-                                    />
+                                    )}
+                                  </div>
+                                  {children > 0 && (
+                                    <div className="flex min-w-0 items-center justify-between gap-1">
+                                      <span className="flex shrink-0 items-center gap-1 text-[8px] font-semibold text-muted-foreground">
+                                        <Baby className="h-2.5 w-2.5" /> Garde {DUTY_SLOT_LABEL.garde[slot]}
+                                      </span>
+                                      {childcareSlot ? (
+                                        <PersonPill name={childcareSlot.personName} />
+                                      ) : (
+                                        <DutyVacancyPill
+                                          onClick={vacancyAction({ role: "garde", date, slot })}
+                                        />
+                                      )}
+                                    </div>
                                   )}
                                 </div>
                               </div>
@@ -1266,164 +1360,6 @@ export function ChantierBriefCard({
           )}
         </section>
 
-        <section className="rounded-xl border border-border bg-card px-3">
-          <BriefSectionHeader
-            icon={ChefHat}
-            title="Intendance"
-            summary={`${coveredDutySlots}/${expectedDutySlots} créneaux couverts`}
-            alert={missingDutySlots > 0 ? `${missingDutySlots} à prendre` : undefined}
-            open={activeSection === "duties"}
-            onClick={() => setActiveSection((current) => (current === "duties" ? null : "duties"))}
-          />
-          {activeSection === "duties" && (
-            <div className="divide-y divide-border border-t border-border/60 pb-2 pt-1">
-              <div className="py-2">
-                <div className="flex items-center justify-between text-[9px] font-semibold">
-                  <span className="text-muted-foreground">Couverture de l’intendance</span>
-                  <span className="text-brand-secondary">{dutyCoverage}%</span>
-                </div>
-                <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-secondary">
-                  <div
-                    className="h-full rounded-full bg-brand-secondary transition-[width]"
-                    style={{ width: `${dutyCoverage}%` }}
-                  />
-                </div>
-              </div>
-              {applicableDutyRoles.map((role) => {
-                const Icon = roleIcons[role];
-                const status = roleStatus(role);
-                return (
-                  <div key={role}>
-                    <button
-                      type="button"
-                      onClick={() => setOpenDutyRole((current) => (current === role ? null : role))}
-                      className="flex w-full items-center gap-3 py-2 text-left"
-                    >
-                      <Icon className="h-4 w-4 text-muted-foreground" />
-                      <span className="flex-1 text-[13px] font-semibold">
-                        {DUTY_ROLE_LABEL[role]}
-                      </span>
-                      {status.names.length ? (
-                        <div className="flex max-w-[55%] items-center justify-end gap-1">
-                          {status.names.slice(0, 2).map((name) => (
-                            <PersonPill key={name} name={name} />
-                          ))}
-                          {status.names.length > 2 && (
-                            <span className="text-[11px] font-semibold text-muted-foreground">
-                              +{status.names.length - 2}
-                            </span>
-                          )}
-                          {openDutyRole === role ? (
-                            <ChevronDown className="ml-0.5 h-3.5 w-3.5" />
-                          ) : (
-                            <ChevronRight className="ml-0.5 h-3.5 w-3.5" />
-                          )}
-                        </div>
-                      ) : (
-                        <DutyVacancyPill />
-                      )}
-                    </button>
-                    {openDutyRole === role && (
-                      <div className="mb-2 rounded-xl bg-secondary/35 px-3 py-2">
-                        {role === "cuisine" || role === "garde" ? (
-                          <div>
-                            <div className="grid grid-cols-[1fr_auto_auto] gap-2 border-b border-border/70 pb-1 text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
-                              <span>Jour</span>
-                              <span className="w-[82px] text-center">
-                                {role === "cuisine" ? "Déjeuner" : "Matin"}
-                              </span>
-                              <span className="w-[82px] text-center">
-                                {role === "cuisine" ? "Dîner" : "Après-midi"}
-                              </span>
-                            </div>
-                            <div className="divide-y divide-border/60">
-                              {days.map((date) => {
-                                const lunch = duties.find(
-                                  (duty) =>
-                                    duty.role === role &&
-                                    duty.date === date &&
-                                    duty.slot === "matin",
-                                );
-                                const dinner = duties.find(
-                                  (duty) =>
-                                    duty.role === role &&
-                                    duty.date === date &&
-                                    duty.slot === "apres_midi",
-                                );
-                                const day = new Date(`${date}T00:00:00`);
-                                return (
-                                  <div
-                                    key={date}
-                                    className="grid grid-cols-[1fr_auto_auto] items-center gap-2 py-1.5"
-                                  >
-                                    <span className="min-w-0 truncate text-[10px] font-semibold capitalize text-muted-foreground">
-                                      {day.toLocaleDateString("fr-FR", {
-                                        weekday: "short",
-                                        day: "numeric",
-                                      })}
-                                    </span>
-                                    <div className="flex w-[82px] justify-center">
-                                      {lunch ? (
-                                        <PersonPill name={lunch.personName} />
-                                      ) : (
-                                        <DutyVacancyPill
-                                          onClick={vacancyAction({ role, date, slot: "matin" })}
-                                        />
-                                      )}
-                                    </div>
-                                    <div className="flex w-[82px] justify-center">
-                                      {dinner ? (
-                                        <PersonPill name={dinner.personName} />
-                                      ) : (
-                                        <DutyVacancyPill
-                                          onClick={vacancyAction({
-                                            role,
-                                            date,
-                                            slot: "apres_midi",
-                                          })}
-                                        />
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ) : (
-                          days.map((date) => {
-                            const duty = duties.find(
-                              (entry) =>
-                                entry.role === role &&
-                                entry.date === date &&
-                                entry.slot === "matin",
-                            );
-                            return (
-                              <div
-                                key={date}
-                                className="flex items-center gap-2 border-b border-border/60 py-1.5 last:border-0"
-                              >
-                                <span className="min-w-0 flex-1 truncate text-[10px] capitalize text-muted-foreground">
-                                  {formatDay(date)} · journée
-                                </span>
-                                {duty ? (
-                                  <PersonPill name={duty.personName} />
-                                ) : (
-                                  <DutyVacancyPill
-                                    onClick={vacancyAction({ role, date, slot: "matin" })}
-                                  />
-                                )}
-                              </div>
-                            );
-                          })
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
       </div>
     </section>
   );

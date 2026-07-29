@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useExpenseStore } from "@/core/store/expense-store";
@@ -24,6 +24,7 @@ const PAYMENT_METHODS: PaymentMethod[] = ["Virement", "Chèque", "Carte", "Prél
 
 function ModifierPage() {
   const navigate = useNavigate();
+  const router = useRouter();
   const { expense, setExpense } = useExpenseStore();
   const [draft, setDraft] = useState<Expense | null>(expense);
   const [confirmSwitch, setConfirmSwitch] = useState<Side | null>(null);
@@ -72,7 +73,7 @@ function ModifierPage() {
     if (!draft) return;
     setExpense(draft);
     toast.success("Fiche mise à jour.");
-    navigate({ to: "/" });
+    router.history.back();
   }
 
   return (
@@ -280,7 +281,7 @@ function ModifierPage() {
 
         <div className="sticky bottom-0 mt-8 -mx-5 grid grid-cols-2 gap-3 border-t border-border bg-background/85 px-5 py-4 backdrop-blur">
           <button
-            onClick={() => navigate({ to: "/" })}
+            onClick={() => router.history.back()}
             className="tap rounded-2xl border border-border bg-card px-4 py-3.5 text-sm font-semibold hover:bg-secondary"
           >
             Annuler

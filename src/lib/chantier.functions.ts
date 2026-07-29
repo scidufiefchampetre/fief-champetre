@@ -74,31 +74,30 @@ function isChantierEvent(event: { summary: string; colorId: string | null }): bo
   );
 }
 
-// Tâches chantier unified schema:
-// A=ID Chantier, B=ID, C=Créé le, D=Tâche, E=Urgence,
-// F=Statut (À faire/En cours/Terminé), G=Pourcentage, H=Description,
-// I=À acheter (JSON), J=Photo avant, K=Photo après, L=Durée (min),
-// M=Nb personnes, N=Participants, O=Terminé le,
-// P=Type (tache|signalement), Q-V=signalement-only fields
+// Schéma Missions (20 cols A-T):
+// A=ID Chantier, B=ID, C=Créé le, D=Titre, E=Urgence, F=Catégorie, G=Lieu,
+// H=Description, I=Statut, J=Pourcentage, K=À acheter, L=Photo avant,
+// M=Photo après, N=Durée (min), O=Nb personnes, P=Participants,
+// Q=Terminé le, R=Budget estimé, S=Signalé par, T=Type
 
 function rowToTask(row: string[], chantierId: string): ChantierTask | null {
   if ((row[0] ?? "") !== chantierId) return null;
   const id = (row[1] ?? "").trim();
   if (!id) return null;
-  const type = (row[15] ?? "").trim(); // col P
+  const type = (row[19] ?? "").trim(); // col T
   if (type === "signalement") return null;
   const urgency = (row[4] ?? "").trim();
-  const rawStatus = (row[5] ?? "").trim();
+  const rawStatus = (row[8] ?? "").trim(); // col I
   const taskStatus: ChantierTask["taskStatus"] =
     rawStatus === "En cours" ? "En cours" :
     rawStatus === "Terminé" || rawStatus === "Oui" ? "Terminé" : "À faire";
-  const pct = Number((row[6] ?? "0").replace(",", "."));
+  const pct = Number((row[9] ?? "0").replace(",", ".")); // col J
   let toBuyItems: string[] = [];
-  try { toBuyItems = JSON.parse(row[8] ?? "[]"); } catch { toBuyItems = []; }
-  const description = row[7] ?? "";
+  try { toBuyItems = JSON.parse(row[10] ?? "[]"); } catch { toBuyItems = []; } // col K
+  const description = row[7] ?? ""; // col H
   return {
     id,
-    label: row[3] ?? "",
+    label: row[3] ?? "", // col D
     urgency: (urgency === "tres_urgent" || urgency === "urgent" || urgency === "important" || urgency === "must_have") ? urgency : "",
     taskStatus,
     done: taskStatus === "Terminé",
@@ -106,56 +105,61 @@ function rowToTask(row: string[], chantierId: string): ChantierTask | null {
     description,
     note: description, // legacy alias
     toBuyItems,
-    photoBeforeUrl: row[9] ?? "",  // J
-    resultPhotoUrl: row[10] ?? "", // K
-    durationMinutes: Math.max(0, Number.parseInt(row[11] ?? "0", 10) || 0), // L
-    peopleCount: Math.max(0, Number.parseFloat(row[12] ?? "0") || 0),        // M
-    participants: row[13] ?? "",   // N
-    completedAt: row[14] ?? "",    // O
+    photoBeforeUrl: row[11] ?? "", // col L
+    resultPhotoUrl: row[12] ?? "", // col M
+    durationMinutes: Math.max(0, Number.parseInt(row[13] ?? "0", 10) || 0), // col N
+    peopleCount: Math.max(0, Number.parseFloat(row[14] ?? "0") || 0),       // col O
+    participants: row[15] ?? "",   // col P
+    completedAt: row[16] ?? "",    // col Q
   };
 }
 
 function taskToRow(chantierId: string, t: ChantierTask, createdAt: string): unknown[] {
   return [
-    chantierId,           // A
-    t.id,                 // B
-    createdAt,            // C
-    t.label,              // D
-    t.urgency,            // E
-    t.taskStatus,         // F
-    t.percentage || "",   // G
-    t.description,        // H
-    JSON.stringify(t.toBuyItems ?? []), // I
-    t.photoBeforeUrl,     // J
-    t.resultPhotoUrl,     // K
-    t.durationMinutes || "", // L
-    t.peopleCount || "",  // M
-    t.participants,       // N
-    t.completedAt,        // O
-    "tache",              // P: type
-    "", "", "", "", "", "", // Q-V: signalement fields (empty for tasks)
+    chantierId,           // A(0)
+    t.id,                 // B(1)
+    createdAt,            // C(2)
+    t.label,              // D(3)
+    t.urgency,            // E(4)
+    "",                   // F(5): Catégorie (vide pour les tâches)
+    "",                   // G(6): Lieu (vide pour les tâches)
+    t.description,        // H(7)
+    t.taskStatus,         // I(8)
+    t.percentage || "",   // J(9)
+    JSON.stringify(t.toBuyItems ?? []), // K(10)
+    t.photoBeforeUrl,     // L(11)
+    t.resultPhotoUrl,     // M(12)
+    t.durationMinutes || "", // N(13)
+    t.peopleCount || "",  // O(14)
+    t.participants,       // P(15)
+    t.completedAt,        // Q(16)
+    "",                   // R(17): Budget estimé (vide pour les tâches)
+    "",                   // S(18): Signalé par (vide pour les tâches)
+    "tache",              // T(19): Type
   ];
 }
 
-// Cols D→O: all task-specific fields (12 cols) — for full task updates
+// Cols D→Q (14 cols) : tous les champs éditables d'une tâche
 function taskFieldsCols(t: ChantierTask): unknown[] {
   return [
-    t.label,              // D
-    t.urgency,            // E
-    t.taskStatus,         // F
-    t.percentage || "",   // G
-    t.description,        // H
-    JSON.stringify(t.toBuyItems ?? []), // I
-    t.photoBeforeUrl,     // J
-    t.resultPhotoUrl,     // K
-    t.durationMinutes || "", // L
-    t.peopleCount || "",  // M
-    t.participants,       // N
-    t.completedAt,        // O
+    t.label,              // D(3)
+    t.urgency,            // E(4)
+    "",                   // F(5): Catégorie
+    "",                   // G(6): Lieu
+    t.description,        // H(7)
+    t.taskStatus,         // I(8)
+    t.percentage || "",   // J(9)
+    JSON.stringify(t.toBuyItems ?? []), // K(10)
+    t.photoBeforeUrl,     // L(11)
+    t.resultPhotoUrl,     // M(12)
+    t.durationMinutes || "", // N(13)
+    t.peopleCount || "",  // O(14)
+    t.participants,       // P(15)
+    t.completedAt,        // Q(16)
   ];
 }
 
-// Cols K→O: execution update (photo après, durée, nb personnes, participants, terminé le)
+// Cols M→Q (5 cols) : compte-rendu d'exécution (photo après, durée, personnes, participants, terminé le)
 function taskExecutionCols(t: ChantierTask): unknown[] {
   return [t.resultPhotoUrl, t.durationMinutes || "", t.peopleCount || "", t.participants, t.completedAt];
 }
@@ -776,13 +780,13 @@ export const listChantierTasks = createServerFn({ method: "POST" })
       ensureChantiersSpreadsheet,
       ensureTabExists,
       getRows,
-      TACHES_TAB,
-      TACHE_HEADERS,
-      TACHE_LAST_COL,
+      MISSIONS_TAB,
+      MISSION_HEADERS,
+      MISSION_LAST_COL,
     } = await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    await ensureTabExists(spreadsheetId, TACHES_TAB, TACHE_HEADERS, TACHE_LAST_COL);
-    const rows = await getRows(spreadsheetId, `${TACHES_TAB}!A2:${TACHE_LAST_COL}`);
+    await ensureTabExists(spreadsheetId, MISSIONS_TAB, MISSION_HEADERS, MISSION_LAST_COL);
+    const rows = await getRows(spreadsheetId, `${MISSIONS_TAB}!A2:${MISSION_LAST_COL}`);
     const tasks = rows
       .map((r) => rowToTask(r, data.chantierId))
       .filter((t): t is ChantierTask => t !== null);
@@ -811,15 +815,15 @@ export const listAllChantierTasks = createServerFn({ method: "POST" })
       ensureChantiersSpreadsheet,
       ensureTabExists,
       getRows,
-      TACHES_TAB,
-      TACHE_HEADERS,
-      TACHE_LAST_COL,
+      MISSIONS_TAB,
+      MISSION_HEADERS,
+      MISSION_LAST_COL,
       CHANTIER_TAB,
     } = await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
     const [taskRows, chantierRows] = await Promise.all([
-      ensureTabExists(spreadsheetId, TACHES_TAB, TACHE_HEADERS, TACHE_LAST_COL).then(() =>
-        getRows(spreadsheetId, `${TACHES_TAB}!A2:${TACHE_LAST_COL}`)
+      ensureTabExists(spreadsheetId, MISSIONS_TAB, MISSION_HEADERS, MISSION_LAST_COL).then(() =>
+        getRows(spreadsheetId, `${MISSIONS_TAB}!A2:${MISSION_LAST_COL}`)
       ),
       getRows(spreadsheetId, `${CHANTIER_TAB}!A2:E`),
     ]);
@@ -832,7 +836,7 @@ export const listAllChantierTasks = createServerFn({ method: "POST" })
     for (const row of taskRows) {
       const chantierId = (row[0] ?? "").trim();
       if (!chantierId) continue;
-      const type = (row[15] ?? "").trim();
+      const type = (row[19] ?? "").trim(); // col T = Type
       if (type === "signalement") continue;
       const task = rowToTask(row, chantierId);
       if (task) {
@@ -867,12 +871,12 @@ export const addChantierTask = createServerFn({ method: "POST" })
       ensureChantiersSpreadsheet,
       ensureTabExists,
       appendRow,
-      TACHES_TAB,
-      TACHE_HEADERS,
-      TACHE_LAST_COL,
+      MISSIONS_TAB,
+      MISSION_HEADERS,
+      MISSION_LAST_COL,
     } = await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    await ensureTabExists(spreadsheetId, TACHES_TAB, TACHE_HEADERS, TACHE_LAST_COL);
+    await ensureTabExists(spreadsheetId, MISSIONS_TAB, MISSION_HEADERS, MISSION_LAST_COL);
 
     const task: ChantierTask = {
       id: crypto.randomUUID(),
@@ -893,7 +897,7 @@ export const addChantierTask = createServerFn({ method: "POST" })
     };
     await appendRow(
       spreadsheetId,
-      `${TACHES_TAB}!A:${TACHE_LAST_COL}`,
+      `${MISSIONS_TAB}!A:${MISSION_LAST_COL}`,
       taskToRow(data.chantierId, task, new Date().toISOString()),
     );
     return { ok: true as const, task };
@@ -918,12 +922,12 @@ export const addUnplannedChantierTask = createServerFn({ method: "POST" })
       ensureChantiersSpreadsheet,
       ensureTabExists,
       appendRow,
-      TACHES_TAB,
-      TACHE_HEADERS,
-      TACHE_LAST_COL,
+      MISSIONS_TAB,
+      MISSION_HEADERS,
+      MISSION_LAST_COL,
     } = await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    await ensureTabExists(spreadsheetId, TACHES_TAB, TACHE_HEADERS, TACHE_LAST_COL);
+    await ensureTabExists(spreadsheetId, MISSIONS_TAB, MISSION_HEADERS, MISSION_LAST_COL);
 
     const task: ChantierTask = {
       id: crypto.randomUUID(),
@@ -944,7 +948,7 @@ export const addUnplannedChantierTask = createServerFn({ method: "POST" })
     };
     await appendRow(
       spreadsheetId,
-      `${TACHES_TAB}!A:${TACHE_LAST_COL}`,
+      `${MISSIONS_TAB}!A:${MISSION_LAST_COL}`,
       taskToRow(data.chantierId, task, new Date().toISOString()),
     );
     return { ok: true as const, task };
@@ -966,10 +970,10 @@ export const renameChantierTask = createServerFn({ method: "POST" })
       throw new Error("Mot de passe admin invalide.");
     }
 
-    const { ensureChantiersSpreadsheet, getRows, updateRange, TACHES_TAB, TACHE_LAST_COL } =
+    const { ensureChantiersSpreadsheet, getRows, updateRange, MISSIONS_TAB, MISSION_LAST_COL } =
       await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    const rows = await getRows(spreadsheetId, `${TACHES_TAB}!A2:${TACHE_LAST_COL}`);
+    const rows = await getRows(spreadsheetId, `${MISSIONS_TAB}!A2:${MISSION_LAST_COL}`);
     const rowIndex = rows.findIndex(
       (r) => (r[0] ?? "") === data.chantierId && (r[1] ?? "").trim() === data.taskId,
     );
@@ -982,7 +986,7 @@ export const renameChantierTask = createServerFn({ method: "POST" })
     // cols D→I (label, urgence, fait, note, participants, terminé le) → col D = 4th col
     await updateRange(
       spreadsheetId,
-      `${TACHES_TAB}!D${sheetRow}:I${sheetRow}`,
+      `${MISSIONS_TAB}!D${sheetRow}:Q${sheetRow}`,
       taskFieldsCols(updated),
     );
     return { ok: true as const, task: updated };
@@ -1003,16 +1007,16 @@ export const deleteChantierTask = createServerFn({ method: "POST" })
       throw new Error("Mot de passe admin invalide.");
     }
 
-    const { ensureChantiersSpreadsheet, getRows, deleteRow, TACHES_TAB, TACHE_LAST_COL } =
+    const { ensureChantiersSpreadsheet, getRows, deleteRow, MISSIONS_TAB, MISSION_LAST_COL } =
       await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    const rows = await getRows(spreadsheetId, `${TACHES_TAB}!A2:${TACHE_LAST_COL}`);
+    const rows = await getRows(spreadsheetId, `${MISSIONS_TAB}!A2:${MISSION_LAST_COL}`);
     const rowIndex = rows.findIndex(
       (r) => (r[0] ?? "") === data.chantierId && (r[1] ?? "").trim() === data.taskId,
     );
     if (rowIndex === -1) throw new Error("Tâche introuvable.");
 
-    await deleteRow(spreadsheetId, TACHES_TAB, rowIndex);
+    await deleteRow(spreadsheetId, MISSIONS_TAB, rowIndex);
     return { ok: true as const };
   });
 
@@ -1030,10 +1034,10 @@ const ToggleTaskInput = z.object({
 export const toggleChantierTask = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ToggleTaskInput.parse(d))
   .handler(async ({ data }) => {
-    const { ensureChantiersSpreadsheet, getRows, updateRange, TACHES_TAB, TACHE_LAST_COL } =
+    const { ensureChantiersSpreadsheet, getRows, updateRange, MISSIONS_TAB, MISSION_LAST_COL } =
       await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    const rows = await getRows(spreadsheetId, `${TACHES_TAB}!A2:${TACHE_LAST_COL}`);
+    const rows = await getRows(spreadsheetId, `${MISSIONS_TAB}!A2:${MISSION_LAST_COL}`);
     const rowIndex = rows.findIndex(
       (r) => (r[0] ?? "") === data.chantierId && (r[1] ?? "").trim() === data.taskId,
     );
@@ -1051,7 +1055,7 @@ export const toggleChantierTask = createServerFn({ method: "POST" })
     const sheetRow = rowIndex + 2;
     await updateRange(
       spreadsheetId,
-      `${TACHES_TAB}!D${sheetRow}:O${sheetRow}`,
+      `${MISSIONS_TAB}!D${sheetRow}:Q${sheetRow}`,
       taskFieldsCols(updated),
     );
     return { ok: true as const, task: updated };
@@ -1070,10 +1074,10 @@ const UpdateTaskNoteInput = z.object({
 export const updateChantierTaskNote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => UpdateTaskNoteInput.parse(d))
   .handler(async ({ data }) => {
-    const { ensureChantiersSpreadsheet, getRows, updateRange, TACHES_TAB, TACHE_LAST_COL } =
+    const { ensureChantiersSpreadsheet, getRows, updateRange, MISSIONS_TAB, MISSION_LAST_COL } =
       await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    const rows = await getRows(spreadsheetId, `${TACHES_TAB}!A2:${TACHE_LAST_COL}`);
+    const rows = await getRows(spreadsheetId, `${MISSIONS_TAB}!A2:${MISSION_LAST_COL}`);
     const rowIndex = rows.findIndex(
       (r) => (r[0] ?? "") === data.chantierId && (r[1] ?? "").trim() === data.taskId,
     );
@@ -1091,7 +1095,7 @@ export const updateChantierTaskNote = createServerFn({ method: "POST" })
     const sheetRow = rowIndex + 2;
     await updateRange(
       spreadsheetId,
-      `${TACHES_TAB}!D${sheetRow}:O${sheetRow}`,
+      `${MISSIONS_TAB}!D${sheetRow}:Q${sheetRow}`,
       taskFieldsCols(updated),
     );
     return { ok: true as const, task: updated };
@@ -1132,11 +1136,11 @@ export const updateChantierTaskExecution = createServerFn({ method: "POST" })
       ensureDriveFolder,
       ensureDriveSubfolder,
       uploadFileToDrive,
-      TACHES_TAB,
-      TACHE_LAST_COL,
+      MISSIONS_TAB,
+      MISSION_LAST_COL,
     } = await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
-    const rows = await getRows(spreadsheetId, `${TACHES_TAB}!A2:${TACHE_LAST_COL}`);
+    const rows = await getRows(spreadsheetId, `${MISSIONS_TAB}!A2:${MISSION_LAST_COL}`);
     const rowIndex = rows.findIndex(
       (r) => (r[0] ?? "") === data.chantierId && (r[1] ?? "").trim() === data.taskId,
     );
@@ -1187,8 +1191,8 @@ export const updateChantierTaskExecution = createServerFn({ method: "POST" })
     };
     const sheetRow = rowIndex + 2;
     await batchUpdateRanges(spreadsheetId, [
-      { range: `${TACHES_TAB}!D${sheetRow}:O${sheetRow}`, row: taskFieldsCols(updated) },
-      { range: `${TACHES_TAB}!K${sheetRow}:O${sheetRow}`, row: taskExecutionCols(updated) },
+      { range: `${MISSIONS_TAB}!D${sheetRow}:Q${sheetRow}`, row: taskFieldsCols(updated) },
+      { range: `${MISSIONS_TAB}!M${sheetRow}:Q${sheetRow}`, row: taskExecutionCols(updated) },
     ]);
     return { ok: true as const, task: updated };
   });

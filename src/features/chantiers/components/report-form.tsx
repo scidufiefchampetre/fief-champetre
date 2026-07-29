@@ -1,17 +1,16 @@
 import { useState } from "react";
-import { Users, Camera, ChevronDown, Send, ImagePlus, X } from "lucide-react";
+import { ChevronDown, Send } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-
 import { reportChantierIssue, type ReportUrgency } from "@/lib/chantier-reports.functions";
 import { UrgencyPicker } from "@/components/ui/urgency-picker";
-
-type ReportPhoto = {
-  name: string;
-  mimeType: "image/jpeg" | "image/png" | "image/webp" | "image/heic" | "image/heif";
-  dataBase64: string;
-  previewUrl: string;
-};
+import {
+  NumberStepper,
+  PhotoField,
+  DurationSelect,
+  DURATION_OPTIONS,
+  type LocalPhoto,
+} from "@/components/ui/form-primitives";
 
 export function ReportForm({
   identifiedName,
@@ -24,52 +23,26 @@ export function ReportForm({
 
   const [title, setTitle] = useState("");
   const [location, setLocation] = useState("");
-  const [timeEstimate, setTimeEstimate] = useState("");
-  const [peopleCount, setPeopleCount] = useState<number | "">("");
+  const [durationMinutes, setDurationMinutes] = useState(0);
+  const [peopleCount, setPeopleCount] = useState(0);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [urgency, setUrgency] = useState<ReportUrgency | "">("");
-  const [photo, setPhoto] = useState<ReportPhoto | null>(null);
+  const [photo, setPhoto] = useState<LocalPhoto | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  // Progressive : le reste n'apparaît qu'une fois les champs clés remplis
   const showLocation = title.trim().length > 0;
   const showMain = showLocation && location.trim().length > 0;
 
   function resetForm() {
     setTitle("");
     setLocation("");
-    setTimeEstimate("");
-    setPeopleCount("");
+    setDurationMinutes(0);
+    setPeopleCount(0);
     setDetailsOpen(false);
     setDescription("");
     setUrgency("");
     setPhoto(null);
-  }
-
-  async function selectPhoto(file: File | null) {
-    if (!file) return;
-    const allowed = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"] as const;
-    if (!allowed.includes(file.type as (typeof allowed)[number])) {
-      toast.error("Choisis une photo JPG, PNG, WebP ou HEIC.");
-      return;
-    }
-    if (file.size > 8_000_000) {
-      toast.error("La photo dépasse 8 Mo.");
-      return;
-    }
-    const dataUrl = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(String(reader.result));
-      reader.onerror = () => reject(new Error("Lecture impossible."));
-      reader.readAsDataURL(file);
-    });
-    setPhoto({
-      name: file.name,
-      mimeType: file.type as ReportPhoto["mimeType"],
-      dataBase64: dataUrl.split(",")[1] ?? "",
-      previewUrl: dataUrl,
-    });
   }
 
   async function handleSubmit() {
@@ -87,14 +60,17 @@ export function ReportForm({
     }
     setSubmitting(true);
     try {
+      const timeEstimateLabel = durationMinutes
+        ? DURATION_OPTIONS.find((o) => o.value === durationMinutes)?.label
+        : undefined;
       await call({
         data: {
           reportedBy: identifiedName,
           title: title.trim(),
           category: "tache",
           location: location.trim(),
-          timeEstimate: timeEstimate.trim() || undefined,
-          personDaysEstimate: typeof peopleCount === "number" ? peopleCount : undefined,
+          timeEstimate: timeEstimateLabel,
+          personDaysEstimate: peopleCount || undefined,
           description: description.trim(),
           urgency: urgency || "important",
           photo: photo
@@ -125,7 +101,7 @@ export function ReportForm({
         />
       </div>
 
-      {/* ── Lieu (spécifique au signalement) ── */}
+      {/* ── Lieu ── */}
       {showLocation && (
         <div className="py-4 border-b border-border">
           <div className="label-micro mb-2">Lieu *</div>
@@ -138,48 +114,22 @@ export function ReportForm({
         </div>
       )}
 
-      {/* ── Durée + Personnes ── */}
+      {/* ── Corps du formulaire ── */}
       {showMain && (
         <>
-          <div className="flex items-stretch border-b border-border">
-            <div className="flex-1 py-4 pr-4">
-              <div className="label-micro mb-2 flex items-center gap-1">⏱ Durée</div>
-              <input
-                value={timeEstimate}
-                onChange={(e) => setTimeEstimate(e.target.value)}
-                placeholder="ex: 2h, 1 jour, 30 min"
-                className="w-full bg-transparent text-[14px] font-semibold outline-none placeholder:text-muted-foreground/40"
-              />
-              <div className="mt-1 h-4 text-[10px] font-semibold">
-                {!timeEstimate && <span className="text-muted-foreground/50">optionnel</span>}
-              </div>
-            </div>
-            <div className="w-px bg-border self-stretch my-4" />
-            <div className="flex-1 py-4 pl-4">
-              <div className="label-micro mb-2 flex items-center gap-1">
-                <Users className="h-3 w-3" /> Personnes
-              </div>
-              <div className="flex items-center gap-1">
-                <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  value={peopleCount}
-                  onChange={(e) =>
-                    setPeopleCount(e.target.value === "" ? "" : Math.max(1, Number(e.target.value)))
-                  }
-                  placeholder="0"
-                  className="w-full bg-transparent text-[14px] font-semibold outline-none placeholder:text-muted-foreground/40"
-                />
-                <span className="shrink-0 text-[10px] text-muted-foreground">pers.</span>
-              </div>
-              <div className="mt-1 h-4 text-[10px] font-semibold">
-                <span className="text-muted-foreground/50">optionnel</span>
-              </div>
-            </div>
+          {/* Durée */}
+          <div className="py-4 border-b border-border">
+            <div className="label-micro mb-2">⏱ Durée estimée</div>
+            <DurationSelect value={durationMinutes} onChange={setDurationMinutes} placeholder="Optionnel…" />
           </div>
 
-          {/* ── Toggle détails ── */}
+          {/* Personnes */}
+          <div className="py-4 border-b border-border">
+            <div className="label-micro mb-2">👥 Personnes estimées</div>
+            <NumberStepper value={peopleCount} onChange={setPeopleCount} min={0} max={20} />
+          </div>
+
+          {/* Toggle détails */}
           <button
             type="button"
             onClick={() => setDetailsOpen((v) => !v)}
@@ -191,7 +141,6 @@ export function ReportForm({
             {detailsOpen ? "Masquer les détails" : "Détails optionnels"}
           </button>
 
-          {/* ── Détails ── */}
           {detailsOpen && (
             <div>
               {/* Description */}
@@ -214,45 +163,13 @@ export function ReportForm({
 
               {/* Photo */}
               <div className="flex items-start gap-3 py-4 border-b border-border">
-                <div className="mt-0.5 shrink-0 text-muted-foreground/60">
-                  <Camera className="h-4 w-4" />
-                </div>
+                <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-[13px]">📸</div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <div className="label-micro">Photo</div>
                     <div className="text-[9px] text-muted-foreground/50">optionnel</div>
                   </div>
-                  {photo ? (
-                    <div className="relative inline-block">
-                      <img
-                        src={photo.previewUrl}
-                        alt="Aperçu"
-                        className="h-20 w-20 rounded-xl object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setPhoto(null)}
-                        className="tap absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-muted-foreground hover:text-destructive transition"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <label className="flex cursor-pointer items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition">
-                      <ImagePlus className="h-3.5 w-3.5" />
-                      <span className="underline underline-offset-2">Joindre une photo…</span>
-                      <input
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
-                        capture="environment"
-                        className="sr-only"
-                        onChange={(e) => {
-                          void selectPhoto(e.target.files?.[0] ?? null);
-                          e.currentTarget.value = "";
-                        }}
-                      />
-                    </label>
-                  )}
+                  <PhotoField photo={photo} onChange={setPhoto} onError={(msg) => toast.error(msg)} />
                 </div>
               </div>
 
@@ -267,7 +184,7 @@ export function ReportForm({
             </div>
           )}
 
-          {/* ── Action sticky ── */}
+          {/* Action sticky */}
           <div className="sticky bottom-0 mt-2 bg-background/90 pb-4 pt-3 backdrop-blur-md">
             <button
               onClick={handleSubmit}

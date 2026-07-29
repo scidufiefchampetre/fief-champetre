@@ -19,13 +19,13 @@ export const DUTY_ROLE_LABEL: Record<DutyRole, string> = {
 };
 
 export const DUTY_ROLE_SLOTS: Record<DutyRole, DutySlotKey[]> = {
-  courses: ["matin"],
+  courses: ["matin", "apres_midi"],
   cuisine: ["matin", "apres_midi"],
   garde: ["matin", "apres_midi"],
 };
 
 export const DUTY_SLOT_LABEL: Record<DutyRole, Partial<Record<DutySlotKey, string>>> = {
-  courses: { matin: "Pour la journée" },
+  courses: { matin: "Courses déjeuner", apres_midi: "Courses dîner" },
   cuisine: { matin: "Déjeuner", apres_midi: "Dîner" },
   garde: { matin: "Matin", apres_midi: "Après-midi" },
 };

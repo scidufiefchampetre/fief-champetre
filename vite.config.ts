@@ -16,5 +16,10 @@ export default defineConfig({
   },
   vite: {
     plugins: [vercel()],
+    server: {
+      fs: {
+        strict: false,
+      },
+    },
   },
 });

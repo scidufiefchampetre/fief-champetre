@@ -1,12 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import {
-  CHANTIER_TAB_HEADERS,
-  CHANTIER_TAB_LAST_COL,
-  chantierTabTitle,
-  emptyChantierRow,
-} from "./chantier-types";
 
 const ExpensePayload = z.object({
   supplier: z.string(),
@@ -49,8 +43,6 @@ export const exportExpense = createServerFn({ method: "POST" })
     const {
       ensureDriveFolder,
       ensureSpreadsheet,
-      ensureChantiersSpreadsheet,
-      ensureTabExists,
       uploadFileToDrive,
       appendRow,
       deleteDriveFile,
@@ -143,34 +135,6 @@ export const exportExpense = createServerFn({ method: "POST" })
     try {
       await appendRow(spreadsheetId, `${tab}!A:V`, row);
       mainRowWritten = true;
-
-      if (e.chantierId && e.chantierStartDate) {
-        const chantiersSpreadsheetId = await ensureChantiersSpreadsheet(null);
-        const chantierTab = chantierTabTitle(e.chantierId, e.chantierStartDate);
-        await ensureTabExists(
-          chantiersSpreadsheetId,
-          chantierTab,
-          CHANTIER_TAB_HEADERS,
-          CHANTIER_TAB_LAST_COL,
-        );
-        const chantierRow = emptyChantierRow();
-        chantierRow[0] = "depense";
-        chantierRow[1] = id;
-        chantierRow[2] = new Date().toISOString();
-        chantierRow[24] = id;
-        chantierRow[25] = e.invoiceDate;
-        chantierRow[26] = e.supplier;
-        chantierRow[27] = String(e.amountTTC);
-        chantierRow[28] = uploaded.webViewLink;
-        chantierRow[29] = depositor;
-        chantierRow[30] = e.topCategory;
-        const safeTab = `'${chantierTab.replace(/'/g, "''")}'`;
-        await appendRow(
-          chantiersSpreadsheetId,
-          `${safeTab}!A:${CHANTIER_TAB_LAST_COL}`,
-          chantierRow,
-        );
-      }
     } catch (error) {
       if (mainRowWritten) {
         try {
@@ -214,14 +178,12 @@ export const deleteExpense = createServerFn({ method: "POST" })
 
     const {
       ensureSpreadsheet,
-      ensureChantiersSpreadsheet,
       getRows,
       deleteRow,
       deleteDriveFile,
       SCI_TAB,
       ASSO_TAB,
     } = await import("../core/google/google.server");
-    const { CHANTIER_TAB_LAST_COL } = await import("./chantier-types");
 
     const spreadsheetId = await ensureSpreadsheet(data.spreadsheetId);
     const tab = data.side === "SCI" ? SCI_TAB : ASSO_TAB;
@@ -231,8 +193,6 @@ export const deleteExpense = createServerFn({ method: "POST" })
 
     const row = rows[rowIndex];
     const driveFileId = (row[21] ?? "").trim(); // col V
-    const chantierId = (row[18] ?? "").trim();   // col S
-    const chantierStartDate = (row[19] ?? "").trim(); // col T
 
     // 1. Supprimer la ligne principale
     await deleteRow(spreadsheetId, tab, rowIndex);
@@ -243,23 +203,6 @@ export const deleteExpense = createServerFn({ method: "POST" })
         await deleteDriveFile(driveFileId);
       } catch (e) {
         console.error("[deleteExpense] échec suppression Drive:", e);
-      }
-    }
-
-    // 3. Supprimer la ligne dans l'onglet chantier si lié
-    if (chantierId && chantierStartDate) {
-      try {
-        const { chantierTabTitle } = await import("./chantier-types");
-        const cSpreadsheetId = await ensureChantiersSpreadsheet(null);
-        const chantierTab = chantierTabTitle(chantierId, chantierStartDate);
-        const safeTab = `'${chantierTab.replace(/'/g, "''")}'`;
-        const cRows = await getRows(cSpreadsheetId, `${safeTab}!A2:${CHANTIER_TAB_LAST_COL}`);
-        const cRowIndex = cRows.findIndex((r) => (r[24] ?? "").trim() === data.expenseId);
-        if (cRowIndex !== -1) {
-          await deleteRow(cSpreadsheetId, chantierTab, cRowIndex);
-        }
-      } catch (e) {
-        console.error("[deleteExpense] échec suppression onglet chantier:", e);
       }
     }
 

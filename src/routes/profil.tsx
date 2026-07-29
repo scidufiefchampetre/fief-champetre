@@ -85,6 +85,7 @@ function ProfilPage() {
   const [editOpen, setEditOpen] = useState(false);
 
   const [otherMembers, setOtherMembers] = useState<Member[]>([]);
+  const [memberId, setMemberId] = useState("");
   const [children, setChildren] = useState<Child[]>([]);
   const [loadingChildren, setLoadingChildren] = useState(true);
   const [newChildFirstName, setNewChildFirstName] = useState("");
@@ -115,6 +116,7 @@ function ProfilPage() {
             normalize(m.lastName) === normalize(store.member!.lastName),
         );
         if (mine) {
+          setMemberId(mine.id);
           setIban(mine.iban ?? "");
           setBankName(mine.bankName ?? "");
           setBirthday(mine.birthday ?? "");
@@ -172,15 +174,19 @@ function ProfilPage() {
       toast.error("Prénom de l'enfant requis.");
       return;
     }
+    if (!memberId) {
+      toast.error("Fiche membre non chargée. Réessaie.");
+      return;
+    }
     setAddingChild(true);
     try {
       await createChild({
         data: {
           spreadsheetId: store.spreadsheetId,
-          parentFirstName: store.member.firstName,
-          parentLastName: store.member.lastName,
+          parent1Id: memberId,
           firstName: newChildFirstName.trim(),
           birthday: newChildBirthday,
+          parent2Id: spouseId || undefined,
         },
       });
       setNewChildFirstName("");
@@ -194,15 +200,13 @@ function ProfilPage() {
     }
   }
 
-  async function handleDeleteChild(firstName: string) {
+  async function handleDeleteChild(childId: string) {
     if (!store.member) return;
     try {
       await removeChild({
         data: {
           spreadsheetId: store.spreadsheetId,
-          parentFirstName: store.member.firstName,
-          parentLastName: store.member.lastName,
-          firstName,
+          childId,
         },
       });
       refreshChildren();
@@ -618,7 +622,7 @@ function ProfilPage() {
                   <select
                     value={spouseId}
                     onChange={(e) => setSpouseId(e.target.value)}
-                    className="w-full rounded-2xl border border-border bg-card px-4 py-3.5 text-base outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                    className="input-field"
                   >
                     <option value="">Aucun·e</option>
                     {otherMembers.map((m) => (
@@ -645,7 +649,7 @@ function ProfilPage() {
                   )}
                   {children.map((c) => (
                     <div
-                      key={c.firstName}
+                      key={c.id}
                       className="flex items-center justify-between gap-2 rounded-xl border border-border px-3 py-2.5"
                     >
                       <div className="text-sm">
@@ -657,7 +661,7 @@ function ProfilPage() {
                         )}
                       </div>
                       <button
-                        onClick={() => handleDeleteChild(c.firstName)}
+                        onClick={() => handleDeleteChild(c.id)}
                         className="p-1 text-muted-foreground hover:text-destructive"
                         aria-label="Supprimer cet enfant"
                       >
@@ -672,14 +676,14 @@ function ProfilPage() {
                     value={newChildFirstName}
                     onChange={(e) => setNewChildFirstName(e.target.value.slice(0, 60))}
                     placeholder="Prénom de l'enfant"
-                    className="w-full rounded-2xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                    className="input-field"
                   />
                   <div className="flex gap-2">
                   <input
                     type="date"
                     value={newChildBirthday}
                     onChange={(e) => setNewChildBirthday(e.target.value)}
-                    className="flex-1 rounded-2xl border border-border bg-card px-3 py-3 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
+                    className="input-field flex-1"
                   />
                   <button
                     onClick={handleAddChild}

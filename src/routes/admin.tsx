@@ -133,8 +133,6 @@ const PERIOD_LABEL: Record<ChantierPeriod, string> = {
 // garder identique à celui utilisé par <Field> pour que les rangées
 // date/période s'alignent pixel pour pixel.
 const FORM_LABEL_CLASS = "mb-1.5 block text-[11px] font-medium text-muted-foreground";
-const FORM_CONTROL_CLASS =
-  "h-8 w-full rounded-xl border border-border bg-card outline-none focus:border-ring focus:ring-2 focus:ring-ring/20";
 
 function DateField({
   label,
@@ -152,7 +150,7 @@ function DateField({
         type="date"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className={`${FORM_CONTROL_CLASS} px-3 text-sm`}
+        className="input-field"
       />
     </label>
   );
@@ -1103,7 +1101,7 @@ function ChantiersSection({
             </label>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-4">
             <div>
               <DateField label="Début" value={startDate} onChange={setStartDate} />
               <div className="mt-1.5">
@@ -1384,7 +1382,7 @@ function ChantierCardBody({
               className="mt-1 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/20"
             />
           </label>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-4">
             <div>
               <DateField label="Début" value={draftStart} onChange={setDraftStart} />
               <div className="mt-1.5">

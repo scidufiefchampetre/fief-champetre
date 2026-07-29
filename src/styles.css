@@ -429,6 +429,13 @@
 /* min-height 44px = touch target minimum.
    Icône toujours [&_svg]:size-4 (16×16) via buttonVariants.
    Count badge à côté, jamais en remplacement de l'icône. */
+/* ── Anti-zoom iOS global : empêche Safari de zoomer sur le focus ── */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+textarea,
+select {
+  font-size: max(1rem, 1em); /* min 16px — seuil iOS */
+}
+
 /* ── Champs de formulaire — mobile-first, anti-zoom iOS (text-base = 16px) ── */
 .input-field {
   width: 100%;
@@ -436,7 +443,7 @@
   border-radius: var(--radius-2xl);
   border: 1px solid var(--color-border);
   background: var(--color-card);
-  padding: 0 1rem;
+  padding: 0.75rem 1rem;
   font-size: 1rem; /* 16px — empêche le zoom automatique sur iOS */
   font-family: var(--font-sans);
   color: var(--color-foreground);

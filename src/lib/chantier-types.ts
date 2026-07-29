@@ -15,6 +15,21 @@ const MOIS_FR = [
   "décembre",
 ];
 
+const MOIS_COURT = [
+  "jan.",
+  "fév.",
+  "mars",
+  "avr.",
+  "mai",
+  "juin",
+  "juil.",
+  "août",
+  "sept.",
+  "oct.",
+  "nov.",
+  "déc.",
+];
+
 /**
  * Nom d'affichage d'un chantier : "WE Chantier / Mois / Année" pour un
  * week-end (moins de 7 nuits), "Semaine Chantier Année" à partir d'une
@@ -25,8 +40,8 @@ export function chantierDisplayName(startDate: string, endDate: string): string 
   const start = new Date(`${startDate}T00:00:00Z`);
   const year = start.getUTCFullYear();
   if (nights >= 7) return `Semaine Chantier ${year}`;
-  const month = MOIS_FR[start.getUTCMonth()];
-  return `WE Chantier / ${month.charAt(0).toUpperCase()}${month.slice(1)} / ${year}`;
+  const month = MOIS_COURT[start.getUTCMonth()];
+  return `${month.charAt(0).toUpperCase()}${month.slice(1)} ${year}`;
 }
 
 export interface Chantier {
@@ -93,54 +108,3 @@ export function chantierTabTitle(reservationId: string, startDate: string): stri
   return `Chantier ${startDate} (${reservationId.slice(0, 4)})`;
 }
 
-// --- Onglet unifié par chantier -------------------------------------------
-// Un seul onglet par chantier (voir chantierTabTitle) regroupe tout : la
-// fiche admin, les tâches, les inscriptions et l'intendance. Une colonne
-// "Type" distingue le genre de chaque ligne ; chaque type a son propre bloc
-// de colonnes dédiées (le reste de la ligne est vide), pour que chaque
-// colonne garde un sens fixe quel que soit le type de ligne lu.
-export type ChantierRowType = "fiche" | "tache" | "inscription" | "intendance" | "depense";
-
-export const CHANTIER_TAB_HEADERS = [
-  "Type", // A
-  "ID", // B
-  "Créé le", // C
-  "Description (fiche)", // D
-  "Tâche", // E
-  "Fait", // F
-  "Note tâche", // G
-  "Participants tâche", // H
-  "Terminé le", // I
-  "Groupe ID", // J
-  "Nom inscrit", // K
-  "Inscrit par", // L
-  "Type personne", // M
-  "Mode", // N
-  "Membre asso", // O
-  "Repas", // P — liste "date:repas" séparée par virgules, ex "2026-09-12:dejeuner,2026-09-12:diner"
-  "Annulé le", // Q
-  "Date intendance", // R
-  "Créneau", // S
-  "Rôle", // T
-  "Personne intendance", // U
-  "Photo résultat", // V
-  "Durée réelle (min)", // W
-  "Nombre de personnes", // X
-  "Dépense ID", // Y
-  "Date facture", // Z
-  "Fournisseur", // AA
-  "Montant TTC (€)", // AB
-  "Lien facture", // AC
-  "Déposé par", // AD
-  "Catégorie dépense", // AE
-  "Urgence tâche", // AF — reprise du signalement d'origine
-];
-export const CHANTIER_TAB_LAST_COL = "AF";
-
-// ID fixe : il n'y a qu'une seule ligne "fiche" par onglet (upsert).
-export const CHANTIER_FICHE_ROW_ID = "fiche";
-
-/** Ligne vide de la largeur de l'onglet unifié — chaque module ne remplit que son propre bloc de colonnes. */
-export function emptyChantierRow(): string[] {
-  return new Array(CHANTIER_TAB_HEADERS.length).fill("");
-}

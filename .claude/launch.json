@@ -5,7 +5,8 @@
       "name": "fief-factures-dev",
       "runtimeExecutable": "bun",
       "runtimeArgs": ["run", "dev"],
-      "port": 8080
+      "port": 8080,
+      "cwd": "/Users/alainbretillot/Documents/New project/fief-factures 23:07:2026"
     }
   ]
 }

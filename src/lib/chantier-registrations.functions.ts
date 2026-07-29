@@ -338,6 +338,7 @@ const CancelInput = z.object({
   chantierId: z.string().min(1),
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   groupId: z.string().min(1),
+  memberNames: z.array(z.string().min(1).max(80)).min(1).max(30),
 });
 
 export const cancelChantierRegistration = createServerFn({ method: "POST" })
@@ -348,9 +349,15 @@ export const cancelChantierRegistration = createServerFn({ method: "POST" })
       ensureTabExists,
       getRows,
       batchUpdateRanges,
+      batchMutateRows,
       INSCRIPTIONS_TAB,
       INSCRIPTION_HEADERS,
       INSCRIPTION_LAST_COL,
+      INTENDANCE_TAB,
+      INTENDANCE_HEADERS,
+      INTENDANCE_LAST_COL,
+      MISSIONS_TAB,
+      MISSION_LAST_COL,
     } = await import("../core/google/google.server");
     const spreadsheetId = await ensureChantiersSpreadsheet(null);
     await ensureTabExists(
@@ -366,11 +373,41 @@ export const cancelChantierRegistration = createServerFn({ method: "POST" })
       const person = rowToPerson(allRows[i], data.chantierId);
       if (!person || person.groupId !== data.groupId) continue;
       const sheetRow = i + 2;
-      // col K (index 10) = Annulé le
       updates.push({ range: `${INSCRIPTIONS_TAB}!K${sheetRow}`, row: [cancelledAt] });
     }
     if (updates.length === 0) throw new Error("Inscription introuvable.");
     await batchUpdateRanges(spreadsheetId, updates);
+
+    // Remove intendance duties for cancelled members
+    await ensureTabExists(spreadsheetId, INTENDANCE_TAB, INTENDANCE_HEADERS, INTENDANCE_LAST_COL);
+    const dutyRows = await getRows(spreadsheetId, `${INTENDANCE_TAB}!A2:${INTENDANCE_LAST_COL}`);
+    const dutyDeletes: number[] = [];
+    for (let i = 0; i < dutyRows.length; i++) {
+      const row = dutyRows[i];
+      if ((row[0] ?? "") !== data.chantierId) continue;
+      if (data.memberNames.includes(row[6] ?? "")) dutyDeletes.push(i);
+    }
+    if (dutyDeletes.length > 0) {
+      await batchMutateRows(spreadsheetId, INTENDANCE_TAB, { deletes: dutyDeletes });
+    }
+
+    // Remove cancelled members from task participants
+    const taskRows = await getRows(spreadsheetId, `${MISSIONS_TAB}!A2:${MISSION_LAST_COL}`);
+    const taskUpdates: Array<{ range: string; row: unknown[] }> = [];
+    for (let i = 0; i < taskRows.length; i++) {
+      const row = taskRows[i];
+      if ((row[0] ?? "") !== data.chantierId) continue;
+      const participantsStr = (row[15] ?? "") as string; // P(15) = Participants
+      if (!participantsStr) continue;
+      const before = participantsStr.split(",").map((s) => s.trim()).filter(Boolean);
+      const after = before.filter((name) => !data.memberNames.includes(name));
+      if (after.length === before.length) continue;
+      taskUpdates.push({ range: `${MISSIONS_TAB}!P${i + 2}`, row: [after.join(", ")] });
+    }
+    if (taskUpdates.length > 0) {
+      await batchUpdateRanges(spreadsheetId, taskUpdates);
+    }
+
     return { ok: true as const };
   });
 
