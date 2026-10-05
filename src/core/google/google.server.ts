@@ -1054,7 +1054,7 @@ export async function ensureFeedbackSpreadsheet(existing: string | null): Promis
     );
   }
 
-  if (!id) {
+  async function createFeedbackSheet(): Promise<string> {
     const res = await fetchWithRetry(
       `${SHEETS_API}/spreadsheets`,
       {
@@ -1073,19 +1073,34 @@ export async function ensureFeedbackSpreadsheet(existing: string | null): Promis
     if (!res.ok)
       throw new Error(`Feedback sheet create failed [${res.status}]: ${await res.text()}`);
     const j = (await res.json()) as { spreadsheetId: string };
-    id = j.spreadsheetId;
-    await batchUpdateRanges(id, [
+    await batchUpdateRanges(j.spreadsheetId, [
       { range: `${FEEDBACK_BUGS_TAB}!A1:${FEEDBACK_BUG_LAST_COL}1`, row: FEEDBACK_BUG_HEADERS },
       { range: `${FEEDBACK_IDEES_TAB}!A1:${FEEDBACK_IDEE_LAST_COL}1`, row: FEEDBACK_IDEE_HEADERS },
     ]);
     console.warn(
-      `Google Sheet "${FEEDBACK_SPREADSHEET_NAME}" créé (id: ${id}). Configure GOOGLE_FEEDBACK_SPREADSHEET_ID.`,
+      `Google Sheet "${FEEDBACK_SPREADSHEET_NAME}" créé (id: ${j.spreadsheetId}). Configure GOOGLE_FEEDBACK_SPREADSHEET_ID=${j.spreadsheetId}`,
     );
+    return j.spreadsheetId;
+  }
+
+  if (!id) {
+    id = await createFeedbackSheet();
   } else {
-    await Promise.all([
-      ensureTabExists(id, FEEDBACK_BUGS_TAB, FEEDBACK_BUG_HEADERS, FEEDBACK_BUG_LAST_COL),
-      ensureTabExists(id, FEEDBACK_IDEES_TAB, FEEDBACK_IDEE_HEADERS, FEEDBACK_IDEE_LAST_COL),
-    ]);
+    // Verify the sheet still exists; if 404, create a fresh one.
+    try {
+      await Promise.all([
+        ensureTabExists(id, FEEDBACK_BUGS_TAB, FEEDBACK_BUG_HEADERS, FEEDBACK_BUG_LAST_COL),
+        ensureTabExists(id, FEEDBACK_IDEES_TAB, FEEDBACK_IDEE_HEADERS, FEEDBACK_IDEE_LAST_COL),
+      ]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("404") || msg.includes("NOT_FOUND")) {
+        console.warn(`Feedback sheet ${id} not found (${msg}), creating a new one.`);
+        id = await createFeedbackSheet();
+      } else {
+        throw err;
+      }
+    }
   }
   cachedFeedbackSpreadsheetId = id;
   return id;

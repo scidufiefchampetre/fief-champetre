@@ -50,8 +50,9 @@ function ProposerIdeePage() {
         },
       });
       setDone(true);
-    } catch {
-      toast.error("Erreur lors de l'envoi. Réessaie.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Erreur lors de l'envoi : ${msg}`);
     } finally {
       setSubmitting(false);
     }

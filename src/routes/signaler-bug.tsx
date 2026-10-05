@@ -62,7 +62,7 @@ function SignalerBugPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!quoi.trim() || !ou || !gravite || !screenshot) {
+    if (!quoi.trim() || !ou || !gravite) {
       toast.error("Remplis tous les champs obligatoires (*).");
       return;
     }
@@ -78,12 +78,13 @@ function SignalerBugPage() {
           urlPage: window.location.href,
           userAgent: navigator.userAgent,
           viewport: `${window.innerWidth}x${window.innerHeight}`,
-          screenshot,
+          screenshot: screenshot ?? undefined,
         },
       });
       setDone(true);
-    } catch {
-      toast.error("Erreur lors de l'envoi. Réessaie.");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      toast.error(`Erreur lors de l'envoi : ${msg}`);
     } finally {
       setSubmitting(false);
     }
@@ -206,7 +207,7 @@ function SignalerBugPage() {
             {/* Screenshot */}
             <div className="space-y-1.5">
               <label className="text-sm font-semibold">
-                Capture d'écran <span className="text-brand-accent">*</span>
+                Capture d'écran <span className="text-muted-foreground font-normal">(optionnel)</span>
               </label>
               <input
                 ref={fileRef}

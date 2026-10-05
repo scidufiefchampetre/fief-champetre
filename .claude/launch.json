@@ -3,10 +3,9 @@
   "configurations": [
     {
       "name": "fief-factures-dev",
-      "runtimeExecutable": "bun",
-      "runtimeArgs": ["run", "dev"],
-      "port": 8080,
-      "cwd": "/Users/alainbretillot/Documents/New project/fief-factures 23:07:2026"
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd \"/Users/alainbretillot/Documents/New project/fief-factures 23:07:2026\" && bun --bun ./node_modules/vite/bin/vite.js dev --port 8080"],
+      "port": 8080
     }
   ]
 }
