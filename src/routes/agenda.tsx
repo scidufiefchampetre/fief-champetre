@@ -216,13 +216,13 @@ function AgendaPage() {
               clearSelection();
               setFormOpen(true);
             }}
-            className="tap lift flex shrink-0 items-center gap-1.5 rounded-full bg-brand-secondary px-4 py-2 text-[12px] font-semibold text-brand-secondary-foreground shadow-card"
+            className="tap lift flex shrink-0 items-center gap-1.5 rounded-full bg-brand-secondary px-4 py-2 text-xs font-semibold text-brand-secondary-foreground shadow-card"
           >
             <Plus className="h-3.5 w-3.5" strokeWidth={2.5} /> Réserver
           </button>
         </div>
 
-        <div className="mt-4 flex gap-2 text-[10px] font-semibold">
+        <div className="mt-4 flex gap-2 text-2xs font-semibold">
           <span className="flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1">
             <span className="h-2 w-2 rounded-full bg-brand-secondary" /> Perso
           </span>
@@ -256,21 +256,21 @@ function AgendaPage() {
             {!rangeEnd ? (
               <>
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-[13px] font-bold capitalize">
+                  <div className="text-sm font-bold capitalize">
                     Arrivée : {fmtDay(rangeStart)}
                   </div>
                   <button
                     onClick={clearSelection}
-                    className="shrink-0 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                    className="shrink-0 text-xs font-semibold text-muted-foreground hover:text-foreground"
                   >
                     Annuler
                   </button>
                 </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Clique maintenant la date de départ sur le calendrier.
                 </p>
                 {startDayReservations.length > 0 && (
-                  <div className="mt-2 space-y-1 text-[11px] text-muted-foreground">
+                  <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                     {startDayReservations.map((r) => (
                       <div key={r.id}>
                         {r.type === "personal" ? r.reservedBy : TYPE_LABEL[r.type]},{" "}
@@ -285,34 +285,34 @@ function AgendaPage() {
               <>
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <div className="text-[13px] font-bold">{fmtRange(rangeStart, rangeEnd)}</div>
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-sm font-bold">{fmtRange(rangeStart, rangeEnd)}</div>
+                    <div className="text-xs text-muted-foreground">
                       {nightsBetween(rangeStart, rangeEnd)} nuit
                       {nightsBetween(rangeStart, rangeEnd) > 1 ? "s" : ""}
                     </div>
                   </div>
                   <button
                     onClick={clearSelection}
-                    className="shrink-0 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+                    className="shrink-0 text-xs font-semibold text-muted-foreground hover:text-foreground"
                   >
                     Recommencer
                   </button>
                 </div>
 
                 {rangeBlockingOverlap && (
-                  <p className="mt-2 rounded-xl bg-destructive/10 px-3 py-2 text-[11px] font-medium text-destructive">
+                  <p className="mt-2 rounded-xl bg-destructive/10 px-3 py-2 text-xs font-medium text-destructive">
                     {rangeBlockingOverlap.reservedBy} a privatisé la maison sur cette période.
                   </p>
                 )}
                 {!rangeBlockingOverlap && rangeExternalOverlap && (
-                  <p className="mt-2 rounded-xl bg-destructive/10 border border-destructive/30 px-3 py-2 text-[11px] font-bold text-destructive">
+                  <p className="mt-2 rounded-xl bg-destructive/10 border border-destructive/30 px-3 py-2 text-xs font-bold text-destructive">
                     ⚠️ Chevauche{" "}
                     {rangeExternalOverlap.type === "airbnb" ? "une location Airbnb" : "un chantier"}{" "}
                     Vérifie avant de confirmer.
                   </p>
                 )}
                 {!rangeBlockingOverlap && rangeSharedOverlap.length > 0 && (
-                  <div className="mt-2 rounded-xl bg-brand-secondary/10 border border-brand-secondary/30 px-3 py-2 text-[11px] text-foreground space-y-1">
+                  <div className="mt-2 rounded-xl bg-brand-secondary/10 border border-brand-secondary/30 px-3 py-2 text-xs text-foreground space-y-1">
                     {rangeSharedOverlap.map((r) => (
                       <div key={r.id}>
                         Déjà là : <strong>{r.reservedBy}</strong> ({r.adults + r.children} pers)
@@ -335,12 +335,12 @@ function AgendaPage() {
 
         <div className="mt-6 space-y-6">
           <div className="flex items-center justify-between">
-            <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+            <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
               Mes réservations
             </div>
             <Link
               to="/mes-reservations"
-              className="text-[11px] font-semibold text-brand-secondary hover:underline"
+              className="text-xs font-semibold text-brand-secondary hover:underline"
             >
               Tout voir →
             </Link>
@@ -358,7 +358,7 @@ function AgendaPage() {
           )}
           {grouped.map(([month, items]) => (
             <div key={month}>
-              <div className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+              <div className="mb-2 text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                 {month}
               </div>
               <div className="space-y-2">
@@ -533,7 +533,7 @@ export function MonthCalendar({
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
-        <div className="text-[13px] font-bold capitalize">
+        <div className="text-sm font-bold capitalize">
           {cursor.toLocaleDateString("fr-FR", { month: "long", year: "numeric" })}
         </div>
         <button
@@ -555,7 +555,7 @@ export function MonthCalendar({
           else if (delta < -50) goMonth(1);
         }}
       >
-        <div className="grid grid-cols-7 text-center text-[9px] font-bold uppercase tracking-wide text-muted-foreground">
+        <div className="grid grid-cols-7 text-center text-2xs font-bold uppercase tracking-wide text-muted-foreground">
           {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
             <div key={i} className="py-1">
               {d}
@@ -578,7 +578,7 @@ export function MonthCalendar({
           ))}
         </div>
       </div>
-      <p className="mt-2 text-center text-[10px] text-muted-foreground">
+      <p className="mt-2 text-center text-2xs text-muted-foreground">
         Glisse à gauche/droite pour changer de mois
       </p>
     </div>
@@ -615,7 +615,7 @@ function WeekRow({
             <button
               key={iso}
               onClick={() => onDayClick(iso)}
-              className={`tap flex h-7 items-center justify-center rounded-md text-[11px] transition active:scale-90 ${
+              className={`tap flex h-7 items-center justify-center rounded-md text-xs transition active:scale-90 ${
                 isCap
                   ? "bg-foreground text-background font-bold"
                   : inRange
@@ -654,7 +654,7 @@ function WeekRow({
                         onSegmentClick(s.reservation);
                       }}
                       style={{ gridColumn: `${s.startCol + 1} / ${s.endCol + 2}` }}
-                      className={`tap flex items-center overflow-hidden px-1.5 text-[9px] font-bold leading-none transition hover:brightness-110 active:scale-[0.96] ${style.bg} ${style.fg} ${
+                      className={`tap flex items-center overflow-hidden px-1.5 text-2xs font-bold leading-none transition hover:brightness-110 active:scale-[0.96] ${style.bg} ${style.fg} ${
                         s.isTrueStart ? "rounded-l-full" : ""
                       } ${s.isTrueEnd ? "rounded-r-full" : ""}`}
                     >
@@ -712,22 +712,22 @@ function ReservationCard({
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="text-[13px] font-bold truncate">
+          <span className="text-sm font-bold truncate">
             {reservation.type === "personal"
               ? reservation.reservedBy
               : TYPE_LABEL[reservation.type]}
           </span>
           {reservation.privatized && (
-            <span className="shrink-0 rounded-full bg-foreground/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide">
+            <span className="shrink-0 rounded-full bg-foreground/10 px-1.5 py-0.5 text-2xs font-bold uppercase tracking-wide">
               Privatisé
             </span>
           )}
         </div>
-        <div className="text-[11px] text-muted-foreground">
+        <div className="text-xs text-muted-foreground">
           {fmtRange(reservation.startDate, reservation.endDate)}
         </div>
         {reservation.type === "personal" && (
-          <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+          <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <Users className="h-3 w-3" /> {reservation.adults + reservation.children}
             </span>
@@ -737,7 +737,7 @@ function ReservationCard({
       </div>
       {reservation.type === "personal" && (
         <span
-          className={`shrink-0 rounded-full px-2 py-1 text-[9px] font-bold uppercase tracking-wide ${PAYMENT_BADGE_STYLE[getPaymentStatus(reservation).status]}`}
+          className={`shrink-0 rounded-full px-2 py-1 text-2xs font-bold uppercase tracking-wide ${PAYMENT_BADGE_STYLE[getPaymentStatus(reservation).status]}`}
         >
           {getPaymentStatus(reservation).label}
         </span>
@@ -827,7 +827,7 @@ function ReservationDetailSheet({
                 ? reservation.reservedBy
                 : TYPE_LABEL[reservation.type]}
             </div>
-            <div className="text-[12px] text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               {fmtRange(reservation.startDate, reservation.endDate)}
             </div>
           </div>
@@ -838,19 +838,19 @@ function ReservationDetailSheet({
             <div className="flex items-center gap-2 flex-wrap">
               {paymentStatus && (
                 <span
-                  className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${PAYMENT_BADGE_STYLE[paymentStatus.status]}`}
+                  className={`rounded-full px-2.5 py-1 text-2xs font-bold uppercase tracking-wide ${PAYMENT_BADGE_STYLE[paymentStatus.status]}`}
                 >
                   {paymentStatus.label}
                 </span>
               )}
               {reservation.privatized && (
-                <span className="rounded-full bg-foreground/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide">
+                <span className="rounded-full bg-foreground/10 px-2.5 py-1 text-2xs font-bold uppercase tracking-wide">
                   Privatisé
                 </span>
               )}
             </div>
 
-            <div className="rounded-2xl border border-border bg-card p-4 space-y-2 text-[13px]">
+            <div className="rounded-2xl border border-border bg-card p-4 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Personnes</span>
                 <span className="font-semibold">
@@ -875,7 +875,7 @@ function ReservationDetailSheet({
             </div>
 
             {breakdown && (
-              <div className="rounded-2xl bg-secondary/50 p-4 space-y-1.5 text-[12px]">
+              <div className="rounded-2xl bg-secondary/50 p-4 space-y-1.5 text-xs">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">{breakdown.nuiteesDetail}</span>
                   <span className="font-semibold tabular-nums">{breakdown.nuiteesAmount}€</span>
@@ -890,7 +890,7 @@ function ReservationDetailSheet({
                     )}
                   </span>
                 </div>
-                <div className="flex justify-between border-t border-border pt-1.5 text-[13px] font-bold">
+                <div className="flex justify-between border-t border-border pt-1.5 text-sm font-bold">
                   <span>Total</span>
                   <span className="tabular-nums">{breakdown.total}€</span>
                 </div>
@@ -909,7 +909,7 @@ function ReservationDetailSheet({
               signupDemo: false,
               focus: undefined,
             }}
-            className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-secondary/50 p-4 text-[13px] transition hover:bg-secondary"
+            className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-secondary/50 p-4 text-sm transition hover:bg-secondary"
           >
             <div>
               <p className="font-semibold text-foreground">Voir la fiche du chantier</p>
@@ -920,7 +920,7 @@ function ReservationDetailSheet({
         )}
 
         {reservation.type === "airbnb" && (
-          <div className="mt-5 rounded-2xl bg-secondary/50 p-4 text-[13px] text-muted-foreground">
+          <div className="mt-5 rounded-2xl bg-secondary/50 p-4 text-sm text-muted-foreground">
             Location Airbnb, gérée en dehors de l'app par le gestionnaire.
           </div>
         )}
@@ -1080,7 +1080,8 @@ function ReservationForm({
       onCreated();
     } catch (e) {
       console.error(e);
-      toast.error("La réservation a échoué. Réessaie.");
+      const detail = e instanceof Error && e.message ? ` (${e.message})` : "";
+      toast.error(`La réservation a échoué. Réessaie.${detail}`);
     } finally {
       setSubmitting(false);
     }
@@ -1119,29 +1120,29 @@ function ReservationForm({
                     onEndChange={setEndDate}
                   />
                 </div>
-                <p className="mt-1.5 text-[10px] text-muted-foreground">
+                <p className="mt-1.5 text-2xs text-muted-foreground">
                   Choisies sur le calendrier, modifiables ici si besoin.
                 </p>
 
                 {blockingOverlap && (
-                  <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2.5 text-[12px] font-medium text-destructive">
+                  <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2.5 text-xs font-medium text-destructive">
                     {blockingOverlap.reservedBy} a privatisé la maison sur cette période.
                   </p>
                 )}
                 {willBlockBecausePrivatizing && (
-                  <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2.5 text-[12px] font-medium text-destructive">
+                  <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2.5 text-xs font-medium text-destructive">
                     Il y a déjà du monde sur cette période, tu ne peux pas privatiser.
                   </p>
                 )}
                 {!blockingOverlap && externalOverlap && (
-                  <p className="mt-3 rounded-xl bg-destructive/10 border border-destructive/30 px-3 py-2.5 text-[12px] font-bold text-destructive">
+                  <p className="mt-3 rounded-xl bg-destructive/10 border border-destructive/30 px-3 py-2.5 text-xs font-bold text-destructive">
                     ⚠️ Ces dates chevauchent{" "}
                     {externalOverlap.type === "airbnb" ? "une location Airbnb" : "un chantier"}.
                     Vérifie avant de confirmer, pour ne pas empiéter dessus.
                   </p>
                 )}
                 {!blockingOverlap && sharedOverlap.length > 0 && (
-                  <div className="mt-3 rounded-xl bg-brand-secondary/10 border border-brand-secondary/30 px-3 py-2.5 text-[12px] text-foreground space-y-1">
+                  <div className="mt-3 rounded-xl bg-brand-secondary/10 border border-brand-secondary/30 px-3 py-2.5 text-xs text-foreground space-y-1">
                     {sharedOverlap.map((r) => (
                       <div key={r.id}>
                         Déjà là : <strong>{r.reservedBy}</strong> ({r.adults + r.children} pers)
@@ -1164,8 +1165,8 @@ function ReservationForm({
 
                 <div className="mt-3 flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
                   <div>
-                    <div className="text-[13px] font-semibold">Privatisation complète</div>
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-sm font-semibold">Privatisation complète</div>
+                    <div className="text-xs text-muted-foreground">
                       250€ forfait, personne d'autre ne peut réserver
                     </div>
                   </div>
@@ -1198,10 +1199,10 @@ function ReservationForm({
 
                 <div className="mt-3 flex items-center justify-between rounded-2xl border border-border bg-card px-4 py-3">
                   <div>
-                    <div className="text-[13px] font-semibold flex items-center gap-1.5">
+                    <div className="text-sm font-semibold flex items-center gap-1.5">
                       <Flame className="h-3.5 w-3.5" /> Pré-chauffage
                     </div>
-                    <div className="text-[11px] text-muted-foreground">
+                    <div className="text-xs text-muted-foreground">
                       Lancer le chauffage avant l'arrivée
                     </div>
                   </div>
@@ -1215,10 +1216,10 @@ function ReservationForm({
                 <div className="mt-3 overflow-hidden rounded-2xl border border-border bg-card">
                   <div className="flex items-center justify-between px-4 py-3">
                     <div>
-                      <div className="text-[13px] font-semibold flex items-center gap-1.5">
+                      <div className="text-sm font-semibold flex items-center gap-1.5">
                         <Hammer className="h-3.5 w-3.5" /> Je viens aussi faire du chantier
                       </div>
-                      <div className="text-[11px] text-muted-foreground">
+                      <div className="text-xs text-muted-foreground">
                         Compte des jours dans ta contribution
                       </div>
                     </div>
@@ -1242,7 +1243,7 @@ function ReservationForm({
                                 key={c.id}
                                 className="flex items-center gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-2"
                               >
-                                <span className="min-w-0 flex-1 truncate text-[13px] font-medium">
+                                <span className="min-w-0 flex-1 truncate text-sm font-medium">
                                   {c.label}
                                 </span>
                                 <div className="flex shrink-0 items-center gap-1">
@@ -1261,7 +1262,7 @@ function ReservationForm({
                                   >
                                     −
                                   </button>
-                                  <span className="w-6 text-center text-[13px] font-bold tabular-nums">
+                                  <span className="w-6 text-center text-sm font-bold tabular-nums">
                                     {c.days}j
                                   </span>
                                   <button
@@ -1296,7 +1297,7 @@ function ReservationForm({
                         <button
                           type="button"
                           onClick={() => setCatalogOpen(true)}
-                          className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground transition"
+                          className="mt-1 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition"
                         >
                           <Plus className="h-3.5 w-3.5" /> Ajouter une tâche
                         </button>
@@ -1305,15 +1306,15 @@ function ReservationForm({
                         <Sheet open={catalogOpen} onOpenChange={setCatalogOpen}>
                           <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto rounded-t-3xl px-5 pb-10 pt-5">
                             <SheetHeader className="mb-4">
-                              <SheetTitle className="text-left text-[17px] font-bold">Ajouter une tâche</SheetTitle>
+                              <SheetTitle className="text-left text-lg font-bold">Ajouter une tâche</SheetTitle>
                             </SheetHeader>
                             <div className="space-y-3">
-                              <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-2">
+                              <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-2">
                                 Choisir dans le catalogue
                               </div>
                               <div className="rounded-xl border border-border bg-card divide-y divide-border overflow-hidden">
                                 {taskCatalog.length === 0 && (
-                                  <div className="px-4 py-3 text-[13px] text-muted-foreground">Chargement…</div>
+                                  <div className="px-4 py-3 text-sm text-muted-foreground">Chargement…</div>
                                 )}
                                 {taskCatalog.map((t) => (
                                   <button
@@ -1324,7 +1325,7 @@ function ReservationForm({
                                       setCatalogOpen(false);
                                       setAddFormOpen(true);
                                     }}
-                                    className="flex w-full items-center justify-between px-4 py-3 text-left text-[14px] font-medium hover:bg-secondary/50 transition"
+                                    className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium hover:bg-secondary/50 transition"
                                   >
                                     {t.label}
                                     <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -1338,7 +1339,7 @@ function ReservationForm({
                                   setCatalogOpen(false);
                                   setAddFormOpen(true);
                                 }}
-                                className="tap lift w-full rounded-2xl border border-border bg-card px-4 py-3 text-left text-[14px] font-semibold text-muted-foreground hover:text-foreground transition"
+                                className="tap lift w-full rounded-2xl border border-border bg-card px-4 py-3 text-left text-sm font-semibold text-muted-foreground hover:text-foreground transition"
                               >
                                 + Créer une nouvelle tâche
                               </button>
@@ -1373,15 +1374,15 @@ function ReservationForm({
               {breakdown && (
                 <FormSection step={3} title="Prix">
                   <div className="rounded-2xl bg-secondary/50 p-4 space-y-1.5">
-                    <div className="flex justify-between text-[12px]">
+                    <div className="flex justify-between text-xs">
                       <span className="text-muted-foreground">{breakdown.nuiteesDetail}</span>
                       <span className="font-semibold tabular-nums">{breakdown.nuiteesAmount}€</span>
                     </div>
-                    <div className="flex justify-between text-[11px] text-muted-foreground">
+                    <div className="flex justify-between text-xs text-muted-foreground">
                       <span>Électricité (à saisir après le séjour)</span>
                       <span>—</span>
                     </div>
-                    <div className="mt-1 flex justify-between border-t border-border pt-1.5 text-[13px] font-bold">
+                    <div className="mt-1 flex justify-between border-t border-border pt-1.5 text-sm font-bold">
                       <span>Total nuitées</span>
                       <span className="tabular-nums">{breakdown.nuiteesAmount}€</span>
                     </div>
@@ -1444,17 +1445,17 @@ function ReservationReceipt({
             <Icon className={`h-4.5 w-4.5 ${style.fg}`} strokeWidth={2} />
           </div>
           <div className="min-w-0">
-            <div className="text-[14px] font-bold">
+            <div className="text-sm font-bold">
               {r.type === "personal" ? r.reservedBy : TYPE_LABEL[r.type]}
             </div>
-            <div className="text-[12px] text-muted-foreground">
+            <div className="text-xs text-muted-foreground">
               {fmtRange(r.startDate, r.endDate)}
             </div>
           </div>
         </div>
 
         {r.type === "personal" && (
-          <div className="px-4 py-3 space-y-2 text-[12px]">
+          <div className="px-4 py-3 space-y-2 text-xs">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Personnes</span>
               <span className="font-semibold">
@@ -1476,11 +1477,11 @@ function ReservationReceipt({
                 </span>
               </div>
             )}
-            <div className="border-t border-border pt-2 flex justify-between font-bold text-[13px]">
+            <div className="border-t border-border pt-2 flex justify-between font-bold text-sm">
               <span>Nuitées</span>
               <span className="tabular-nums">{breakdown.nuiteesAmount}€</span>
             </div>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-2xs text-muted-foreground">
               L'électricité s'ajoutera après le séjour, saisie par le trésorier. Suis le total sur
               "Mes réservations".
             </p>

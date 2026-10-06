@@ -1,11 +1,16 @@
 import type { AttendedMeal, MealType } from "@/lib/chantier-registrations.functions";
 
+/**
+ * Jours de présence du chantier, jour d'arrivée ET jour de départ inclus :
+ * `endDate` est le jour du départ (ex. sam. → dim. = 2 jours). Les repas
+ * réellement proposés ce jour-là sont filtrés par `validMealTokens`.
+ */
 export function enumerateDays(startDate: string, endDate: string): string[] {
   const days: string[] = [];
   const start = new Date(`${startDate}T00:00:00Z`);
   const end = new Date(`${endDate}T00:00:00Z`);
   if (isNaN(start.getTime()) || isNaN(end.getTime())) return days;
-  for (let d = new Date(start); d < end; d.setUTCDate(d.getUTCDate() + 1)) {
+  for (let d = new Date(start); d <= end; d.setUTCDate(d.getUTCDate() + 1)) {
     days.push(d.toISOString().slice(0, 10));
   }
   return days;
@@ -29,12 +34,19 @@ export function validMealTokens(
   startPeriod?: string | null,
   endPeriod?: string | null,
 ): string[] {
+  // Moments par défaut identiques à l'affichage (arrivée le matin, départ
+  // l'après-midi) quand le chantier n'en précise pas.
+  const arrival = startPeriod || "matin";
+  const departure = endPeriod || "apres_midi";
   return allMealTokens(days).filter((t) => {
     const { date, meal } = parseMealToken(t);
-    // No lunch on arrival day if arriving in the evening
-    if (meal === "dejeuner" && date === days[0] && startPeriod === "soir") return false;
-    // No dinner on departure day if leaving in the morning
-    if (meal === "diner" && date === days[days.length - 1] && endPeriod === "matin") return false;
+    // Arrival day: no lunch if arriving in the afternoon or evening
+    if (date === days[0] && meal === "dejeuner" && arrival !== "matin") return false;
+    // Departure day: lunch only if leaving after it, dinner only if leaving in the evening
+    if (date === days[days.length - 1]) {
+      if (meal === "dejeuner" && departure === "matin") return false;
+      if (meal === "diner" && departure !== "soir") return false;
+    }
     return true;
   });
 }

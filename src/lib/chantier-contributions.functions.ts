@@ -39,13 +39,49 @@ function rowToContribution(row: string[]): ChantierContribution | null {
   };
 }
 
+/**
+ * Catalogue de tâches = onglet « Tâches types » (s'il existe encore) + libellés
+ * distincts des missions déjà créées (onglet « Missions », col D, hors
+ * signalements col T). Lecture seule : aucune création d'onglet ni réécriture
+ * d'en-têtes ici (avant, chaque lecture à froid faisait métadonnées + écriture
+ * des en-têtes + lecture), et un seul appel batchGet pour les plages.
+ */
 export const listTaskCatalog = createServerFn({ method: "POST" }).handler(async () => {
-  const { ensureChantiersSpreadsheet, ensureTabExists, getRows } =
+  const { ensureChantiersSpreadsheet, fetchSheetTitles, batchGetRows, MISSIONS_TAB } =
     await import("../core/google/google.server");
   const spreadsheetId = await ensureChantiersSpreadsheet(null);
-  await ensureTabExists(spreadsheetId, TASK_CATALOG_TAB, TASK_CATALOG_HEADERS, "B");
-  const rows = await getRows(spreadsheetId, `'${TASK_CATALOG_TAB}'!A2:B`);
-  const tasks = rows.map(rowToTaskCatalogEntry).filter((t): t is TaskCatalogEntry => t !== null);
+  const titles = await fetchSheetTitles(spreadsheetId);
+  const hasCatalog = titles.has(TASK_CATALOG_TAB);
+  const hasMissions = titles.has(MISSIONS_TAB);
+  const ranges = [
+    ...(hasCatalog ? [`'${TASK_CATALOG_TAB}'!A2:B`] : []),
+    ...(hasMissions ? [`${MISSIONS_TAB}!D2:D`, `${MISSIONS_TAB}!T2:T`] : []),
+  ];
+  const results = await batchGetRows(spreadsheetId, ranges);
+  const catalogRows = hasCatalog ? (results[0] ?? []) : [];
+  const offset = hasCatalog ? 1 : 0;
+  const missionLabels = hasMissions ? (results[offset] ?? []) : [];
+  const missionTypes = hasMissions ? (results[offset + 1] ?? []) : [];
+
+  const seen = new Set<string>();
+  const tasks: TaskCatalogEntry[] = [];
+  const push = (entry: TaskCatalogEntry) => {
+    const label = entry.label.trim();
+    const key = label.toLocaleLowerCase("fr-FR");
+    if (!label || seen.has(key)) return;
+    seen.add(key);
+    tasks.push({ id: entry.id, label });
+  };
+  for (const row of catalogRows) {
+    const entry = rowToTaskCatalogEntry(row);
+    if (entry) push(entry);
+  }
+  missionLabels.forEach((row, index) => {
+    if ((missionTypes[index]?.[0] ?? "").trim() === "signalement") return;
+    const label = (row[0] ?? "").trim();
+    push({ id: `mission:${label.toLocaleLowerCase("fr-FR")}`, label });
+  });
+  tasks.sort((x, y) => x.label.localeCompare(y.label, "fr"));
   return { tasks };
 });
 

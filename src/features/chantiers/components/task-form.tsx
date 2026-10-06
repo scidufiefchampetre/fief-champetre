@@ -103,6 +103,7 @@ export function TaskForm({
         });
       }
       queryClient.invalidateQueries({ queryKey: ["chantier-tasks"] });
+      queryClient.invalidateQueries({ queryKey: ["task-catalog"] });
       toast.success(`"${label.trim()}" enregistrée.`);
       setLabel("");
       setDurationMinutes(0);
@@ -131,7 +132,7 @@ export function TaskForm({
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleAddToList()}
-          autoFocus
+          enterKeyHint="done"
           placeholder="Nom de la tâche *"
           className="w-full bg-transparent text-base font-semibold outline-none placeholder:text-muted-foreground/40 leading-snug"
         />
@@ -142,7 +143,7 @@ export function TaskForm({
         <div className="label-micro mb-2">⏱ Durée *</div>
         <DurationInput value={durationMinutes} onChange={setDurationMinutes} />
         {!durationMinutes && (
-          <p className="mt-1.5 text-[10px] font-semibold text-brand-accent">Requis</p>
+          <p className="mt-1.5 text-2xs font-semibold text-brand-accent">Requis</p>
         )}
       </div>
 
@@ -156,7 +157,7 @@ export function TaskForm({
       <button
         type="button"
         onClick={() => setDetailsOpen((v) => !v)}
-        className="tap flex w-full items-center gap-1.5 py-4 text-[11px] font-semibold text-muted-foreground border-b border-border hover:text-foreground transition"
+        className="tap flex w-full items-center gap-1.5 py-4 text-xs font-semibold text-muted-foreground border-b border-border hover:text-foreground transition"
       >
         <ChevronDown
           className={`h-3.5 w-3.5 transition-transform ${detailsOpen ? "rotate-180" : ""}`}
@@ -169,18 +170,18 @@ export function TaskForm({
         <div>
           {/* Description */}
           <div className="flex items-start gap-3 py-4 border-b border-border">
-            <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-[13px]">📋</div>
+            <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-sm">📋</div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <div className="label-micro">Description</div>
-                <div className="text-[9px] text-muted-foreground/50">optionnel</div>
+                <div className="text-2xs text-muted-foreground/50">optionnel</div>
               </div>
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Contexte, contraintes…"
                 rows={3}
-                className="w-full resize-none bg-transparent text-[13px] leading-relaxed outline-none placeholder:text-muted-foreground/40"
+                className="w-full resize-none bg-transparent text-sm leading-relaxed outline-none placeholder:text-muted-foreground/40"
               />
             </div>
           </div>
@@ -193,14 +194,14 @@ export function TaskForm({
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <div className="label-micro">À acheter</div>
-                <div className="text-[9px] text-muted-foreground/50">optionnel</div>
+                <div className="text-2xs text-muted-foreground/50">optionnel</div>
               </div>
               {toBuyItems.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {toBuyItems.map((item, i) => (
                     <span
                       key={i}
-                      className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2.5 py-1 text-[11px] font-medium"
+                      className="inline-flex items-center gap-1 rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium"
                     >
                       {item}
                       <button
@@ -215,7 +216,7 @@ export function TaskForm({
                 </div>
               )}
               <div className="flex items-center gap-2 border-t border-border/60 pt-2.5">
-                <span className="text-[13px] font-bold text-brand-accent">+</span>
+                <span className="text-sm font-bold text-brand-accent">+</span>
                 <input
                   ref={toBuyRef}
                   value={toBuyInput}
@@ -227,13 +228,13 @@ export function TaskForm({
                     }
                   }}
                   placeholder="Ajouter un article…"
-                  className="flex-1 bg-transparent text-[13px] outline-none placeholder:text-muted-foreground/40"
+                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/40"
                 />
                 {toBuyInput.trim() && (
                   <button
                     type="button"
                     onClick={addToBuyItem}
-                    className="tap text-[11px] font-semibold text-brand-accent"
+                    className="tap text-xs font-semibold text-brand-accent"
                   >
                     Ajouter
                   </button>
@@ -244,11 +245,11 @@ export function TaskForm({
 
           {/* Photo */}
           <div className="flex items-start gap-3 py-4 border-b border-border">
-            <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-[13px]">📸</div>
+            <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-sm">📸</div>
             <div className="flex-1">
               <div className="flex items-center justify-between mb-2">
                 <div className="label-micro">Photo avant</div>
-                <div className="text-[9px] text-muted-foreground/50">optionnel</div>
+                <div className="text-2xs text-muted-foreground/50">optionnel</div>
               </div>
               <PhotoField photo={photo} onChange={setPhoto} onError={(msg) => toast.error(msg)} />
             </div>
@@ -265,22 +266,21 @@ export function TaskForm({
         </div>
       )}
 
-      {/* ── Actions sticky ── */}
-      <div className="sticky bottom-0 mt-2 flex items-center gap-2 bg-background/90 pb-4 pt-3 backdrop-blur-md">
-        <button
-          type="button"
-          onClick={onClose}
-          className="tap rounded-2xl border border-border bg-card px-4 py-3.5 text-[13px] font-semibold text-muted-foreground hover:bg-secondary transition"
-        >
-          Fermer
-        </button>
+      {/* ── CTA principal sticky (règle CLAUDE.md) — la fermeture passe par la croix du Sheet ── */}
+      <div className="sticky bottom-0 mt-2 bg-background/90 pb-4 pt-3 backdrop-blur-md">
         <button
           type="button"
           onClick={handleAddToList}
           disabled={!canSubmit || saving}
-          className="tap lift flex flex-1 items-center justify-center gap-1.5 rounded-2xl bg-brand-accent px-4 py-3.5 text-[13px] font-semibold text-brand-accent-foreground shadow-card disabled:opacity-40"
+          className="tap lift flex w-full items-center justify-center gap-1.5 rounded-2xl bg-brand-secondary px-4 py-3.5 text-sm font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-50"
         >
-          {saving ? "Enregistrement…" : <><Plus className="h-4 w-4" /> Enregistrer</>}
+          {saving ? (
+            "Enregistrement…"
+          ) : (
+            <>
+              <Plus className="h-4 w-4" /> Enregistrer
+            </>
+          )}
         </button>
       </div>
     </div>
@@ -305,16 +305,23 @@ export function TaskFormSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="bottom"
-        className="flex h-[100dvh] flex-col rounded-t-3xl px-5 pb-2 pt-6"
+        className="flex h-[100dvh] max-h-[100dvh] flex-col overflow-hidden rounded-t-3xl px-5 pb-0 pt-6"
       >
         <SheetHeader className="mb-5 shrink-0">
           <SheetTitle className="page-title text-left">{title}.</SheetTitle>
           <p className="mt-2 text-sm text-muted-foreground">
-            {subtitle ?? "Propose une tâche pour les prochains chantiers. Elle sera visible dans le backlog admin."}
+            {subtitle ??
+              "Propose une tâche pour les prochains chantiers. Elle sera visible dans le backlog admin."}
           </p>
         </SheetHeader>
-        <div className="flex-1 overflow-y-auto">
-          <TaskForm {...formProps} initialLabel={initialLabel} onClose={() => onOpenChange(false)} />
+        {/* min-h-0 : sans lui, l'enfant flex garde la hauteur de son contenu et
+            ne défile jamais (seuls Nom + Durée visibles avec le clavier ouvert). */}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <TaskForm
+            {...formProps}
+            initialLabel={initialLabel}
+            onClose={() => onOpenChange(false)}
+          />
         </div>
       </SheetContent>
     </Sheet>

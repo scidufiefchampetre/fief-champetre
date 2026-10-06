@@ -102,17 +102,15 @@ function ModifierPage() {
               onChange={(v) => patch("invoiceDate", v)}
             />
             <div className="grid grid-cols-2 gap-3">
-              <Text
+              <Amount
                 label="Montant TTC (€)"
-                type="number"
-                value={String(draft.amountTTC)}
-                onChange={(v) => patch("amountTTC", parseFloat(v) || 0)}
+                value={draft.amountTTC}
+                onChange={(n) => patch("amountTTC", n ?? 0)}
               />
-              <Text
+              <Amount
                 label="TVA (€)"
-                type="number"
-                value={draft.vat == null ? "" : String(draft.vat)}
-                onChange={(v) => patch("vat", v === "" ? null : parseFloat(v))}
+                value={draft.vat}
+                onChange={(n) => patch("vat", n)}
               />
             </div>
             <Text
@@ -363,6 +361,46 @@ function Text({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        className="input-field mt-1.5"
+      />
+    </label>
+  );
+}
+
+// Montant saisi en texte libre : un <input type="number"> contrôlé renvoie ""
+// pendant la frappe de "12," ou "12." (clavier FR mobile), ce qui remettait le
+// montant à 0. On garde la saisie brute et on accepte la virgule.
+function parseAmount(raw: string): number | null {
+  const n = parseFloat(raw.replace(/\s/g, "").replace(",", "."));
+  return Number.isFinite(n) ? n : null;
+}
+
+function Amount({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (v: number | null) => void;
+}) {
+  const [raw, setRaw] = useState(value == null ? "" : String(value).replace(".", ","));
+  useEffect(() => {
+    if (parseAmount(raw) !== value) setRaw(value == null ? "" : String(value).replace(".", ","));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+  return (
+    <label className="block">
+      <Label>{label}</Label>
+      <input
+        type="text"
+        inputMode="decimal"
+        value={raw}
+        onChange={(e) => {
+          const next = e.target.value.replace(/[^\d.,\s]/g, "");
+          setRaw(next);
+          onChange(parseAmount(next));
+        }}
         className="input-field mt-1.5"
       />
     </label>

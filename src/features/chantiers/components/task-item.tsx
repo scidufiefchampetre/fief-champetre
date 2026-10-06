@@ -1,5 +1,9 @@
 import { useState } from "react";
-import { Camera, Check, Clock, Image, Plus, ShoppingCart, Trash2, User, X } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Camera, Check, Clock, Image, Pencil, Plus, ShoppingCart, Trash2, User, X } from "lucide-react";
+import { toast } from "sonner";
+import { updateChantierTaskNote } from "@/lib/chantier.functions";
 import type { ChantierTask, TaskPhase } from "@/lib/chantier-types";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { TaskExecutionForm } from "./task-execution-form";
@@ -45,6 +49,48 @@ export function TaskItem({
   const [open, setOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [photoBefore, setPhotoBefore] = useState<string | null>(task.photoBeforeUrl ?? null);
+  const queryClient = useQueryClient();
+  const saveTask = useServerFn(updateChantierTaskNote);
+  const [editing, setEditing] = useState(false);
+  const [editLabel, setEditLabel] = useState(task.label);
+  const [editDescription, setEditDescription] = useState(task.description);
+  const [saving, setSaving] = useState(false);
+
+  function startEditing() {
+    setEditLabel(task.label);
+    setEditDescription(task.description);
+    setEditing(true);
+  }
+
+  async function saveEdit() {
+    if (!editLabel.trim()) {
+      toast.error("L'intitulé ne peut pas être vide.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await saveTask({
+        data: {
+          chantierId,
+          startDate,
+          taskId: task.id,
+          label: editLabel.trim(),
+          note: editDescription,
+        },
+      });
+      await queryClient.invalidateQueries({
+        predicate: (q) =>
+          typeof q.queryKey[0] === "string" &&
+          ["chantier-tasks", "all-chantier-tasks", "task-catalog"].includes(q.queryKey[0]),
+      });
+      toast.success("Tâche modifiée.");
+      setEditing(false);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "La modification a échoué.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   const isPending = task.isPending ?? false;
   const isReal = task.done && !isPending;
@@ -88,7 +134,7 @@ export function TaskItem({
         <button
           type="button"
           onClick={() => setDetailOpen(true)}
-          className={`min-w-0 flex-1 truncate text-left text-[13px] ${
+          className={`min-w-0 flex-1 truncate text-left text-sm ${
             task.done ? "line-through text-muted-foreground/60" : "text-foreground"
           }`}
         >
@@ -105,7 +151,7 @@ export function TaskItem({
         {/* Personnes */}
         {people > 0 && (
           <span
-            className={`flex shrink-0 items-center gap-0.5 text-[11px] tabular-nums ${
+            className={`flex shrink-0 items-center gap-0.5 text-xs tabular-nums ${
               isReal ? "font-medium text-brand-secondary" : "text-muted-foreground"
             }`}
           >
@@ -118,7 +164,7 @@ export function TaskItem({
         {/* Durée */}
         {duration > 0 && (
           <span
-            className={`flex shrink-0 items-center gap-0.5 text-[11px] tabular-nums ${
+            className={`flex shrink-0 items-center gap-0.5 text-xs tabular-nums ${
               isReal ? "font-medium text-brand-secondary" : "text-muted-foreground"
             }`}
           >
@@ -130,7 +176,7 @@ export function TaskItem({
 
         {/* Badge "À valider" */}
         {isPending && (
-          <span className="shrink-0 rounded-full bg-brand-accent/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-brand-accent">
+          <span className="shrink-0 rounded-full bg-brand-accent/10 px-2 py-0.5 text-2xs font-bold uppercase tracking-wide text-brand-accent">
             À valider
           </span>
         )}
@@ -140,7 +186,7 @@ export function TaskItem({
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            className="shrink-0 text-[11px] font-semibold text-brand-secondary"
+            className="shrink-0 text-xs font-semibold text-brand-secondary"
           >
             {buttonLabel}
           </button>
@@ -183,7 +229,13 @@ export function TaskItem({
       )}
 
       {/* Sheet de détail — clic sur le label */}
-      <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
+      <Sheet
+        open={detailOpen}
+        onOpenChange={(v) => {
+          setDetailOpen(v);
+          if (!v) setEditing(false);
+        }}
+      >
         <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-3xl px-5 pb-10 pt-6">
           <SheetHeader className="mb-4">
             <div className="flex items-start gap-3">
@@ -202,33 +254,74 @@ export function TaskItem({
             </div>
             <div className="ml-8 mt-2 flex flex-wrap gap-1.5">
               {task.taskStatus && (
-                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-2xs font-semibold text-muted-foreground">
                   {task.taskStatus}
                 </span>
               )}
               {task.urgency && URGENCY_LABEL[task.urgency] && (
-                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold">
+                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-2xs font-semibold">
                   {URGENCY_LABEL[task.urgency]}
                 </span>
               )}
               {people > 0 && (
-                <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-2xs font-semibold text-muted-foreground">
                   <User className="h-2.5 w-2.5" /> ~{people} pers.
                 </span>
               )}
               {duration > 0 && (
-                <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">
+                <span className="flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 text-2xs font-semibold text-muted-foreground">
                   <Clock className="h-2.5 w-2.5" /> ~{durationLabelShort(duration)}
                 </span>
               )}
             </div>
           </SheetHeader>
 
+          {editing ? (
+            <div className="space-y-3">
+              <label className="block">
+                <div className="label-micro mb-1.5">Intitulé</div>
+                <input
+                  value={editLabel}
+                  onChange={(e) => setEditLabel(e.target.value)}
+                  maxLength={200}
+                  className="input-field"
+                />
+              </label>
+              <label className="block">
+                <div className="label-micro mb-1.5">Description</div>
+                <textarea
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={4}
+                  maxLength={2000}
+                  className="input-field resize-none py-3"
+                />
+              </label>
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setEditing(false)}
+                  disabled={saving}
+                  className="tap flex-1 rounded-2xl border border-border px-4 py-3.5 text-sm font-semibold disabled:opacity-50"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void saveEdit()}
+                  disabled={saving}
+                  className="tap lift flex-1 rounded-2xl bg-brand-secondary px-4 py-3.5 text-sm font-semibold text-brand-secondary-foreground shadow-card disabled:opacity-50"
+                >
+                  {saving ? "Enregistrement…" : "Enregistrer"}
+                </button>
+              </div>
+            </div>
+          ) : (
           <div className="space-y-4">
             {task.description && (
               <div>
                 <div className="label-micro mb-1.5">Description</div>
-                <p className="text-[13px] leading-relaxed text-muted-foreground">{task.description}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">{task.description}</p>
               </div>
             )}
 
@@ -241,7 +334,7 @@ export function TaskItem({
                   {task.toBuyItems.map((item, i) => (
                     <span
                       key={i}
-                      className="rounded-full border border-border bg-secondary px-2.5 py-1 text-[11px] font-medium"
+                      className="rounded-full border border-border bg-secondary px-2.5 py-1 text-xs font-medium"
                     >
                       {item}
                     </span>
@@ -273,7 +366,7 @@ export function TaskItem({
             )}
 
             {!task.description && !task.toBuyItems?.length && !task.photoBeforeUrl && !photoBefore && (
-              <p className="text-[13px] text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Aucun détail supplémentaire pour cette tâche.
               </p>
             )}
@@ -282,12 +375,22 @@ export function TaskItem({
               <button
                 type="button"
                 onClick={() => { setDetailOpen(false); setOpen(true); }}
-                className="tap lift mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-secondary px-4 py-3.5 text-[13px] font-semibold text-brand-secondary-foreground shadow-card"
+                className="tap lift mt-2 flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-secondary px-4 py-3.5 text-sm font-semibold text-brand-secondary-foreground shadow-card"
               >
                 {buttonLabel}
               </button>
             )}
+            {!isPending && !preview && (
+              <button
+                type="button"
+                onClick={startEditing}
+                className="tap mt-1 flex w-full items-center justify-center gap-2 rounded-2xl border border-border px-4 py-3 text-sm font-semibold text-muted-foreground hover:text-foreground transition"
+              >
+                <Pencil className="h-3.5 w-3.5" /> Modifier la tâche
+              </button>
+            )}
           </div>
+          )}
         </SheetContent>
       </Sheet>
     </div>
@@ -307,7 +410,7 @@ function AvantPanel({
 }) {
   return (
     <div className="mb-2 rounded-xl border border-border/60 bg-secondary/30 p-3">
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-xs text-muted-foreground">
         Documente l'état <span className="font-semibold text-foreground">avant</span> le chantier,
         utile pour mesurer le résultat.
       </p>
@@ -325,7 +428,7 @@ function AvantPanel({
             </button>
           </div>
         ) : (
-          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border bg-card px-3 py-2.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition">
+          <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-dashed border-border bg-card px-3 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition">
             <Camera className="h-3.5 w-3.5" />
             Photo "avant" (optionnelle)
             <input
@@ -346,7 +449,7 @@ function AvantPanel({
         <button
           type="button"
           onClick={onClose}
-          className="text-[10px] font-semibold text-muted-foreground hover:text-foreground transition"
+          className="text-2xs font-semibold text-muted-foreground hover:text-foreground transition"
         >
           Fermer
         </button>
@@ -376,7 +479,7 @@ export function AddTaskButton({
     <button
       type="button"
       onClick={onClick}
-      className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground transition"
+      className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition"
     >
       <Plus className="h-3.5 w-3.5" />
       {label}

@@ -32,7 +32,9 @@ export function checkPassword(space: AdminSpace, password: string): boolean {
   // Mode provisoire demandé : les écrans admin sont ouverts sans mot de passe.
   // La sentinelle n'est émise que par l'interface admin et permet de réactiver
   // ultérieurement la vérification sans modifier toutes les mutations.
-  if (password === "__admin_open__") return true;
+  // Uniquement en mode démo : en production, la sentinelle ouvrirait l'admin à
+  // quiconque la lit dans le code client.
+  if (password === "__admin_open__" && process.env["VITE_USE_MOCK_DATA"] === "true") return true;
   const expected = envPasswordFor(space);
   if (!expected) {
     console.warn(

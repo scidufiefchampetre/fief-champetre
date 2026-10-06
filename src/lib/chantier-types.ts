@@ -49,7 +49,7 @@ export interface Chantier {
   createdAt: string; // ISO
   reservedBy: string;
   startDate: string; // ISO date, YYYY-MM-DD
-  endDate: string; // ISO date, YYYY-MM-DD (exclusif, comme les événements Calendar all-day)
+  endDate: string; // ISO date, YYYY-MM-DD — jour du départ (exclu des nuitées, mais on y est présent : repas, missions)
   startPeriod: ChantierPeriod;
   endPeriod: ChantierPeriod;
   adults: number;

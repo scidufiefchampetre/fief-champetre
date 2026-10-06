@@ -77,7 +77,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      {
+        name: "viewport",
+        // resizes-content : sur Chrome Android, le clavier réduit la hauteur (dvh)
+        // au lieu de recouvrir le bas des feuilles plein écran.
+        content: "width=device-width, initial-scale=1, interactive-widget=resizes-content",
+      },
       { title: "Fief Champêtre" },
       { name: "description", content: "Dépose une facture, on te rembourse." },
       { property: "og:title", content: "Fief Champêtre" },

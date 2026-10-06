@@ -1063,14 +1063,16 @@ export const toggleChantierTask = createServerFn({ method: "POST" })
 
 const UpdateTaskNoteInput = z.object({
   chantierId: z.string().min(1),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  startDate: z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.literal("")]),
   taskId: z.string().min(1),
+  label: z.string().trim().min(1).max(200).optional(),
   note: z.string().max(2000).optional(),
   participants: z.string().max(300).optional(),
 });
 
-// Pas de mot de passe requis ici non plus : annoter une tâche (note,
-// participants) est ouvert à tout le monde, comme le fait de la cocher.
+// Pas de mot de passe requis ici non plus : modifier une tâche (intitulé,
+// note, participants) est ouvert à tout le monde, comme le fait de l'ajouter
+// ou de la cocher.
 export const updateChantierTaskNote = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => UpdateTaskNoteInput.parse(d))
   .handler(async ({ data }) => {
@@ -1087,6 +1089,7 @@ export const updateChantierTaskNote = createServerFn({ method: "POST" })
 
     const updated: ChantierTask = {
       ...current,
+      label: data.label ?? current.label,
       description: data.note !== undefined ? data.note.trim() : current.description,
       note: data.note !== undefined ? data.note.trim() : current.note,
       participants:
@@ -1103,7 +1106,9 @@ export const updateChantierTaskNote = createServerFn({ method: "POST" })
 
 const UpdateTaskExecutionInput = z.object({
   chantierId: z.string().min(1),
-  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  // Vide pour une mission dont le chantier n'existe plus (supprimé) : elle
+  // reste modifiable depuis l'admin.
+  startDate: z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.literal("")]),
   taskId: z.string().min(1),
   done: z.boolean(),
   note: z.string().trim().max(2_000).default(""),
@@ -1150,7 +1155,9 @@ export const updateChantierTaskExecution = createServerFn({ method: "POST" })
 
     let resultPhotoUrl = current.resultPhotoUrl;
     if (data.photo) {
-      const folderLabel = chantierTabTitle(data.chantierId, data.startDate);
+      const folderLabel = data.startDate
+        ? chantierTabTitle(data.chantierId, data.startDate)
+        : "Missions sans chantier";
       const rootFolderId = await ensureDriveFolder("Asso");
       const chantierFolderId = await ensureDriveSubfolder(rootFolderId, folderLabel);
       const photoFolderId = await ensureDriveSubfolder(chantierFolderId, "Photos missions");
@@ -1169,7 +1176,7 @@ export const updateChantierTaskExecution = createServerFn({ method: "POST" })
           .replace(/^-|-$/g, "")
           .slice(0, 60) || "mission";
       const uploaded = await uploadFileToDrive(photoFolderId, {
-        name: `${data.startDate}-${safeLabel}-${Date.now()}.${extension}`,
+        name: `${data.startDate || "sans-date"}-${safeLabel}-${Date.now()}.${extension}`,
         mimeType: data.photo.mimeType,
         dataBase64: data.photo.dataBase64,
       });

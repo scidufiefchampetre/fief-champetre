@@ -474,7 +474,7 @@ export const createReservation = createServerFn({ method: "POST" })
         const spreadsheetId = await ensureSpreadsheet(data.spreadsheetId);
         await appendRow(
           spreadsheetId,
-          `${quoteTab(RESERVATIONS_TAB)}!A:S`,
+          `${quoteTab(RESERVATIONS_TAB)}!A:T`,
           reservationToRow(reservation),
         );
       } catch (error) {

@@ -87,7 +87,7 @@ export function PersonPill({
   return (
     <span
       title={name}
-      className={`inline-flex h-6 w-[76px] min-w-0 items-center justify-center rounded-full px-2 text-[10px] font-semibold ${style}`}
+      className={`inline-flex h-6 w-[76px] min-w-0 items-center justify-center rounded-full px-2 text-2xs font-semibold ${style}`}
     >
       <span className="block min-w-0 truncate">{name}</span>
     </span>
@@ -96,7 +96,7 @@ export function PersonPill({
 
 function DutyVacancyPill({ onClick }: { onClick?: () => void }) {
   const className =
-    "inline-flex h-6 w-[76px] min-w-0 items-center justify-center whitespace-nowrap rounded-full border border-brand-accent/25 bg-brand-accent/15 px-2 text-[9px] font-semibold text-brand-accent transition-colors hover:bg-brand-accent/25";
+    "inline-flex h-6 w-[76px] min-w-0 items-center justify-center whitespace-nowrap rounded-full border border-brand-accent/25 bg-brand-accent/15 px-2 text-2xs font-semibold text-brand-accent transition-colors hover:bg-brand-accent/25";
   if (onClick)
     return (
       <button type="button" onClick={onClick} className={className}>
@@ -121,7 +121,7 @@ function CompactPersonPill({
   return (
     <span
       title={name}
-      className={`inline-flex h-[18px] w-[58px] shrink-0 items-center justify-center rounded-full px-1.5 text-[7px] font-semibold ${style}`}
+      className={`inline-flex h-[18px] w-[58px] shrink-0 items-center justify-center rounded-full px-1.5 text-2xs font-semibold ${style}`}
     >
       <span className="min-w-0 truncate">{name}</span>
     </span>
@@ -157,11 +157,11 @@ function BriefSectionHeader({
         <Icon className="h-3.5 w-3.5" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-[13px] font-bold">{title}</span>
-        <span className="block truncate text-[10px] text-muted-foreground">{summary}</span>
+        <span className="block text-sm font-bold">{title}</span>
+        <span className="block truncate text-2xs text-muted-foreground">{summary}</span>
       </span>
       {!open && alert && (
-        <span className="shrink-0 rounded-full bg-brand-accent/15 px-2 py-1 text-[8px] font-bold text-brand-accent">
+        <span className="shrink-0 rounded-full bg-brand-accent/15 px-2 py-1 text-2xs font-bold text-brand-accent">
           {alert}
         </span>
       )}
@@ -178,7 +178,8 @@ function enumerateDays(startDate: string, endDate: string) {
   const days: string[] = [];
   const start = new Date(`${startDate}T00:00:00Z`);
   const end = new Date(`${endDate}T00:00:00Z`);
-  for (let day = new Date(start); day < end; day.setUTCDate(day.getUTCDate() + 1)) {
+  // Jour de départ inclus : on y sert encore des repas (cf. validMealTokens).
+  for (let day = new Date(start); day <= end; day.setUTCDate(day.getUTCDate() + 1)) {
     days.push(day.toISOString().slice(0, 10));
   }
   return days;
@@ -402,11 +403,20 @@ export function ChantierBriefCard({
     queryFn: () => listTasks({ data: { chantierId, startDate } }),
     enabled: !demo && !!startDate,
   });
-  const { data: catalogData } = useQuery({
+  const {
+    data: catalogData,
+    isPending: catalogPending,
+    isError: catalogError,
+    refetch: refetchCatalog,
+    isFetching: catalogFetching,
+  } = useQuery({
     queryKey: ["task-catalog"],
     queryFn: () => getCatalog(),
     enabled: catalogOpen,
+    staleTime: 5 * 60_000,
+    retry: 1,
   });
+  const catalogTasks = catalogData?.tasks ?? [];
   const { data: dutiesData } = useQuery({
     queryKey: ["chantier-duties", chantierId, startDate],
     queryFn: () => listDuties({ data: { chantierId, startDate } }),
@@ -588,7 +598,9 @@ export function ChantierBriefCard({
     let count = 0;
     for (const date of days) {
       for (const role of roles) {
-        for (const slot of ["matin", "apres_midi"]) {
+        // Jour de départ : seul le créneau du matin reste à couvrir.
+        const slots = date === days[days.length - 1] ? ["matin"] : ["matin", "apres_midi"];
+        for (const slot of slots) {
           if (!duties.some((d) => d.role === role && d.date === date && d.slot === slot && d.personName)) count++;
         }
       }
@@ -623,22 +635,22 @@ export function ChantierBriefCard({
   return (
     <section className="mt-3 overflow-hidden rounded-2xl border border-brand-secondary/20 bg-card shadow-card">
       <div className="bg-brand-secondary/5 p-4">
-        <div className="text-[10px] font-bold uppercase tracking-[0.16em] text-brand-secondary">
+        <div className="text-2xs font-bold uppercase tracking-widest text-brand-secondary">
           {daysUntilStart >= 0 && daysUntilStart <= 7 ? "Briefing chantier" : "Fiche chantier"}
         </div>
         <div className="mt-1.5 flex min-w-0 items-center justify-between gap-2">
-          <h1 className="min-w-0 text-[22px] font-black leading-[1.1] sm:text-[24px]">
+          <h1 className="min-w-0 text-2xl font-black leading-[1.1] sm:text-2xl">
             {chantierDisplayName(startDate, endDate)}
           </h1>
           {daysUntilStart > 0 && (
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-accent/10 px-2 py-1 text-[7px] font-bold uppercase tracking-[0.08em] text-brand-accent">
+            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-brand-accent/10 px-2 py-1 text-2xs font-bold uppercase tracking-widest text-brand-accent">
               <span className="h-1.5 w-1.5 rounded-full bg-brand-accent" />
               Prévision à date
             </span>
           )}
         </div>
         <div className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
-          <div className="flex items-center gap-1.5 text-[10px]">
+          <div className="flex items-center gap-1.5 text-2xs">
             <LogIn className="h-3.5 w-3.5 shrink-0 text-success-foreground" />
             <span className="font-bold text-muted-foreground">Arrivée</span>
             <span className="font-semibold text-foreground">{formatShortDate(startDate)}</span>
@@ -650,7 +662,7 @@ export function ChantierBriefCard({
             )}
           </div>
           {formatShortDate(endDate) && (
-            <div className="flex items-center gap-1.5 text-[10px]">
+            <div className="flex items-center gap-1.5 text-2xs">
               <LogOut className="h-3.5 w-3.5 shrink-0 text-brand-accent" />
               <span className="font-bold text-muted-foreground">Départ</span>
               <span className="font-semibold text-foreground">{formatShortDate(endDate)}</span>
@@ -666,7 +678,7 @@ export function ChantierBriefCard({
         <div className="mt-3 rounded-xl border border-brand-secondary/15 bg-card/75 p-3">
           <div className="min-w-0">
             <div className="flex items-center justify-between gap-2">
-              <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-brand-secondary">
+              <div className="text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                 Objectif principal
               </div>
               {!demo && (
@@ -679,13 +691,13 @@ export function ChantierBriefCard({
                 </button>
               )}
             </div>
-            <p className="mt-1 text-[17px] font-extrabold leading-[1.22] tracking-[-0.015em] text-foreground">
+            <p className="mt-1 text-lg font-extrabold leading-[1.22] tracking-[-0.015em] text-foreground">
               {displayedObjective}
             </p>
             {objectiveDetails && (
               <>
                 <p
-                  className={`mt-1 text-[10px] leading-4 text-muted-foreground ${objectiveOpen ? "" : "line-clamp-2"}`}
+                  className={`mt-1 text-2xs leading-4 text-muted-foreground ${objectiveOpen ? "" : "line-clamp-2"}`}
                 >
                   {objectiveDetails}
                 </p>
@@ -693,7 +705,7 @@ export function ChantierBriefCard({
                   <button
                     type="button"
                     onClick={() => setObjectiveOpen((value) => !value)}
-                    className="mt-1 text-[8px] font-bold text-brand-secondary"
+                    className="mt-1 text-2xs font-bold text-brand-secondary"
                   >
                     {objectiveOpen ? "Réduire" : "Lire la suite"}
                   </button>
@@ -706,7 +718,7 @@ export function ChantierBriefCard({
         <Sheet open={ficheEditOpen} onOpenChange={setFicheEditOpen}>
           <SheetContent side="bottom" className="max-h-[85dvh] overflow-y-auto rounded-t-3xl px-5 pb-10 pt-6">
             <SheetHeader className="mb-4">
-              <SheetTitle className="text-left text-[17px] font-bold">Objectif principal</SheetTitle>
+              <SheetTitle className="text-left text-lg font-bold">Objectif principal</SheetTitle>
             </SheetHeader>
             <div className="space-y-3">
               <textarea
@@ -714,9 +726,9 @@ export function ChantierBriefCard({
                 onChange={(e) => setFicheEditText(e.target.value)}
                 placeholder="Décris l'objectif principal du chantier. La première phrase sera affichée en titre, le reste en détail."
                 rows={6}
-                className="w-full resize-none rounded-xl border border-border bg-secondary/30 px-3 py-2.5 text-[13px] leading-5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary/40"
+                className="w-full resize-none rounded-xl border border-border bg-secondary/30 px-3 py-2.5 text-sm leading-5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary/40"
               />
-              <p className="text-[9px] text-muted-foreground">
+              <p className="text-2xs text-muted-foreground">
                 La première phrase (jusqu'au premier point) sera affichée en titre. Le reste apparaîtra dans "Lire la suite".
               </p>
               <input
@@ -724,10 +736,10 @@ export function ChantierBriefCard({
                 value={ficheEditPassword}
                 onChange={(e) => { setFicheEditPassword(e.target.value); setFicheEditError(""); }}
                 placeholder="Mot de passe admin"
-                className="w-full rounded-xl border border-border bg-secondary/30 px-3 py-2.5 text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary/40"
+                className="w-full rounded-xl border border-border bg-secondary/30 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-brand-secondary/40"
               />
               {ficheEditError && (
-                <p className="text-[11px] font-semibold text-destructive">{ficheEditError}</p>
+                <p className="text-xs font-semibold text-destructive">{ficheEditError}</p>
               )}
               <button
                 type="button"
@@ -745,7 +757,7 @@ export function ChantierBriefCard({
                     setFicheEditSaving(false);
                   }
                 }}
-                className="tap w-full rounded-xl bg-brand-secondary py-3 text-[13px] font-bold text-brand-secondary-foreground disabled:opacity-40"
+                className="tap w-full rounded-xl bg-brand-secondary py-3 text-sm font-bold text-brand-secondary-foreground disabled:opacity-40"
               >
                 {ficheEditSaving ? "Enregistrement…" : "Enregistrer"}
               </button>
@@ -759,7 +771,7 @@ export function ChantierBriefCard({
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-secondary/10 text-brand-secondary">
                 <Users className="h-4 w-4" />
               </span>
-              <span className="text-[11px] font-semibold text-muted-foreground">Participants</span>
+              <span className="text-xs font-semibold text-muted-foreground">Participants</span>
             </div>
             {loading ? (
               <div
@@ -772,10 +784,10 @@ export function ChantierBriefCard({
             ) : (
               <>
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="text-[24px] font-black leading-none">{people.length}</span>
-                  <span className="text-[10px] font-medium text-muted-foreground">personnes</span>
+                  <span className="text-2xl font-black leading-none">{people.length}</span>
+                  <span className="text-2xs font-medium text-muted-foreground">personnes</span>
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] text-muted-foreground">
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-2xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1 whitespace-nowrap">
                     <User className="h-2.5 w-2.5 shrink-0 text-brand-secondary" />
                     {members.length + guests.length} adultes
@@ -791,7 +803,7 @@ export function ChantierBriefCard({
               type="button"
               disabled={loading}
               onClick={openParticipants}
-              className="mt-auto flex items-center gap-1 pt-2 text-[9px] font-bold text-brand-secondary disabled:opacity-30"
+              className="mt-auto flex items-center gap-1 pt-2 text-2xs font-bold text-brand-secondary disabled:opacity-30"
             >
               Voir le détail <ChevronRight className="h-3 w-3" />
             </button>
@@ -801,7 +813,7 @@ export function ChantierBriefCard({
               <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-accent/15 text-brand-accent">
                 <Utensils className="h-4 w-4" />
               </span>
-              <span className="min-w-0 truncate text-[11px] font-semibold text-muted-foreground">
+              <span className="min-w-0 truncate text-xs font-semibold text-muted-foreground">
                 Budget
               </span>
             </div>
@@ -816,12 +828,12 @@ export function ChantierBriefCard({
             ) : (
               <>
                 <div className="mt-2 flex items-baseline gap-1.5">
-                  <span className="whitespace-nowrap text-[24px] font-black leading-none tabular-nums">
+                  <span className="whitespace-nowrap text-2xl font-black leading-none tabular-nums">
                     {Math.round(totalBudget)} €
                   </span>
-                  <span className="whitespace-nowrap text-[10px] font-medium text-muted-foreground">total</span>
+                  <span className="whitespace-nowrap text-2xs font-medium text-muted-foreground">total</span>
                 </div>
-                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[9px] text-muted-foreground">
+                <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-2xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1 whitespace-nowrap">
                     <ReceiptText className="h-2.5 w-2.5 shrink-0 text-brand-accent" />
                     {Math.round(expensesTotal)} € dép.
@@ -837,7 +849,7 @@ export function ChantierBriefCard({
               type="button"
               disabled={loading}
               onClick={() => setActiveSection("days")}
-              className="mt-auto flex items-center gap-1 pt-2 text-[9px] font-bold text-brand-secondary disabled:opacity-30"
+              className="mt-auto flex items-center gap-1 pt-2 text-2xs font-bold text-brand-secondary disabled:opacity-30"
             >
               {totalAdultMeals} repas prévus <ChevronRight className="h-3 w-3" />
             </button>
@@ -882,7 +894,7 @@ export function ChantierBriefCard({
                 <button
                   type="button"
                   onClick={() => setMissionsOpen((v) => !v)}
-                  className="mt-2 text-[12px] font-semibold text-brand-secondary"
+                  className="mt-2 text-xs font-semibold text-brand-secondary"
                 >
                   {missionsOpen
                     ? "Réduire"
@@ -894,17 +906,37 @@ export function ChantierBriefCard({
               <Sheet open={catalogOpen} onOpenChange={setCatalogOpen}>
                 <SheetContent side="bottom" className="max-h-[80vh] overflow-y-auto rounded-t-3xl px-5 pb-10 pt-5">
                   <SheetHeader className="mb-4">
-                    <SheetTitle className="text-left text-[17px] font-bold">Ajouter une tâche</SheetTitle>
+                    <SheetTitle className="text-left text-lg font-bold">Ajouter une tâche</SheetTitle>
                   </SheetHeader>
                   <div className="space-y-3">
-                    <div className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground mb-2">
+                    <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground mb-2">
                       Choisir dans le catalogue
                     </div>
                     <div className="rounded-xl border border-border bg-card divide-y divide-border overflow-hidden">
-                      {(catalogData?.tasks ?? []).length === 0 && (
-                        <div className="px-4 py-3 text-[13px] text-muted-foreground">Chargement…</div>
-                      )}
-                      {(catalogData?.tasks ?? []).map((t) => (
+                      {catalogPending && !catalogError ? (
+                        <div className="px-4 py-3 text-sm text-muted-foreground">
+                          Chargement…
+                        </div>
+                      ) : catalogError ? (
+                        <div className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+                          <span className="text-brand-accent">
+                            Impossible de charger le catalogue.
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => void refetchCatalog()}
+                            disabled={catalogFetching}
+                            className="tap shrink-0 text-xs font-semibold text-brand-secondary disabled:opacity-50"
+                          >
+                            {catalogFetching ? "…" : "Réessayer"}
+                          </button>
+                        </div>
+                      ) : catalogTasks.length === 0 ? (
+                        <div className="px-4 py-3 text-sm text-muted-foreground">
+                          Aucune tâche dans le catalogue pour l'instant. Crée-la ci-dessous.
+                        </div>
+                      ) : null}
+                      {catalogTasks.map((t) => (
                         <button
                           key={t.id}
                           type="button"
@@ -913,7 +945,7 @@ export function ChantierBriefCard({
                             setCatalogOpen(false);
                             setFormOpen(true);
                           }}
-                          className="flex w-full items-center justify-between px-4 py-3 text-left text-[14px] font-medium hover:bg-secondary/50 transition"
+                          className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium hover:bg-secondary/50 transition"
                         >
                           {t.label}
                           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
@@ -927,7 +959,7 @@ export function ChantierBriefCard({
                         setCatalogOpen(false);
                         setFormOpen(true);
                       }}
-                      className="tap lift w-full rounded-2xl border border-border bg-card px-4 py-3 text-left text-[14px] font-semibold text-muted-foreground hover:text-foreground transition"
+                      className="tap lift w-full rounded-2xl border border-border bg-card px-4 py-3 text-left text-sm font-semibold text-muted-foreground hover:text-foreground transition"
                     >
                       + Créer une nouvelle tâche
                     </button>
@@ -990,14 +1022,14 @@ export function ChantierBriefCard({
                           key={person.id}
                           type="button"
                           onClick={() => setSelectedPerson(person)}
-                          className={`tap inline-flex h-7 items-center gap-1 rounded-full px-3 text-[11px] font-semibold ${pillStyle}`}
+                          className={`tap inline-flex h-7 items-center gap-1 rounded-full px-3 text-xs font-semibold ${pillStyle}`}
                         >
                           {firstName}
                           {isChild && (
-                            <span className="text-[8px] font-medium opacity-60">enfant</span>
+                            <span className="text-2xs font-medium opacity-60">enfant</span>
                           )}
                           {isGuest && !isChild && (
-                            <span className="text-[8px] font-medium opacity-60">woofer</span>
+                            <span className="text-2xs font-medium opacity-60">woofer</span>
                           )}
                         </button>
                       );
@@ -1006,7 +1038,7 @@ export function ChantierBriefCard({
                       <button
                         type="button"
                         onClick={() => setShowAllPeople(true)}
-                        className="tap inline-flex h-7 items-center rounded-full border border-border bg-secondary px-3 text-[11px] font-bold text-muted-foreground"
+                        className="tap inline-flex h-7 items-center rounded-full border border-border bg-secondary px-3 text-xs font-bold text-muted-foreground"
                       >
                         +{overflow} autres
                       </button>
@@ -1014,7 +1046,7 @@ export function ChantierBriefCard({
                   </div>
                 );
               })()}
-              <p className="mt-3 text-[8px] text-muted-foreground">
+              <p className="mt-3 text-2xs text-muted-foreground">
                 Clique sur un participant pour voir ses horaires d’arrivée et de départ.
               </p>
 
@@ -1047,35 +1079,35 @@ export function ChantierBriefCard({
                             <div className="text-2xl font-black">{selectedPerson.personName}</div>
                             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
                               {isChild ? (
-                                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-[10px] font-semibold">Enfant</span>
+                                <span className="rounded-full bg-secondary px-2.5 py-0.5 text-2xs font-semibold">Enfant</span>
                               ) : isGuest ? (
-                                <span className="rounded-full border border-border bg-card px-2.5 py-0.5 text-[10px] font-semibold">Woofer</span>
+                                <span className="rounded-full border border-border bg-card px-2.5 py-0.5 text-2xs font-semibold">Woofer</span>
                               ) : (
-                                <span className="rounded-full bg-brand-secondary/15 px-2.5 py-0.5 text-[10px] font-semibold text-brand-secondary">Membre</span>
+                                <span className="rounded-full bg-brand-secondary/15 px-2.5 py-0.5 text-2xs font-semibold text-brand-secondary">Membre</span>
                               )}
                               {selectedPerson.mode === "teletravail" && (
-                                <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-0.5 text-[10px] font-semibold text-muted-foreground">💻 Télétravail</span>
+                                <span className="rounded-full border border-border bg-secondary/40 px-2.5 py-0.5 text-2xs font-semibold text-muted-foreground">💻 Télétravail</span>
                               )}
                             </div>
                           </div>
                         </div>
 
                         {selectedPerson.registeredBy !== selectedPerson.personName && (
-                          <p className="mt-3 text-[11px] text-muted-foreground">
+                          <p className="mt-3 text-xs text-muted-foreground">
                             Inscrit·e par <strong className="text-foreground">{selectedPerson.registeredBy}</strong>
                           </p>
                         )}
 
                         <div className="mt-4 space-y-3 rounded-2xl bg-secondary/35 p-4">
                           {!arrival ? (
-                            <p className="text-[12px] text-muted-foreground">Aucun repas renseigné.</p>
+                            <p className="text-xs text-muted-foreground">Aucun repas renseigné.</p>
                           ) : (
                             <>
                               <div className="flex items-start gap-3">
                                 <LogIn className="mt-0.5 h-4 w-4 shrink-0 text-success-foreground" />
                                 <div>
                                   <div className="label-micro mb-0.5">Arrivée</div>
-                                  <div className="text-[13px] font-semibold">{arrival}</div>
+                                  <div className="text-sm font-semibold">{arrival}</div>
                                 </div>
                               </div>
                               {departure && (
@@ -1083,12 +1115,12 @@ export function ChantierBriefCard({
                                   <LogOut className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" />
                                   <div>
                                     <div className="label-micro mb-0.5">Départ</div>
-                                    <div className="text-[13px] font-semibold">{departure}</div>
+                                    <div className="text-sm font-semibold">{departure}</div>
                                   </div>
                                 </div>
                               )}
                               {selectedPerson.meals.length > 0 && (
-                                <div className="border-t border-border/40 pt-3 text-[11px] text-muted-foreground">
+                                <div className="border-t border-border/40 pt-3 text-xs text-muted-foreground">
                                   {selectedPerson.meals.length} repas prévu{selectedPerson.meals.length > 1 ? "s" : ""}
                                 </div>
                               )}
@@ -1154,10 +1186,10 @@ export function ChantierBriefCard({
                 <div className="mb-3 flex items-center gap-2.5 rounded-xl bg-brand-accent/10 px-3 py-2.5">
                   <ChefHat className="h-4 w-4 shrink-0 text-brand-accent" />
                   <div className="min-w-0 flex-1">
-                    <div className="text-[12px] font-bold text-brand-accent">
+                    <div className="text-xs font-bold text-brand-accent">
                       {missingDutySlots} créneau{missingDutySlots > 1 ? "x" : ""} d'intendance à prendre
                     </div>
-                    <div className="text-[9px] text-brand-accent/70">
+                    <div className="text-2xs text-brand-accent/70">
                       Déplie un jour et clique sur « ↗ À prendre » pour t'inscrire
                     </div>
                   </div>
@@ -1204,12 +1236,12 @@ export function ChantierBriefCard({
                         className="flex w-full items-center gap-2.5 px-3 py-2 text-left active:scale-[0.99]"
                       >
                         <div className="w-12 shrink-0">
-                          <div className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground">
+                          <div className="text-2xs font-bold uppercase tracking-wider text-muted-foreground">
                             {parsed.toLocaleDateString("fr-FR", { weekday: "short" })}
                           </div>
-                          <div className="text-[14px] font-black">
+                          <div className="text-sm font-black">
                             {parsed.getDate()}{" "}
-                            <span className="text-[9px] font-semibold text-muted-foreground">
+                            <span className="text-2xs font-semibold text-muted-foreground">
                               {parsed.toLocaleDateString("fr-FR", { month: "short" })}
                             </span>
                           </div>
@@ -1217,26 +1249,26 @@ export function ChantierBriefCard({
                         <div className="grid min-w-0 flex-1 grid-cols-3 divide-x divide-border/70 rounded-lg bg-secondary/35 py-1.5 text-center">
                           <div className="flex flex-col items-center px-1">
                             <User className="mb-0.5 h-3 w-3 text-brand-secondary" />
-                            <span className="text-[15px] font-black leading-none text-brand-secondary">
+                            <span className="text-base font-black leading-none text-brand-secondary">
                               {movement.adults.length}
                             </span>
-                            <span className="mt-0.5 text-[8px] font-medium text-muted-foreground">
+                            <span className="mt-0.5 text-2xs font-medium text-muted-foreground">
                               adultes
                             </span>
                           </div>
                           <div className="flex flex-col items-center px-1">
                             <Baby className="mb-0.5 h-3 w-3 text-muted-foreground" />
-                            <span className="text-[15px] font-black leading-none">{children}</span>
-                            <span className="mt-0.5 text-[8px] font-medium text-muted-foreground">
+                            <span className="text-base font-black leading-none">{children}</span>
+                            <span className="mt-0.5 text-2xs font-medium text-muted-foreground">
                               enfants
                             </span>
                           </div>
                           <div className="flex flex-col items-center px-1">
                             <Users className="mb-0.5 h-3 w-3 text-muted-foreground" />
-                            <span className="text-[15px] font-black leading-none">
+                            <span className="text-base font-black leading-none">
                               {movement.adults.length + children}
                             </span>
-                            <span className="mt-0.5 text-[8px] font-semibold text-muted-foreground">
+                            <span className="mt-0.5 text-2xs font-semibold text-muted-foreground">
                               total
                             </span>
                           </div>
@@ -1249,7 +1281,7 @@ export function ChantierBriefCard({
                       </button>
                       {active && (
                         <div className="border-t border-border/70 px-3 pb-3 pt-2.5">
-                          <div className="grid grid-cols-2 gap-2 text-[10px] leading-4">
+                          <div className="grid grid-cols-2 gap-2 text-2xs leading-4">
                             <div>
                               <span className="flex items-center gap-1 font-bold text-success-foreground">
                                 <LogIn className="h-3 w-3" /> {movement.arrivals.length} arrivent
@@ -1286,7 +1318,7 @@ export function ChantierBriefCard({
                                 className="rounded-lg bg-card px-2.5 py-2 shadow-sm ring-1 ring-border/60"
                               >
                                 <div className="flex items-center justify-between gap-2">
-                                  <span className="flex items-center gap-1 text-[11px] font-bold">
+                                  <span className="flex items-center gap-1 text-xs font-bold">
                                     {label === "Déjeuner" ? (
                                       <Sun className="h-3 w-3 text-brand-accent" />
                                     ) : (
@@ -1294,22 +1326,22 @@ export function ChantierBriefCard({
                                     )}
                                     {label}
                                   </span>
-                                  <span className="whitespace-nowrap text-[11px] font-black text-brand-secondary">
+                                  <span className="whitespace-nowrap text-xs font-black text-brand-secondary">
                                     {formatEuro(meal.budget)}
                                   </span>
                                 </div>
-                                <div className="mt-1 text-[13px] font-black">
+                                <div className="mt-1 text-sm font-black">
                                   {meal.adults + meal.children}{" "}
-                                  <span className="text-[9px] font-medium text-muted-foreground">
+                                  <span className="text-2xs font-medium text-muted-foreground">
                                     personnes
                                   </span>
                                 </div>
-                                <div className="text-[9px] text-muted-foreground">
+                                <div className="text-2xs text-muted-foreground">
                                   {meal.adults} adultes · {meal.children} enfants
                                 </div>
                                 <div className="mt-2 space-y-1 border-t border-border/60 pt-1.5">
                                   <div className="flex min-w-0 items-center justify-between gap-1">
-                                    <span className="flex shrink-0 items-center gap-1 text-[8px] font-semibold text-muted-foreground">
+                                    <span className="flex shrink-0 items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                       <ShoppingCart className="h-2.5 w-2.5" /> Courses
                                     </span>
                                     {courseSlot ? (
@@ -1321,7 +1353,7 @@ export function ChantierBriefCard({
                                     )}
                                   </div>
                                   <div className="flex min-w-0 items-center justify-between gap-1">
-                                    <span className="flex shrink-0 items-center gap-1 text-[8px] font-semibold text-muted-foreground">
+                                    <span className="flex shrink-0 items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                       <ChefHat className="h-2.5 w-2.5" /> Cuisine
                                     </span>
                                     {kitchenSlot ? (
@@ -1334,7 +1366,7 @@ export function ChantierBriefCard({
                                   </div>
                                   {children > 0 && (
                                     <div className="flex min-w-0 items-center justify-between gap-1">
-                                      <span className="flex shrink-0 items-center gap-1 text-[8px] font-semibold text-muted-foreground">
+                                      <span className="flex shrink-0 items-center gap-1 text-2xs font-semibold text-muted-foreground">
                                         <Baby className="h-2.5 w-2.5" /> Garde {DUTY_SLOT_LABEL.garde[slot]}
                                       </span>
                                       {childcareSlot ? (

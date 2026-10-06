@@ -132,7 +132,7 @@ const PERIOD_LABEL: Record<ChantierPeriod, string> = {
 // Style de libellé partagé par tous les champs du formulaire chantier —
 // garder identique à celui utilisé par <Field> pour que les rangées
 // date/période s'alignent pixel pour pixel.
-const FORM_LABEL_CLASS = "mb-1.5 block text-[11px] font-medium text-muted-foreground";
+const FORM_LABEL_CLASS = "mb-1.5 block text-xs font-medium text-muted-foreground";
 
 function DateField({
   label,
@@ -196,11 +196,11 @@ function PeriodSelect({
 }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-[11px] font-medium text-muted-foreground">{label}</span>
+      <span className="mb-1 block text-xs font-medium text-muted-foreground">{label}</span>
       <select
         value={value}
         onChange={(event) => onChange(event.target.value as ChantierPeriod)}
-        className="h-10 w-full rounded-xl border border-border bg-card px-3 text-[12px] outline-none focus:border-ring"
+        className="h-10 w-full rounded-xl border border-border bg-card px-3 text-xs outline-none focus:border-ring"
       >
         {Object.entries(PERIOD_LABEL).map(([key, option]) => (
           <option key={key} value={key}>
@@ -272,7 +272,7 @@ function AdminPage() {
                   <Wallet className="h-5 w-5 text-brand-secondary" strokeWidth={2} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                     Admin
                   </div>
                   <div className="text-xl font-bold mt-0.5">SCI</div>
@@ -288,7 +288,7 @@ function AdminPage() {
                   <Hammer className="h-5 w-5 text-brand-secondary" strokeWidth={2} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                     Admin
                   </div>
                   <div className="text-xl font-bold mt-0.5">Asso</div>
@@ -397,7 +397,7 @@ function AdminPasswordGate({
         Indique le mot de passe de l'espace {SPACE_LABEL[space]} pour continuer.
       </p>
       {import.meta.env["VITE_USE_MOCK_DATA"] === "true" && (
-        <div className="mt-4 rounded-xl border border-dashed border-brand-secondary/40 bg-brand-secondary/5 px-3 py-2.5 text-[11px] text-brand-secondary">
+        <div className="mt-4 rounded-xl border border-dashed border-brand-secondary/40 bg-brand-secondary/5 px-3 py-2.5 text-xs text-brand-secondary">
           <span className="font-bold">Mode démo</span> : entre n'importe quel mot de passe pour
           continuer.
         </div>
@@ -516,7 +516,7 @@ function AdminSpacePanel({
       {openSection === "remb" && (
         <div className="mt-3">
           <div className="rounded-2xl bg-secondary/50 p-4">
-            <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+            <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
               En attente
             </div>
             <div className="text-2xl font-black tracking-tight tabular-nums mt-0.5">
@@ -526,7 +526,7 @@ function AdminSpacePanel({
 
           <button
             onClick={() => setShowPaid((v) => !v)}
-            className="mt-3 self-start text-[11px] font-semibold text-muted-foreground hover:text-foreground transition"
+            className="mt-3 self-start text-xs font-semibold text-muted-foreground hover:text-foreground transition"
           >
             {showPaid ? "Masquer les réglés" : "Voir aussi les réglés"}
           </button>
@@ -553,7 +553,7 @@ function AdminSpacePanel({
                 >
                   <div className="min-w-0 flex-1">
                     <div className="text-sm font-semibold truncate">{item.memberName}</div>
-                    <div className="text-[11px] text-muted-foreground truncate">
+                    <div className="text-xs text-muted-foreground truncate">
                       {item.supplier} · {fmtDate(item.invoiceDate)}
                     </div>
                   </div>
@@ -620,7 +620,7 @@ function BankRefCard({ item }: { item: PendingReimbursement }) {
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
-      <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+      <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
         Objet virement
       </div>
       <button
@@ -629,7 +629,7 @@ function BankRefCard({ item }: { item: PendingReimbursement }) {
         className="mt-1.5 flex w-full items-center justify-between gap-3 rounded-xl bg-secondary px-3 py-2.5 text-left transition hover:bg-secondary/80 active:scale-[0.99]"
       >
         <span className="text-sm font-semibold font-mono tracking-tight">{ref}</span>
-        <span className="shrink-0 text-[10px] font-semibold text-muted-foreground">
+        <span className="shrink-0 text-2xs font-semibold text-muted-foreground">
           {copied ? "✓ Copié" : "Copier"}
         </span>
       </button>
@@ -718,13 +718,13 @@ function ReimbursementDetailSheet({
 
             <div className="mt-4 space-y-3">
               <div className="rounded-2xl border border-border bg-card p-4">
-                <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                   Bénéficiaire
                 </div>
                 <div className="text-lg font-bold mt-0.5">{item.memberName}</div>
               </div>
               <div className="rounded-2xl border border-border bg-card p-4">
-                <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                   IBAN
                 </div>
                 <div className="text-sm font-mono mt-0.5 break-all">
@@ -759,20 +759,20 @@ function ReimbursementDetailSheet({
                   type="button"
                   onClick={() => setConfirmDelete(true)}
                   disabled={deleting}
-                  className="w-full rounded-2xl border border-destructive/30 py-3 text-[13px] font-semibold text-destructive hover:bg-destructive/5 transition disabled:opacity-50"
+                  className="w-full rounded-2xl border border-destructive/30 py-3 text-sm font-semibold text-destructive hover:bg-destructive/5 transition disabled:opacity-50"
                 >
                   Supprimer cette facture
                 </button>
               ) : (
                 <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 space-y-3">
-                  <p className="text-[13px] font-semibold text-destructive text-center">
+                  <p className="text-sm font-semibold text-destructive text-center">
                     Supprimer la facture, le fichier Drive et les données liées ?
                   </p>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => setConfirmDelete(false)}
-                      className="tap rounded-xl border border-border py-2.5 text-[13px] font-semibold text-muted-foreground hover:bg-secondary transition"
+                      className="tap rounded-xl border border-border py-2.5 text-sm font-semibold text-muted-foreground hover:bg-secondary transition"
                     >
                       Annuler
                     </button>
@@ -780,7 +780,7 @@ function ReimbursementDetailSheet({
                       type="button"
                       onClick={handleDelete}
                       disabled={deleting}
-                      className="tap rounded-xl bg-destructive py-2.5 text-[13px] font-semibold text-white disabled:opacity-50"
+                      className="tap rounded-xl bg-destructive py-2.5 text-sm font-semibold text-white disabled:opacity-50"
                     >
                       {deleting ? "Suppression…" : "Confirmer"}
                     </button>
@@ -947,7 +947,7 @@ function ChantiersSection({
               Chantiers
             </h2>
           </div>
-          <p className="mt-1.5 text-[11px] text-muted-foreground">
+          <p className="mt-1.5 text-xs text-muted-foreground">
             Fiche (consignes) et tâches se gèrent ici. L'effectif n'est jamais estimé, il ne
             provient que des inscriptions réelles.
           </p>
@@ -980,22 +980,22 @@ function ChantiersSection({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <div
-                      className={`text-[17px] font-black leading-tight tracking-[-0.01em] ${isPast ? "text-muted-foreground" : "text-foreground"}`}
+                      className={`text-lg font-black leading-tight tracking-[-0.01em] ${isPast ? "text-muted-foreground" : "text-foreground"}`}
                     >
                       {monthYear}
                     </div>
                     <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] ${isPast ? "bg-secondary text-muted-foreground" : "bg-brand-secondary/15 text-brand-secondary"}`}
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-bold uppercase tracking-widest ${isPast ? "bg-secondary text-muted-foreground" : "bg-brand-secondary/15 text-brand-secondary"}`}
                     >
                       {typeLabel}
                     </span>
                     {isPast && (
-                      <span className="text-[9px] font-semibold uppercase tracking-[0.1em] text-muted-foreground/60">
+                      <span className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground/60">
                         Terminé
                       </span>
                     )}
                   </div>
-                  <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-0 text-[11px] text-muted-foreground">
+                  <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-0 text-xs text-muted-foreground">
                     {PIcon(c.startPeriod || "matin")}
                     <span className="capitalize">{fmtDate(c.startDate)}</span>
                     <ArrowRight className="h-2 w-2 shrink-0" />
@@ -1053,7 +1053,7 @@ function ChantiersSection({
               <>
                 <button
                   onClick={() => setShowPast((v) => !v)}
-                  className="tap flex w-full items-center gap-1.5 pt-3 pb-1 text-[10px] font-bold uppercase tracking-[0.12em] text-muted-foreground/60 hover:text-muted-foreground"
+                  className="tap flex w-full items-center gap-1.5 pt-3 pb-1 text-2xs font-bold uppercase tracking-widest text-muted-foreground/60 hover:text-muted-foreground"
                 >
                   {showPast ? (
                     <ChevronDown className="h-3 w-3" />
@@ -1128,7 +1128,7 @@ function ChantiersSection({
 
               <div className="max-h-40 overflow-y-auto rounded-xl border border-border bg-card">
                 {filteredReports.length === 0 && (
-                  <div className="px-3 py-2 text-[12px] text-muted-foreground">
+                  <div className="px-3 py-2 text-xs text-muted-foreground">
                     {openReports.length === 0
                       ? "Aucune tâche ouverte."
                       : "Aucun résultat pour cette recherche."}
@@ -1147,7 +1147,7 @@ function ChantiersSection({
               <button
                 type="button"
                 onClick={() => setCreateReportOpen(true)}
-                className="tap flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2 text-[12px] font-semibold text-muted-foreground hover:text-foreground"
+                className="tap flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
               >
                 <Plus className="h-3.5 w-3.5" /> Créer une nouvelle tâche
               </button>
@@ -1164,7 +1164,7 @@ function ChantiersSection({
                         tasks.filter((x) => (x.reportId ?? x.label) !== (t.reportId ?? t.label)),
                       )
                     }
-                    className="flex items-center gap-1 rounded-full bg-brand-secondary/15 px-2.5 py-1 text-[11px] font-semibold text-brand-secondary"
+                    className="flex items-center gap-1 rounded-full bg-brand-secondary/15 px-2.5 py-1 text-xs font-semibold text-brand-secondary"
                   >
                     {t.label}
                     {t.peopleCount > 0 && (
@@ -1183,14 +1183,14 @@ function ChantiersSection({
           <div className="flex items-center gap-2 border-t border-border pt-3">
             <button
               onClick={() => setFormOpen(false)}
-              className="tap rounded-xl border border-border px-3.5 py-2 text-[12px] font-semibold text-muted-foreground hover:bg-secondary transition"
+              className="tap rounded-xl border border-border px-3.5 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary transition"
             >
               Annuler
             </button>
             <button
               onClick={submitCreate}
               disabled={submitting}
-              className="tap lift flex-1 rounded-2xl bg-brand-accent px-4 py-2 text-[12px] font-semibold text-brand-accent-foreground disabled:opacity-50"
+              className="tap lift flex-1 rounded-2xl bg-brand-accent px-4 py-2 text-xs font-semibold text-brand-accent-foreground disabled:opacity-50"
             >
               {submitting ? "Envoi vers Google…" : "Valider"}
             </button>
@@ -1410,13 +1410,13 @@ function ChantierCardBody({
       ) : (
         <div>
           {title && (
-            <p className="text-[24px] font-black leading-tight tracking-[-0.02em] text-foreground">
+            <p className="text-2xl font-black leading-tight tracking-[-0.02em] text-foreground">
               {title}
             </p>
           )}
           {description && (
             <p
-              className={`text-[12px] text-muted-foreground leading-relaxed ${title ? "mt-1.5" : ""}`}
+              className={`text-xs text-muted-foreground leading-relaxed ${title ? "mt-1.5" : ""}`}
             >
               {description}
             </p>
@@ -1445,14 +1445,14 @@ function ChantierCardBody({
                 setEditing(false);
                 setPendingTasks([]);
               }}
-              className="tap rounded-xl border border-border px-3.5 py-2 text-[12px] font-semibold text-muted-foreground hover:bg-secondary transition"
+              className="tap rounded-xl border border-border px-3.5 py-2 text-xs font-semibold text-muted-foreground hover:bg-secondary transition"
             >
               Annuler
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="tap lift flex-1 rounded-2xl bg-brand-accent px-4 py-2 text-[12px] font-semibold text-brand-accent-foreground disabled:opacity-50"
+              className="tap lift flex-1 rounded-2xl bg-brand-accent px-4 py-2 text-xs font-semibold text-brand-accent-foreground disabled:opacity-50"
             >
               {saving
                 ? "Envoi vers Google…"
@@ -1463,13 +1463,13 @@ function ChantierCardBody({
           <>
             <button
               onClick={openEdit}
-              className="tap rounded-xl border border-border bg-card px-3.5 py-2 text-[12px] font-semibold text-foreground hover:bg-secondary/60 transition-colors"
+              className="tap rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:bg-secondary/60 transition-colors"
             >
               Modifier
             </button>
             <button
               onClick={() => setLocked((v) => !v)}
-              className={`tap rounded-xl border px-3.5 py-2 text-[12px] font-semibold transition-colors ${
+              className={`tap rounded-xl border px-3.5 py-2 text-xs font-semibold transition-colors ${
                 locked
                   ? "border-brand-secondary/30 bg-brand-secondary/10 text-brand-secondary"
                   : "border-border bg-card text-muted-foreground hover:bg-secondary/60"
@@ -1482,7 +1482,7 @@ function ChantierCardBody({
               <AlertDialogTrigger asChild>
                 <button
                   disabled={deleting}
-                  className="text-[11px] font-semibold text-destructive hover:underline disabled:opacity-50"
+                  className="text-xs font-semibold text-destructive hover:underline disabled:opacity-50"
                 >
                   {deleting ? "Suppression…" : "Supprimer"}
                 </button>
@@ -1534,14 +1534,14 @@ function ReportLine({
 }) {
   return (
     <div className="flex w-full items-center gap-2 border-b border-border px-3 py-2.5 last:border-b-0">
-      <span className="min-w-0 flex-1 truncate text-[13px] font-semibold">
+      <span className="min-w-0 flex-1 truncate text-sm font-semibold">
         {reportDisplayName(report)}
       </span>
-      <span className="flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground">
+      <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
         <User className="h-3 w-3" />
         {report.personDaysEstimate || "—"}
       </span>
-      <span className="flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground">
+      <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
         <Clock className="h-3 w-3" />
         {shortDurationLabel(report.timeEstimate) || "—"}
       </span>
@@ -1685,7 +1685,7 @@ function ChantierTasksAdmin({
       <div className="flex items-center gap-1.5">
         <SectionLabel>Tâches</SectionLabel>
         {totalCount > 0 && (
-          <span className="text-[10px] font-semibold text-muted-foreground/60">
+          <span className="text-2xs font-semibold text-muted-foreground/60">
             · {doneTasks.length}/{totalCount}
           </span>
         )}
@@ -1759,7 +1759,7 @@ function ChantierTasksAdmin({
               onChange={(e) => setQuery(e.target.value)}
               autoFocus
               placeholder="Chercher une tâche (mot-clé)…"
-              className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-card px-3 text-[13px] outline-none focus:border-ring"
+              className="h-9 min-w-0 flex-1 rounded-lg border border-border bg-card px-3 text-sm outline-none focus:border-ring"
             />
             <button
               onClick={() => setAdderOpen(false)}
@@ -1771,10 +1771,10 @@ function ChantierTasksAdmin({
           </div>
           <div className="mt-2 max-h-40 overflow-y-auto rounded-lg border border-border bg-card">
             {reportsLoading && (
-              <div className="px-3 py-2 text-[12px] text-muted-foreground">Chargement…</div>
+              <div className="px-3 py-2 text-xs text-muted-foreground">Chargement…</div>
             )}
             {!reportsLoading && filteredReports.length === 0 && (
-              <div className="px-3 py-2 text-[12px] text-muted-foreground">
+              <div className="px-3 py-2 text-xs text-muted-foreground">
                 {openReports.length === 0 ? "Aucune tâche ouverte." : "Aucun résultat."}
               </div>
             )}
@@ -1793,7 +1793,7 @@ function ChantierTasksAdmin({
               setAdderOpen(false);
               setCreateOpen(true);
             }}
-            className="tap mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border py-2 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+            className="tap mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-border py-2 text-xs font-semibold text-muted-foreground hover:text-foreground"
           >
             <Plus className="h-3.5 w-3.5" /> Créer une nouvelle tâche
           </button>
@@ -1854,7 +1854,7 @@ function ChantierBacklogSection({
               Tâches à faire
             </h2>
           </div>
-          <p className="mt-1.5 text-[11px] text-muted-foreground">
+          <p className="mt-1.5 text-xs text-muted-foreground">
             Trié par urgence. Pioche dedans depuis la fiche d'un chantier pour créer les tâches.
           </p>
         </>
@@ -1872,10 +1872,10 @@ function ChantierBacklogSection({
 
       <div className="mt-2 max-h-64 overflow-y-auto rounded-xl border border-border bg-card">
         {isLoading && (
-          <div className="px-3 py-2.5 text-[12px] text-muted-foreground">Chargement…</div>
+          <div className="px-3 py-2.5 text-xs text-muted-foreground">Chargement…</div>
         )}
         {!isLoading && filtered.length === 0 && (
-          <div className="px-3 py-2.5 text-[12px] text-muted-foreground">
+          <div className="px-3 py-2.5 text-xs text-muted-foreground">
             {open.length === 0 ? "Aucune tâche ouverte." : "Aucun résultat."}
           </div>
         )}
@@ -1891,7 +1891,7 @@ function ChantierBacklogSection({
         ))}
       </div>
       {planned.length > 0 && (
-        <p className="mt-2 text-[11px] text-muted-foreground">
+        <p className="mt-2 text-xs text-muted-foreground">
           {planned.length} déjà planifié{planned.length > 1 ? "s" : ""} sur un chantier.
         </p>
       )}
@@ -1899,7 +1899,7 @@ function ChantierBacklogSection({
       <button
         type="button"
         onClick={() => setCreateOpen(true)}
-        className="tap mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground"
+        className="tap mt-2 flex w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
       >
         <Plus className="h-3.5 w-3.5" /> Créer une nouvelle tâche
       </button>
@@ -1937,11 +1937,11 @@ function ChantierBacklogSection({
             <>
               <SheetHeader className="text-left">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="inline-flex items-center rounded-full bg-brand-secondary/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-brand-secondary">
+                  <span className="inline-flex items-center rounded-full bg-brand-secondary/15 px-2 py-0.5 text-2xs font-bold uppercase tracking-widest text-brand-secondary">
                     {REPORT_CATEGORY_LABEL[detail.category]}
                   </span>
                   <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] ${
+                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-2xs font-bold uppercase tracking-widest ${
                       detail.urgency === "tres_urgent"
                         ? "bg-destructive/10 text-destructive"
                         : detail.urgency === "urgent"
@@ -1952,11 +1952,11 @@ function ChantierBacklogSection({
                     {REPORT_URGENCY_LABEL[detail.urgency]}
                   </span>
                 </div>
-                <SheetTitle className="text-[22px] font-black leading-tight tracking-[-0.01em]">
+                <SheetTitle className="text-2xl font-black leading-tight tracking-[-0.01em]">
                   {detail.title}
                 </SheetTitle>
                 {detail.location && (
-                  <SheetDescription className="text-[12px]">📍 {detail.location}</SheetDescription>
+                  <SheetDescription className="text-xs">📍 {detail.location}</SheetDescription>
                 )}
               </SheetHeader>
 
@@ -1970,7 +1970,7 @@ function ChantierBacklogSection({
                       <div className="mt-1 text-sm font-bold tabular-nums">
                         {detail.personDaysEstimate || "—"}
                       </div>
-                      <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <div className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Personnes
                       </div>
                     </div>
@@ -1979,7 +1979,7 @@ function ChantierBacklogSection({
                       <div className="mt-1 text-sm font-bold">
                         {shortDurationLabel(detail.timeEstimate) || "—"}
                       </div>
-                      <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <div className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Durée
                       </div>
                     </div>
@@ -1988,7 +1988,7 @@ function ChantierBacklogSection({
                       <div className="mt-1 text-sm font-bold tabular-nums">
                         {detail.budgetEstimate ? `${detail.budgetEstimate} €` : "—"}
                       </div>
-                      <div className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground">
+                      <div className="text-2xs font-semibold uppercase tracking-wider text-muted-foreground">
                         Budget
                       </div>
                     </div>
@@ -1997,10 +1997,10 @@ function ChantierBacklogSection({
 
                 {detail.description && (
                   <div>
-                    <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                    <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                       Description
                     </div>
-                    <p className="mt-1 text-[13px] leading-relaxed text-foreground">
+                    <p className="mt-1 text-sm leading-relaxed text-foreground">
                       {detail.description}
                     </p>
                   </div>
@@ -2011,13 +2011,13 @@ function ChantierBacklogSection({
                     href={detail.photoUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="tap flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-[12px] font-semibold text-muted-foreground hover:text-foreground"
+                    className="tap flex items-center justify-center gap-1.5 rounded-xl border border-border py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
                   >
                     <ExternalLink className="h-3.5 w-3.5" /> Voir la photo
                   </a>
                 )}
 
-                <p className="text-[11px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Signalé par{" "}
                   <span className="font-semibold text-foreground">{detail.reportedBy}</span>
                   {detail.createdAt ? ` · ${fmtDate(detail.createdAt.slice(0, 10))}` : ""}
@@ -2109,7 +2109,7 @@ function AdminAgendaSection({
                     {" · "}{pending.startDate}
                     {pending.endDate !== pending.startDate ? ` → ${pending.endDate}` : ""}
                     <br />
-                    <span className="text-[11px] text-muted-foreground">
+                    <span className="text-xs text-muted-foreground">
                       Supprimé du Sheet, de l'agenda Google et de toutes les données liées.
                     </span>
                   </>
@@ -2207,13 +2207,13 @@ function AllTasksAdminSection({ password }: { password: string }) {
           const phase = getTaskPhase(startDate, endDate || startDate);
           const label = startDate
             ? new Date(`${startDate}T00:00:00`).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
-            : chantierId.slice(0, 8);
+            : "Sans week-end";
           return (
             <div key={chantierId} className="rounded-xl border border-border bg-card overflow-hidden">
               <div className="px-4 py-2.5 border-b border-border/50 flex items-center gap-2">
                 <Hammer className="h-3.5 w-3.5 text-brand-secondary shrink-0" />
-                <span className="text-[12px] font-bold text-muted-foreground capitalize">{label}</span>
-                <span className="ml-auto text-[10px] font-semibold text-muted-foreground/60">
+                <span className="text-xs font-bold text-muted-foreground capitalize">{label}</span>
+                <span className="ml-auto text-2xs font-semibold text-muted-foreground/60">
                   {tasks.filter((t) => t.taskStatus === "En cours").length > 0 && (
                     <span className="text-brand-secondary">
                       {tasks.filter((t) => t.taskStatus === "En cours").length} en cours ·{" "}
@@ -2270,7 +2270,7 @@ function AllTasksAdminSection({ password }: { password: string }) {
                     {new Date(`${c.startDate}T00:00:00`).toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" })}
                     {c.endDate !== c.startDate && ` → ${new Date(`${c.endDate}T00:00:00`).toLocaleDateString("fr-FR", { day: "2-digit", month: "short" })}`}
                   </div>
-                  <div className="text-[11px] text-muted-foreground">{chantierDisplayName(c.startDate, c.endDate)}</div>
+                  <div className="text-xs text-muted-foreground">{chantierDisplayName(c.startDate, c.endDate)}</div>
                 </div>
                 <ArrowRight className="h-4 w-4 text-muted-foreground shrink-0" />
               </button>
@@ -2329,7 +2329,7 @@ function CleanupTabsButton({ password }: { password: string }) {
       type="button"
       onClick={run}
       disabled={running}
-      className="mt-4 w-full rounded-2xl border border-border px-4 py-2.5 text-[12px] font-semibold text-muted-foreground transition hover:text-destructive disabled:opacity-40"
+      className="mt-4 w-full rounded-2xl border border-border px-4 py-2.5 text-xs font-semibold text-muted-foreground transition hover:text-destructive disabled:opacity-40"
     >
       {running ? "Suppression…" : "Supprimer onglets obsolètes (Tâches + Tâches types)"}
     </button>
