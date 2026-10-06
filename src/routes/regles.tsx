@@ -18,12 +18,12 @@ export const Route = createFileRoute("/regles")({
 function ReglesPage() {
   return (
     <main className="min-h-dvh w-full bg-background">
-      <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 py-4 sm:py-10">
+      <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-5 py-5 sm:py-10">
         <AppHeader variant="back" />
 
         <div className="animate-rise">
           <h1 className="page-title">SCI ou Asso&nbsp;?</h1>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="page-lead">
             La question est simple : qui bénéficie principalement de la dépense ?
           </p>
 

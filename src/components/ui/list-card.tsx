@@ -45,23 +45,23 @@ function CardRow({
     <div className={ROW}>
       {icon && (
         <span
-          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${muted ? "bg-secondary text-muted-foreground" : "bg-brand-accent/15 text-brand-accent"}`}
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${muted ? "bg-secondary text-muted-foreground" : "bg-brand-secondary text-brand-secondary-foreground"}`}
         >
           {icon}
         </span>
       )}
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-[15px] font-black tracking-[-0.01em]">{title}</span>
+          <span className="item-title truncate">{title}</span>
           {badge && <span className="shrink-0">{badge}</span>}
         </div>
         {meta1 && (
-          <div className="mt-1 flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap text-[8px] font-medium text-muted-foreground sm:text-[9px]">
+          <div className="mt-1 flex min-w-0 flex-wrap items-center gap-x-1 gap-y-0.5 text-xs font-medium text-muted-foreground">
             {meta1}
           </div>
         )}
         {meta2 && (
-          <div className="mt-0.5 flex min-w-0 items-center gap-1 text-[8px] font-medium text-muted-foreground">
+          <div className="mt-0.5 flex min-w-0 items-center gap-1 text-xs font-medium text-muted-foreground">
             {meta2}
           </div>
         )}

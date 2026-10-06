@@ -168,7 +168,7 @@ function MesReservationsPage() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="page-title">Mes réservations.</h1>
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="page-lead">
               Le montant électricité et le statut payé sont mis à jour par le trésorier, ça se
               rafraîchit ici tout seul.
             </p>
@@ -176,7 +176,7 @@ function MesReservationsPage() {
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[10px] font-semibold text-muted-foreground hover:text-foreground transition disabled:opacity-50"
+            className="flex shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-2xs font-semibold text-muted-foreground hover:text-foreground transition disabled:opacity-50"
           >
             <RefreshCw className={`h-3 w-3 ${isFetching ? "animate-spin" : ""}`} />
             Actualiser
@@ -185,19 +185,19 @@ function MesReservationsPage() {
 
         {due.length > 0 && (
           <div className="mt-5 rounded-2xl bg-brand-accent/10 border border-brand-accent/30 p-4">
-            <div className="text-[10px] font-medium uppercase tracking-widest text-brand-accent">
+            <div className="text-2xs font-medium uppercase tracking-widest text-brand-accent">
               À régler
             </div>
             <div className="mt-1 text-3xl font-black tracking-tight text-brand-accent">
               {fmtEur(totalDu)}
             </div>
-            <div className="mt-0.5 text-[11px] text-brand-accent/80">
+            <div className="mt-0.5 text-xs text-brand-accent/80">
               sur {due.length} séjour{due.length > 1 ? "s" : ""}
             </div>
           </div>
         )}
         {due.length === 0 && mine.length > 0 && (
-          <div className="mt-5 rounded-2xl bg-success/20 border border-success/30 p-4 text-[13px] font-semibold text-success-foreground">
+          <div className="mt-5 rounded-2xl bg-success/20 border border-success/30 p-4 text-sm font-semibold text-success-foreground">
             Tu es en règle. Rien à devoir pour l'instant.
           </div>
         )}
@@ -266,7 +266,7 @@ function ReservationGroup({
 }) {
   return (
     <div>
-      <div className="mb-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+      <div className="mb-2 text-2xs font-medium uppercase tracking-widest text-muted-foreground">
         {title}
       </div>
       <div className="space-y-2">
@@ -332,7 +332,7 @@ function ReservationBreakdownCard({
       title={fmtRange(reservation.startDate, reservation.endDate)}
       badge={
         <span
-          className={`rounded-full px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide ${PAYMENT_BADGE_STYLE[paymentStatus.status]}`}
+          className={`rounded-full px-2.5 py-1 text-2xs font-bold uppercase tracking-wide ${PAYMENT_BADGE_STYLE[paymentStatus.status]}`}
         >
           {paymentStatus.label}
         </span>
@@ -370,11 +370,11 @@ function ReservationBreakdownCard({
       chevron={false}
     >
       <div className="border-t border-border/60 px-3.5 py-3 space-y-1.5">
-        <div className="flex justify-between text-[12px]">
+        <div className="flex justify-between text-xs">
           <span className="text-muted-foreground">{breakdown.nuiteesDetail}</span>
           <span className="font-semibold tabular-nums">{fmtEur(breakdown.nuiteesAmount)}</span>
         </div>
-        <div className="flex justify-between text-[12px]">
+        <div className="flex justify-between text-xs">
           <span className="text-muted-foreground">Électricité</span>
           <span className="font-semibold tabular-nums">
             {reservation.electricityAmount === null ? (
@@ -384,7 +384,7 @@ function ReservationBreakdownCard({
             )}
           </span>
         </div>
-        <div className="flex justify-between border-t border-border pt-1.5 text-[13px] font-bold">
+        <div className="flex justify-between border-t border-border pt-1.5 text-sm font-bold">
           <span>Total</span>
           <span className="tabular-nums">{fmtEur(breakdown.total)}</span>
         </div>
@@ -523,17 +523,17 @@ function EditReservationSheet({
               />
 
               {blockingOverlap && (
-                <p className="mt-2 rounded-xl bg-destructive/5 border border-destructive/20 px-3 py-2 text-[11px] text-destructive">
+                <p className="mt-2 rounded-xl bg-destructive/5 border border-destructive/20 px-3 py-2 text-xs text-destructive">
                   Ces dates chevauchent une privatisation. Choisis d'autres dates.
                 </p>
               )}
               {willBlockBecausePrivatizing && (
-                <p className="mt-2 rounded-xl bg-destructive/5 border border-destructive/20 px-3 py-2 text-[11px] text-destructive">
+                <p className="mt-2 rounded-xl bg-destructive/5 border border-destructive/20 px-3 py-2 text-xs text-destructive">
                   D'autres réservations existent déjà sur ces dates. Impossible de privatiser.
                 </p>
               )}
               {!blockingOverlap && externalOverlap && (
-                <p className="mt-2 rounded-xl bg-destructive/10 border border-destructive/30 px-3 py-2 text-[11px] font-bold text-destructive">
+                <p className="mt-2 rounded-xl bg-destructive/10 border border-destructive/30 px-3 py-2 text-xs font-bold text-destructive">
                   ⚠️ Ces dates chevauchent{" "}
                   {externalOverlap.type === "airbnb" ? "une location Airbnb" : "un chantier"}. Vérifie
                   avant de confirmer.
@@ -554,7 +554,7 @@ function EditReservationSheet({
               <div className="mt-3 flex items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
                 <div>
                   <div className="text-sm font-semibold">Privatisation complète</div>
-                  <div className="text-[11px] text-muted-foreground">
+                  <div className="text-xs text-muted-foreground">
                     250€ forfait, personne d'autre ne peut réserver
                   </div>
                 </div>
@@ -579,13 +579,13 @@ function EditReservationSheet({
 
             {breakdown && (
               <div className="rounded-2xl bg-secondary/50 p-4">
-                <div className="flex justify-between text-[12px]">
+                <div className="flex justify-between text-xs">
                   <span className="text-muted-foreground">{breakdown.nuiteesDetail}</span>
                   <span className="font-semibold tabular-nums">
                     {fmtEur(breakdown.nuiteesAmount)}
                   </span>
                 </div>
-                <p className="mt-1.5 text-[10px] text-muted-foreground">
+                <p className="mt-1.5 text-2xs text-muted-foreground">
                   L'électricité s'ajoutera après le séjour, saisie par le trésorier.
                 </p>
               </div>

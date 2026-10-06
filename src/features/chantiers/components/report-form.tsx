@@ -133,7 +133,7 @@ export function ReportForm({
           <button
             type="button"
             onClick={() => setDetailsOpen((v) => !v)}
-            className="tap flex w-full items-center gap-1.5 py-4 text-[11px] font-semibold text-muted-foreground border-b border-border hover:text-foreground transition"
+            className="tap flex w-full items-center gap-1.5 py-4 text-xs font-semibold text-muted-foreground border-b border-border hover:text-foreground transition"
           >
             <ChevronDown
               className={`h-3.5 w-3.5 transition-transform ${detailsOpen ? "rotate-180" : ""}`}
@@ -145,29 +145,29 @@ export function ReportForm({
             <div>
               {/* Description */}
               <div className="flex items-start gap-3 py-4 border-b border-border">
-                <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-[13px]">📋</div>
+                <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-sm">📋</div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <div className="label-micro">Description</div>
-                    <div className="text-[9px] text-muted-foreground/50">optionnel</div>
+                    <div className="text-2xs text-muted-foreground/50">optionnel</div>
                   </div>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Contexte, contraintes…"
                     rows={3}
-                    className="w-full resize-none bg-transparent text-[13px] leading-relaxed outline-none placeholder:text-muted-foreground/40"
+                    className="w-full resize-none bg-transparent text-sm leading-relaxed outline-none placeholder:text-muted-foreground/40"
                   />
                 </div>
               </div>
 
               {/* Photo */}
               <div className="flex items-start gap-3 py-4 border-b border-border">
-                <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-[13px]">📸</div>
+                <div className="mt-0.5 shrink-0 text-muted-foreground/60 text-sm">📸</div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-2">
                     <div className="label-micro">Photo</div>
-                    <div className="text-[9px] text-muted-foreground/50">optionnel</div>
+                    <div className="text-2xs text-muted-foreground/50">optionnel</div>
                   </div>
                   <PhotoField photo={photo} onChange={setPhoto} onError={(msg) => toast.error(msg)} />
                 </div>
@@ -189,7 +189,7 @@ export function ReportForm({
             <button
               onClick={handleSubmit}
               disabled={submitting}
-              className="tap lift flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-accent px-4 py-3.5 text-sm font-bold text-brand-accent-foreground shadow-card disabled:opacity-50"
+              className="tap lift flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-secondary px-4 py-3.5 text-sm font-bold text-brand-secondary-foreground shadow-card disabled:opacity-50"
             >
               <Send className="h-4 w-4" />
               {submitting ? "Envoi…" : "Envoyer"}

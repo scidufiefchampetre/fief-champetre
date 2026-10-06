@@ -207,7 +207,7 @@ function AgendaPage() {
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="page-title">Agenda.</h1>
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="page-lead">
               Clique une date de début, puis une date de fin, pour réserver.
             </p>
           </div>

@@ -285,7 +285,7 @@ export function RegistrationWizard({
           <button
             type="button"
             onClick={goBack}
-            className="tap flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground transition hover:text-foreground"
+            className="tap flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition hover:text-foreground"
           >
             {step === 1 ? (
               <>
@@ -299,7 +299,7 @@ export function RegistrationWizard({
               </>
             )}
           </button>
-          <span className="text-[11px] font-medium text-muted-foreground">
+          <span className="text-xs font-medium text-muted-foreground">
             Étape {step} sur 4
           </span>
         </div>
@@ -312,7 +312,7 @@ export function RegistrationWizard({
           />
         </div>
 
-        <h2 className="mt-4 text-[20px] font-black">{STEP_LABELS[step]}</h2>
+        <h2 className="mt-4 text-xl font-black">{STEP_LABELS[step]}</h2>
       </div>
 
       {/* ── Scrollable step content ── */}
@@ -383,7 +383,7 @@ export function RegistrationWizard({
           <button
             type="button"
             onClick={() => setCancelConfirm(true)}
-            className="mt-3 w-full text-center text-[11px] font-semibold text-muted-foreground/60 underline-offset-2 transition hover:text-destructive hover:underline"
+            className="mt-3 w-full text-center text-xs font-semibold text-muted-foreground/60 underline-offset-2 transition hover:text-destructive hover:underline"
           >
             Annuler mon inscription
           </button>

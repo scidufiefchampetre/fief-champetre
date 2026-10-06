@@ -157,8 +157,8 @@ export function TaskExecutionForm({
     <div className="mb-2 rounded-xl border border-brand-secondary/20 bg-brand-secondary/5 p-3">
       <label className="flex items-center justify-between gap-3">
         <span>
-          <span className="block text-[11px] font-bold">Mission terminée</span>
-          <span className="block text-[9px] text-muted-foreground">
+          <span className="block text-xs font-bold">Mission terminée</span>
+          <span className="block text-2xs text-muted-foreground">
             Compte-rendu facultatif, mais recommandé.
           </span>
         </span>
@@ -171,7 +171,7 @@ export function TaskExecutionForm({
       </label>
 
       <div className="mt-3">
-        <div className="mb-1.5 text-[8px] font-bold uppercase tracking-wide text-muted-foreground">
+        <div className="mb-1.5 text-2xs font-bold uppercase tracking-wide text-muted-foreground">
           Participants
         </div>
         <div className="flex flex-wrap gap-1.5">
@@ -180,28 +180,28 @@ export function TaskExecutionForm({
               key={name}
               type="button"
               onClick={() => toggleParticipant(name)}
-              className={`rounded-full border px-2 py-1 text-[9px] font-semibold ${participants.has(name) ? "border-brand-secondary bg-brand-secondary/10 text-brand-secondary" : "border-border bg-card text-muted-foreground"}`}
+              className={`rounded-full border px-2 py-1 text-2xs font-semibold ${participants.has(name) ? "border-brand-secondary bg-brand-secondary/10 text-brand-secondary" : "border-border bg-card text-muted-foreground"}`}
             >
               {participants.has(name) ? "✓ " : ""}
               {name}
             </button>
           ))}
           {!participantNames.length && (
-            <span className="text-[9px] text-muted-foreground">Aucun adulte inscrit.</span>
+            <span className="text-2xs text-muted-foreground">Aucun adulte inscrit.</span>
           )}
         </div>
       </div>
 
       <div className="mt-3 grid grid-cols-2 gap-2">
         <div className="rounded-lg border border-border bg-card p-2">
-          <div className="mb-1 flex items-center gap-1 text-[8px] font-bold uppercase text-muted-foreground">
+          <div className="mb-1 flex items-center gap-1 text-2xs font-bold uppercase text-muted-foreground">
             <Clock className="h-3 w-3" />
             Temps passé
           </div>
           <select
             value={duration}
             onChange={(event) => setDuration(event.target.value)}
-            className="w-full rounded-md bg-secondary/50 px-2 py-1.5 text-[10px] font-semibold outline-none"
+            className="w-full rounded-md bg-secondary/50 px-2 py-1.5 text-2xs font-semibold outline-none"
           >
             {HALF_HOUR_OPTIONS.map((value) => (
               <option key={value} value={value}>
@@ -211,7 +211,7 @@ export function TaskExecutionForm({
           </select>
         </div>
         <label className="rounded-lg border border-border bg-card p-2">
-          <span className="mb-1 flex items-center gap-1 text-[8px] font-bold uppercase text-muted-foreground">
+          <span className="mb-1 flex items-center gap-1 text-2xs font-bold uppercase text-muted-foreground">
             <Users className="h-3 w-3" />
             Effectif réel
           </span>
@@ -221,15 +221,15 @@ export function TaskExecutionForm({
               min="0"
               value={peopleCount}
               onChange={(event) => setPeopleCount(event.target.value)}
-              className="w-full rounded-md bg-secondary/50 px-1.5 py-1 text-center text-[10px]"
+              className="w-full rounded-md bg-secondary/50 px-1.5 py-1 text-center text-2xs"
             />
-            <span className="text-[8px]">pers.</span>
+            <span className="text-2xs">pers.</span>
           </span>
         </label>
       </div>
 
       <div className="mt-3 grid grid-cols-[auto_1fr] gap-2">
-        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-brand-secondary/30 bg-card px-2 py-1.5 text-[9px] font-semibold text-brand-secondary">
+        <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-brand-secondary/30 bg-card px-2 py-1.5 text-2xs font-semibold text-brand-secondary">
           {photo ? (
             <img src={photo.previewUrl} alt="Aperçu" className="h-7 w-7 rounded-md object-cover" />
           ) : (
@@ -248,7 +248,7 @@ export function TaskExecutionForm({
           value={note}
           onChange={(event) => setNote(event.target.value)}
           placeholder="Précision sur le résultat…"
-          className="min-w-0 rounded-lg border border-border bg-card px-2.5 py-1.5 text-[10px] outline-none focus:border-ring"
+          className="min-w-0 rounded-lg border border-border bg-card px-2.5 py-1.5 text-2xs outline-none focus:border-ring"
         />
       </div>
       {task.resultPhotoUrl && !photo && (
@@ -256,7 +256,7 @@ export function TaskExecutionForm({
           href={task.resultPhotoUrl}
           target="_blank"
           rel="noreferrer"
-          className="mt-1.5 inline-flex items-center gap-1 text-[8px] font-semibold text-brand-secondary"
+          className="mt-1.5 inline-flex items-center gap-1 text-2xs font-semibold text-brand-secondary"
         >
           Voir la photo actuelle <ExternalLink className="h-2.5 w-2.5" />
         </a>
@@ -266,7 +266,7 @@ export function TaskExecutionForm({
         <button
           type="button"
           onClick={onClose}
-          className="px-2 py-1.5 text-[9px] font-semibold text-muted-foreground"
+          className="px-2 py-1.5 text-2xs font-semibold text-muted-foreground"
         >
           Fermer
         </button>
@@ -274,7 +274,7 @@ export function TaskExecutionForm({
           type="button"
           onClick={save}
           disabled={saving}
-          className="rounded-lg bg-brand-secondary px-3 py-1.5 text-[9px] font-semibold text-brand-secondary-foreground disabled:opacity-50"
+          className="rounded-lg bg-brand-secondary px-3 py-1.5 text-2xs font-semibold text-brand-secondary-foreground disabled:opacity-50"
         >
           {saving ? "Enregistrement…" : "Enregistrer"}
         </button>

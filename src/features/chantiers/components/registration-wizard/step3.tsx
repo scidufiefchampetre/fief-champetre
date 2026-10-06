@@ -30,8 +30,8 @@ const SLOT_CONFIG: Record<DutyRole, Record<DutySlotKey, { icon: React.ElementTyp
     apres_midi: { icon: Moon,    label: "Dîner",    color: "text-brand-secondary" },
   },
   garde: {
-    matin:     { icon: Sunrise, label: "Matin",  color: "text-amber-500" },
-    apres_midi: { icon: Sunset,  label: "A-M",    color: "text-orange-400" },
+    matin:     { icon: Sunrise, label: "Matin",  color: "text-brand-accent" },
+    apres_midi: { icon: Sunset,  label: "A-M",    color: "text-brand-accent" },
   },
 };
 
@@ -86,7 +86,7 @@ export function Step3Duties({
 
   return (
     <div className="space-y-6 py-2">
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-xs text-muted-foreground">
         Optionnel · choisis les missions que tu prends en charge.
       </p>
 
@@ -97,7 +97,7 @@ export function Step3Duties({
             {/* Role header */}
             <div className="mb-3 flex items-center gap-2">
               <RoleIcon className="h-4 w-4 text-brand-secondary" />
-              <span className="text-[13px] font-bold">{DUTY_ROLE_LABEL[role]}</span>
+              <span className="text-sm font-bold">{DUTY_ROLE_LABEL[role]}</span>
             </div>
 
             {/* 1 row per day */}
@@ -105,7 +105,7 @@ export function Step3Duties({
               {days.map((day) => (
                 <div key={day} className="flex items-center gap-3">
                   {/* Day label */}
-                  <span className="w-[48px] shrink-0 text-[10px] font-semibold capitalize text-muted-foreground">
+                  <span className="w-[48px] shrink-0 text-2xs font-semibold capitalize text-muted-foreground">
                     {fmtDayShort(day)}
                   </span>
 
@@ -126,8 +126,8 @@ export function Step3Duties({
                             className="flex items-center gap-1.5 rounded-xl bg-secondary px-3 py-2 opacity-50"
                           >
                             <SlotIcon className={`h-3.5 w-3.5 shrink-0 ${cfg.color}`} />
-                            <span className="text-[11px] font-semibold text-muted-foreground">{cfg.label}</span>
-                            <span className="text-[9px] font-bold text-muted-foreground">
+                            <span className="text-xs font-semibold text-muted-foreground">{cfg.label}</span>
+                            <span className="text-2xs font-bold text-muted-foreground">
                               {initials(existing.personName)}
                             </span>
                           </div>
@@ -144,8 +144,8 @@ export function Step3Duties({
                             className="tap flex items-center gap-1.5 rounded-xl bg-brand-secondary px-3 py-2 text-white"
                           >
                             <SlotIcon className="h-3.5 w-3.5 shrink-0 text-white/80" />
-                            <span className="text-[11px] font-bold">{cfg.label}</span>
-                            <span className="text-[9px] font-semibold opacity-75">
+                            <span className="text-xs font-bold">{cfg.label}</span>
+                            <span className="text-2xs font-semibold opacity-75">
                               {draft.personName.split(" ")[0]}
                             </span>
                             <X className="h-3 w-3 opacity-60" />
@@ -162,7 +162,7 @@ export function Step3Duties({
                           className="tap flex items-center gap-1.5 rounded-xl border border-dashed border-border bg-card px-3 py-2 transition hover:border-brand-secondary/40 hover:bg-brand-secondary/5"
                         >
                           <SlotIcon className={`h-3.5 w-3.5 shrink-0 ${cfg.color}`} />
-                          <span className="text-[11px] font-semibold text-muted-foreground">{cfg.label}</span>
+                          <span className="text-xs font-semibold text-muted-foreground">{cfg.label}</span>
                         </button>
                       );
                     })}
@@ -183,11 +183,11 @@ export function Step3Duties({
             return (
               <>
                 <SheetHeader className="mb-5">
-                  <SheetTitle className="flex items-center gap-2 text-left text-[17px] font-black">
+                  <SheetTitle className="flex items-center gap-2 text-left text-lg font-black">
                     <SlotIcon className={`h-5 w-5 ${cfg.color}`} />
                     {DUTY_ROLE_LABEL[sheetTarget.role]} — {cfg.label}
                   </SheetTitle>
-                  <p className="text-[12px] text-muted-foreground">{fmtDayShort(sheetTarget.date)}</p>
+                  <p className="text-xs text-muted-foreground">{fmtDayShort(sheetTarget.date)}</p>
                 </SheetHeader>
                 <div className="no-scrollbar max-h-[50vh] space-y-1.5 overflow-y-auto">
                   {pickerList.map((name) => {
@@ -200,12 +200,12 @@ export function Step3Duties({
                         onClick={() => assignDuty(sheetTarget, name)}
                         className="tap flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left transition hover:border-brand-secondary/40 hover:bg-brand-secondary/5"
                       >
-                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[11px] font-black ${isMe ? "bg-brand-secondary text-white" : "bg-secondary"}`}>
+                        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-black ${isMe ? "bg-brand-secondary text-white" : "bg-secondary"}`}>
                           {initials(name)}
                         </span>
-                        <span className="flex-1 text-[14px] font-bold">{name.split(" ")[0]}</span>
-                        {isMe && <span className="text-[9px] font-semibold uppercase tracking-wide text-brand-secondary">Toi</span>}
-                        {!isMe && isWizard && <span className="text-[9px] font-semibold uppercase tracking-wide text-muted-foreground">Inscrit</span>}
+                        <span className="flex-1 text-sm font-bold">{name.split(" ")[0]}</span>
+                        {isMe && <span className="text-2xs font-semibold uppercase tracking-wide text-brand-secondary">Toi</span>}
+                        {!isMe && isWizard && <span className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">Inscrit</span>}
                       </button>
                     );
                   })}

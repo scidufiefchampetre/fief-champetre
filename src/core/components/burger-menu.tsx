@@ -47,7 +47,7 @@ function ProfilePreviewCard({ open, onNavigate }: { open: boolean; onNavigate: (
         </div>
         <div className="min-w-0 flex-1">
           <div className="text-sm font-bold leading-tight">Mon profil</div>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             {store.member?.firstName}, vue d'ensemble
           </p>
         </div>
@@ -59,17 +59,17 @@ function ProfilePreviewCard({ open, onNavigate }: { open: boolean; onNavigate: (
       {!summary.loading && hasStats && (
         <div className="flex flex-wrap gap-1.5 pl-[52px]">
           {summary.reservationsUpcomingCount > 0 && (
-            <span className="rounded-full bg-brand-secondary/15 px-2 py-0.5 text-[10px] font-semibold text-brand-secondary">
+            <span className="rounded-full bg-brand-secondary/15 px-2 py-0.5 text-2xs font-semibold text-brand-secondary">
               {summary.reservationsUpcomingCount} résa à venir
             </span>
           )}
           {summary.reservationsDueCount > 0 && (
-            <span className="rounded-full bg-brand-accent/15 px-2 py-0.5 text-[10px] font-semibold text-brand-accent">
+            <span className="rounded-full bg-brand-accent/15 px-2 py-0.5 text-2xs font-semibold text-brand-accent">
               {fmtEur(summary.reservationsDueAmount)} dû
             </span>
           )}
           {summary.expensesPendingCount > 0 && (
-            <span className="rounded-full bg-brand-accent/15 px-2 py-0.5 text-[10px] font-semibold text-brand-accent">
+            <span className="rounded-full bg-brand-accent/15 px-2 py-0.5 text-2xs font-semibold text-brand-accent">
               {fmtEur(summary.expensesPendingAmount)} à rembourser
             </span>
           )}
@@ -119,7 +119,7 @@ export function BurgerMenu() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-bold leading-tight">Améliorer l'app</div>
-                <p className="text-[11px] text-muted-foreground mt-0.5">2 options</p>
+                <p className="text-xs text-muted-foreground mt-0.5">2 options</p>
               </div>
               <ChevronDown
                 className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${expanded === "feedback" ? "rotate-180" : ""}`}
@@ -135,10 +135,10 @@ export function BurgerMenu() {
                 >
                   <Bug className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2} />
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-semibold leading-tight">
+                    <div className="text-sm font-semibold leading-tight">
                       Signaler un problème
                     </div>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                    <p className="text-2xs text-muted-foreground mt-0.5">
                       Quelque chose ne marche pas ?
                     </p>
                   </div>
@@ -154,8 +154,8 @@ export function BurgerMenu() {
                 >
                   <Lightbulb className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2} />
                   <div className="min-w-0 flex-1">
-                    <div className="text-[13px] font-semibold leading-tight">Proposer une idée</div>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                    <div className="text-sm font-semibold leading-tight">Proposer une idée</div>
+                    <p className="text-2xs text-muted-foreground mt-0.5">
                       Une fonctionnalité qui manque ?
                     </p>
                   </div>
@@ -177,7 +177,7 @@ export function BurgerMenu() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold leading-tight">Règles SCI vs Asso</div>
-              <p className="text-[11px] text-muted-foreground mt-0.5">
+              <p className="text-xs text-muted-foreground mt-0.5">
                 Comment savoir si c'est SCI ou Asso
               </p>
             </div>
@@ -196,7 +196,7 @@ export function BurgerMenu() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="text-sm font-bold leading-tight">Espace admin</div>
-              <p className="text-[11px] text-muted-foreground mt-0.5">Trésoriers SCI et Asso</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Trésoriers SCI et Asso</p>
             </div>
             <ArrowRight
               className="h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5"
@@ -209,7 +209,7 @@ export function BurgerMenu() {
                 store.setMember(null);
                 close();
               }}
-              className="flex w-full items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-[13px] font-semibold text-muted-foreground hover:text-foreground transition"
+              className="flex w-full items-center gap-2 rounded-2xl border border-border bg-card px-4 py-3 text-sm font-semibold text-muted-foreground hover:text-foreground transition"
             >
               <LogOut className="h-4 w-4" />
               Changer de membre ({store.member.firstName})

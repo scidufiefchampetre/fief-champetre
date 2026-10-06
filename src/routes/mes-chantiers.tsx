@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Baby,
   ChefHat,
-  ClipboardCheck,
   HardHat,
   ShoppingCart,
   Users,
@@ -63,14 +62,14 @@ function DutiesSection({ duties }: { duties: ChantierDuty[] }) {
 
   if (!duties.length) {
     return (
-      <div className="mt-1.5 text-[10px] text-muted-foreground">Aucune mission choisie</div>
+      <div className="mt-1.5 text-2xs text-muted-foreground">Aucune mission choisie</div>
     );
   }
 
   return (
     <div>
       <div className="flex items-center justify-between">
-        <div className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+        <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
           Ton intendance
         </div>
         {duties.length > 1 && (
@@ -83,7 +82,7 @@ function DutiesSection({ duties }: { duties: ChantierDuty[] }) {
                 key={v}
                 type="button"
                 onClick={() => setView(v)}
-                className={`rounded-full px-2 py-0.5 text-[8px] font-bold transition ${
+                className={`rounded-full px-2 py-0.5 text-2xs font-bold transition ${
                   view === v
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -101,7 +100,7 @@ function DutiesSection({ duties }: { duties: ChantierDuty[] }) {
           {duties.map((duty) => {
             const DutyIcon = dutyIcon(duty.role);
             return (
-              <div key={duty.id} className="flex items-center gap-2 text-[10px]">
+              <div key={duty.id} className="flex items-center gap-2 text-2xs">
                 <DutyIcon className="h-3.5 w-3.5 shrink-0 text-brand-accent" />
                 <span className="font-bold">{DUTY_ROLE_LABEL[duty.role]}</span>
                 <span className="text-muted-foreground">
@@ -121,12 +120,12 @@ function DutiesSection({ duties }: { duties: ChantierDuty[] }) {
               <div key={role} className="flex items-start gap-2">
                 <DutyIcon className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand-accent" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-[10px] font-bold">{DUTY_ROLE_LABEL[role]}</div>
+                  <div className="text-2xs font-bold">{DUTY_ROLE_LABEL[role]}</div>
                   <div className="mt-0.5 flex flex-wrap gap-1">
                     {roleDuties.map((d) => (
                       <span
                         key={d.id}
-                        className="rounded-full bg-secondary px-2 py-0.5 text-[9px] text-muted-foreground"
+                        className="rounded-full bg-secondary px-2 py-0.5 text-2xs text-muted-foreground"
                       >
                         {fmtDate(d.date)} · {DUTY_SLOT_LABEL[role][d.slot]}
                       </span>
@@ -205,11 +204,8 @@ function MesChantiersPage() {
     <PageShell>
       <AppHeader variant="back" />
       <div className="animate-rise">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-secondary/15 text-brand-secondary">
-          <ClipboardCheck className="h-5 w-5" />
-        </div>
-        <h1 className="page-title mt-3">Mes chantiers</h1>
-        <p className="mt-2 text-xs text-muted-foreground">
+        <h1 className="page-title">Mes chantiers.</h1>
+        <p className="page-lead">
           Tes inscriptions, les personnes avec toi et ton intendance.
         </p>
 
@@ -227,12 +223,12 @@ function MesChantiersPage() {
         {!loading && store.member && mine.length === 0 && (
           <div className="mt-5 rounded-2xl border border-border bg-card p-5">
             <div className="text-sm font-bold">Aucun chantier à venir</div>
-            <p className="mt-1 text-[11px] text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               Tu n’es inscrit à aucun chantier pour le moment.
             </p>
             <Link
               to="/chantiers"
-              className="mt-3 inline-flex items-center gap-1 text-[11px] font-bold text-brand-secondary"
+              className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-brand-secondary"
             >
               Voir les prochains chantiers <ArrowRight className="h-3 w-3" />
             </Link>
@@ -265,7 +261,7 @@ function MesChantiersPage() {
                     <HardHat className="h-5 w-5" />
                   </span>
                   <div className="min-w-0 flex-1">
-                    <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                    <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                       {chantier.startDate <= today ? "En cours" : "À venir"}
                     </div>
                     <div className="mt-0.5 text-sm font-black capitalize">
@@ -276,11 +272,11 @@ function MesChantiersPage() {
                 </div>
                 <div className="border-t border-border/70 px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1 text-[10px] font-bold">
+                    <span className="flex items-center gap-1 text-2xs font-bold">
                       <Users className="h-3.5 w-3.5 text-brand-secondary" />
                       {people.length} personne{people.length > 1 ? "s" : ""}
                     </span>
-                    <span className="text-[9px] text-muted-foreground">
+                    <span className="text-2xs text-muted-foreground">
                       {adults} adulte{adults > 1 ? "s" : ""}
                       {children ? ` · ${children} enfant${children > 1 ? "s" : ""}` : ""}
                     </span>
@@ -289,7 +285,7 @@ function MesChantiersPage() {
                     {people.map((person) => (
                       <span
                         key={person.id}
-                        className="rounded-full bg-secondary px-2 py-1 text-[9px] font-semibold"
+                        className="rounded-full bg-secondary px-2 py-1 text-2xs font-semibold"
                       >
                         {person.personName}
                       </span>

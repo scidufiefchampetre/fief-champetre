@@ -100,7 +100,7 @@ function IdentifyGate() {
   return (
     <section className="animate-rise">
       <h1 className="page-title">Qui es-tu&nbsp;?</h1>
-      <p className="mt-3 text-sm text-muted-foreground">
+      <p className="page-lead">
         Identifie-toi pour voir <span className="font-semibold text-foreground">tes</span> dépenses
         et tes remboursements.
       </p>
@@ -154,7 +154,7 @@ function IdentifyGate() {
         className="mt-5 flex items-center justify-between gap-3 rounded-2xl bg-brand-accent p-5 text-brand-accent-foreground shadow-card transition active:scale-[0.99]"
       >
         <div>
-          <div className="text-[10px] font-medium uppercase tracking-widest opacity-70">
+          <div className="text-2xs font-medium uppercase tracking-widest opacity-70">
             Nouveau
           </div>
           <div className="text-base font-bold mt-0.5">Créer ma fiche</div>
@@ -231,13 +231,13 @@ function MyExpenses() {
       <header className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 sm:flex sm:flex-wrap sm:justify-between sm:items-center">
         <div className="min-w-0">
           <h1 className="page-title">Mes dépenses.</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="page-lead">
             {store.member?.firstName} {store.member?.lastName}
           </p>
         </div>
         <button
           onClick={() => query.refetch()}
-          className="shrink-0 flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-[10px] font-semibold text-muted-foreground hover:text-foreground transition"
+          className="shrink-0 flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 text-2xs font-semibold text-muted-foreground hover:text-foreground transition"
         >
           <RefreshCw className={`h-3 w-3 ${query.isFetching ? "animate-spin" : ""}`} /> Actualiser
         </button>
@@ -253,7 +253,7 @@ function MyExpenses() {
           <button
             key={k}
             onClick={() => setFilter(k)}
-            className={`flex-1 rounded-full border px-3 py-1.5 text-[11px] font-semibold transition ${
+            className={`flex-1 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
               filter === k
                 ? "bg-foreground text-background border-foreground"
                 : "border-border bg-card text-muted-foreground hover:text-foreground"
@@ -264,7 +264,7 @@ function MyExpenses() {
         ))}
       </div>
 
-      <div className="mt-3 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+      <div className="mt-3 text-2xs font-medium uppercase tracking-widest text-muted-foreground">
         {filtered.length} dépense{filtered.length > 1 ? "s" : ""} pour {store.member?.firstName}
       </div>
 
@@ -310,9 +310,9 @@ function SideTotalCard({
 }) {
   return (
     <div
-      className={`rounded-3xl p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-lg ${SIDE_TONE_CLASSES[tone]}`}
+      className={`rounded-2xl p-4 shadow-card transition hover:-translate-y-0.5 hover:shadow-lg ${SIDE_TONE_CLASSES[tone]}`}
     >
-      <div className="text-[10px] font-medium uppercase tracking-widest opacity-70">{label}</div>
+      <div className="text-2xs font-medium uppercase tracking-widest opacity-70">{label}</div>
       <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-current/20">
         <div
           className="h-full rounded-full bg-current transition-all duration-500"
@@ -320,14 +320,14 @@ function SideTotalCard({
         />
       </div>
       <div className="mt-3">
-        <div className="text-[9px] font-medium uppercase tracking-widest opacity-70">
+        <div className="text-2xs font-medium uppercase tracking-widest opacity-70">
           À rembourser
         </div>
         <div className="text-xl font-bold tracking-tight tabular-nums">
           {fmtEur(totals.pending)}
         </div>
       </div>
-      <div className="mt-1.5 text-[10px] font-semibold opacity-80">
+      <div className="mt-1.5 text-2xs font-semibold opacity-80">
         {totals.total > 0 ? `${fmtEur(totals.done)} déjà remboursé` : "Aucune avance"}
       </div>
     </div>
@@ -344,18 +344,18 @@ function ExpenseListItem({ row }: { row: ExpenseRow }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="text-sm font-bold leading-tight truncate">{row.supplier || "…"}</div>
-          <div className="mt-0.5 text-[11px] text-muted-foreground">{fmtDate(row.invoiceDate)}</div>
+          <div className="mt-0.5 text-xs text-muted-foreground">{fmtDate(row.invoiceDate)}</div>
         </div>
         <div className="text-right shrink-0">
           <div className="text-base font-bold tracking-tight">{fmtEur(row.amountTTC)}</div>
-          <div className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground mt-0.5">
+          <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground mt-0.5">
             {sideLabel}
           </div>
         </div>
       </div>
       <div className="mt-2 flex items-center justify-between gap-2">
         <span
-          className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+          className={`text-2xs font-semibold px-2 py-0.5 rounded-full ${
             !isAdvance
               ? "bg-secondary text-muted-foreground"
               : done
@@ -370,7 +370,7 @@ function ExpenseListItem({ row }: { row: ExpenseRow }) {
             href={row.fileLink}
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition"
+            className="flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition"
           >
             Facture <ExternalLink className="h-3 w-3" />
           </a>

@@ -73,7 +73,7 @@ function ChantiersPage() {
 
       <div className="animate-rise">
         <h1 className="page-title">Chantiers.</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="page-lead">
           Choisis le prochain chantier ou retrouve le récapitulatif des précédents.
         </p>
 
@@ -114,14 +114,14 @@ function ChantiersPage() {
                   </div>
                   <StatBadge count={pastChantiers.length} />
                 </div>
-                <p className="mb-3 text-[10px] text-muted-foreground">
+                <p className="mb-3 text-2xs text-muted-foreground">
                   Consultation uniquement · aucune modification possible.
                 </p>
                 <div className="space-y-5">
                   {pastChantiers.length ? (
                     groupByAssoYear(pastChantiers).map((group) => (
                       <div key={group.label}>
-                        <div className="mb-2 text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                        <div className="mb-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
                           {group.label}
                         </div>
                         <div className="space-y-2">

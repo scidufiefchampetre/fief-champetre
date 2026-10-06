@@ -24,7 +24,7 @@ export function UrgencyPicker({
                 active ? "bg-foreground text-background" : "bg-secondary text-muted-foreground"
               }`}
             >
-              <span className="text-[11px] font-semibold leading-tight">
+              <span className="text-xs font-semibold leading-tight">
                 {REPORT_URGENCY_LABEL[u]}
               </span>
             </button>
@@ -32,7 +32,7 @@ export function UrgencyPicker({
         })}
       </div>
       {value && (
-        <p className="mt-2 text-[11px] text-muted-foreground">{REPORT_URGENCY_SUBLABEL[value]}</p>
+        <p className="mt-2 text-xs text-muted-foreground">{REPORT_URGENCY_SUBLABEL[value]}</p>
       )}
     </div>
   );

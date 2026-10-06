@@ -326,7 +326,7 @@ function Home() {
           <div className={flying ? "animate-fly" : "animate-rise space-y-3"}>
             <ExpenseCard expense={store.expense} fileName={store.file?.name} />
             {missingFields.length > 0 && (
-              <div className="flex items-start gap-2 rounded-2xl border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-[12px] text-destructive">
+              <div className="flex items-start gap-2 rounded-2xl border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-xs text-destructive">
                 <span className="mt-0.5">⚠️</span>
                 <span>
                   Il manque <strong>{missingFields.join(" et ")}</strong>. Vérifie et complète en
@@ -370,7 +370,7 @@ function Home() {
                   <button
                     type="button"
                     onClick={() => setNoteOpen(true)}
-                    className="flex w-full items-center gap-2 px-3.5 py-2.5 text-[12px] font-semibold text-muted-foreground hover:text-foreground transition"
+                    className="flex w-full items-center gap-2 px-3.5 py-2.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition"
                   >
                     <Plus className="h-3.5 w-3.5" />
                     Ajouter une note perso
@@ -380,7 +380,7 @@ function Home() {
                     <div className="mb-1.5 flex items-center justify-between">
                       <label
                         htmlFor="personal-note"
-                        className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground"
+                        className="text-2xs font-medium uppercase tracking-widest text-muted-foreground"
                       >
                         Ma note
                       </label>
@@ -390,7 +390,7 @@ function Home() {
                           setPersonalNote("");
                           setNoteOpen(false);
                         }}
-                        className="text-[10px] font-semibold text-muted-foreground hover:text-foreground transition"
+                        className="text-2xs font-semibold text-muted-foreground hover:text-foreground transition"
                       >
                         Retirer
                       </button>
@@ -405,9 +405,9 @@ function Home() {
                       }}
                       placeholder="Ex : pour la chambre du fond, à ranger côté Airbnb."
                       rows={2}
-                      className="w-full resize-none rounded-xl bg-secondary/50 px-3 py-2 text-[12px] leading-relaxed text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-ring/40"
+                      className="w-full resize-none rounded-xl bg-secondary/50 px-3 py-2 text-xs leading-relaxed text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-ring/40"
                     />
-                    <div className="mt-1 text-right text-[9px] font-medium text-muted-foreground tabular-nums">
+                    <div className="mt-1 text-right text-2xs font-medium text-muted-foreground tabular-nums">
                       {personalNote.length}/300
                     </div>
                   </div>
@@ -418,7 +418,7 @@ function Home() {
             <div className="grid grid-cols-[1fr_2fr] gap-2">
               <button
                 onClick={() => navigate({ to: "/modifier" })}
-                className="tap lift flex items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3 text-[13px] font-semibold text-foreground hover-device:hover:bg-secondary hover-device:hover:border-foreground/30"
+                className="tap lift flex items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3 text-sm font-semibold text-foreground hover-device:hover:bg-secondary hover-device:hover:border-foreground/30"
               >
                 <Pencil className="h-3.5 w-3.5" /> Modifier
               </button>
@@ -429,7 +429,7 @@ function Home() {
                   store.expense.needsPlaceChoice ||
                   (store.expense.topCategory === "Repas chantier" && !store.expense.chantierId)
                 }
-                className={`tap lift flex items-center justify-center gap-2 rounded-2xl py-3 text-[13px] font-semibold shadow-card disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`tap lift flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-semibold shadow-card disabled:opacity-40 disabled:cursor-not-allowed ${
                   store.expense.finalSide === "SCI"
                     ? "bg-brand-secondary text-brand-secondary-foreground"
                     : "bg-brand-accent text-brand-accent-foreground"
@@ -549,20 +549,20 @@ function ClarificationPrompt({
     <div className="rounded-2xl border border-border bg-card p-4 animate-rise">
       <div className="flex items-center gap-1.5 mb-1.5">
         <span className="h-1.5 w-1.5 rounded-full bg-brand-secondary/80 animate-soft-pulse" />
-        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+        <span className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
           Une précision
         </span>
       </div>
-      <div className="text-[15px] font-semibold leading-snug text-foreground">{question}</div>
+      <div className="text-base font-semibold leading-snug text-foreground">{question}</div>
       <div className="mt-3 grid grid-cols-1 gap-1.5">
         {options.map((opt, i) => (
           <button
             key={i}
             onClick={() => onPick(opt)}
-            className="tap lift w-full rounded-xl bg-secondary text-left px-3 py-2.5 text-[13px] font-medium flex items-center justify-between gap-3 hover:bg-secondary/80"
+            className="tap lift w-full rounded-xl bg-secondary text-left px-3 py-2.5 text-sm font-medium flex items-center justify-between gap-3 hover:bg-secondary/80"
           >
             <span className="text-foreground leading-tight">{opt.label}</span>
-            <span className="shrink-0 text-[9px] font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+            <span className="shrink-0 text-2xs font-bold px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
               {opt.side === "Association" ? "Asso" : "SCI"}
             </span>
           </button>
@@ -577,17 +577,17 @@ function PlacePrompt({ onPick }: { onPick: (place: Place) => void }) {
     <div className="rounded-2xl border border-border bg-card p-4 animate-rise">
       <div className="flex items-center gap-1.5 mb-1.5">
         <span className="h-1.5 w-1.5 rounded-full bg-brand-secondary/80 animate-soft-pulse" />
-        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+        <span className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
           Une précision
         </span>
       </div>
-      <div className="text-[15px] font-semibold leading-snug text-foreground">Pour quel lieu&nbsp;?</div>
+      <div className="text-base font-semibold leading-snug text-foreground">Pour quel lieu&nbsp;?</div>
       <div className="mt-3 grid grid-cols-3 auto-rows-fr gap-1.5">
         {PLACES.map((p) => (
           <button
             key={p}
             onClick={() => onPick(p)}
-            className="tap lift rounded-xl bg-secondary px-2.5 py-2.5 text-[12px] font-semibold text-foreground text-center leading-tight hover:bg-secondary/80"
+            className="tap lift rounded-xl bg-secondary px-2.5 py-2.5 text-xs font-semibold text-foreground text-center leading-tight hover:bg-secondary/80"
           >
             {p}
           </button>
@@ -681,11 +681,11 @@ function ChantierExpenseAssociation({
     <section className="animate-rise rounded-2xl border border-border bg-card p-4">
       <div className="mb-1.5 flex items-center gap-1.5">
         <span className="h-1.5 w-1.5 animate-soft-pulse rounded-full bg-brand-secondary/80" />
-        <span className="text-[9px] font-medium uppercase tracking-widest text-muted-foreground">
+        <span className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
           Une précision
         </span>
       </div>
-      <div className="text-[15px] font-semibold leading-snug text-foreground">
+      <div className="text-base font-semibold leading-snug text-foreground">
         Est-ce que la facture correspond à un repas chantier&nbsp;?
       </div>
 
@@ -694,14 +694,14 @@ function ChantierExpenseAssociation({
           <button
             type="button"
             onClick={chooseChantierMeal}
-            className="tap lift rounded-xl bg-secondary px-3 py-2.5 text-[12px] font-semibold text-foreground hover:bg-secondary/80"
+            className="tap lift rounded-xl bg-secondary px-3 py-2.5 text-xs font-semibold text-foreground hover:bg-secondary/80"
           >
             Oui, chantier
           </button>
           <button
             type="button"
             onClick={dismiss}
-            className="tap lift rounded-xl bg-secondary px-3 py-2.5 text-[12px] font-semibold text-foreground hover:bg-secondary/80"
+            className="tap lift rounded-xl bg-secondary px-3 py-2.5 text-xs font-semibold text-foreground hover:bg-secondary/80"
           >
             Non
           </button>
@@ -712,7 +712,7 @@ function ChantierExpenseAssociation({
         <div className="mt-3 border-t border-border pt-3">
           <label
             htmlFor="expense-chantier"
-            className="mb-1.5 block text-[9px] font-medium uppercase tracking-widest text-muted-foreground"
+            className="mb-1.5 block text-2xs font-medium uppercase tracking-widest text-muted-foreground"
           >
             Chantier concerné
           </label>
@@ -721,7 +721,7 @@ function ChantierExpenseAssociation({
             value={expense.chantierId ?? ""}
             onChange={(event) => selectChantier(event.target.value)}
             disabled={loading}
-            className="h-10 w-full rounded-xl border border-border bg-secondary px-3 text-[11px] font-semibold text-foreground outline-none focus:ring-2 focus:ring-brand-accent/40 disabled:opacity-50"
+            className="h-10 w-full rounded-xl border border-border bg-secondary px-3 text-xs font-semibold text-foreground outline-none focus:ring-2 focus:ring-brand-accent/40 disabled:opacity-50"
           >
             <option value="">{loading ? "Chargement…" : "Choisir un chantier"}</option>
             {available.map((chantier) => (
@@ -732,14 +732,14 @@ function ChantierExpenseAssociation({
             ))}
           </select>
           {!loading && !expense.chantierId && (
-            <p className="mt-1.5 text-[9px] font-semibold text-muted-foreground">
+            <p className="mt-1.5 text-2xs font-semibold text-muted-foreground">
               Choisis le chantier avant de valider.
             </p>
           )}
           <button
             type="button"
             onClick={dismiss}
-            className="mt-2 text-[9px] font-semibold text-muted-foreground underline-offset-2 hover:underline"
+            className="mt-2 text-2xs font-semibold text-muted-foreground underline-offset-2 hover:underline"
           >
             Ce n’est pas un repas chantier
           </button>
@@ -886,7 +886,7 @@ function IdleView({
           <Camera className="h-6 w-6 shrink-0" strokeWidth={2} />
           <div className="min-w-0 flex-1 text-left">
             <h2 className="text-base font-bold leading-tight">Prendre une photo</h2>
-            <p className="text-[12px] opacity-70 mt-0.5">Ouvre la caméra</p>
+            <p className="text-xs opacity-70 mt-0.5">Ouvre la caméra</p>
           </div>
           <ArrowRight
             className="h-5 w-5 opacity-60 shrink-0 transition group-hover:translate-x-0.5 group-hover:opacity-100"
@@ -915,7 +915,7 @@ function IdleView({
           />
           <div className="min-w-0 flex-1 text-left">
             <h2 className="text-base font-bold leading-tight">Choisir un fichier</h2>
-            <p className="text-[12px] text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5">
               Photo ou PDF depuis ton téléphone
             </p>
           </div>
@@ -938,7 +938,7 @@ function AnalyzingView({ message, onCancel }: { message: string; onCancel: () =>
     <section className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 animate-rise bg-background text-foreground text-center">
       <button
         onClick={onCancel}
-        className="absolute left-6 top-6 flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground hover:text-foreground transition"
+        className="absolute left-6 top-6 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition"
       >
         <ArrowLeft className="h-4 w-4" /> Retour
       </button>
@@ -974,7 +974,7 @@ function ExportingView({ side, onCancel }: { side: Side; onCancel: () => void })
     <section className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-8 animate-rise bg-background text-foreground text-center">
       <button
         onClick={onCancel}
-        className="absolute left-6 top-6 flex items-center gap-1.5 text-[12px] font-semibold text-muted-foreground hover:text-foreground transition"
+        className="absolute left-6 top-6 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition"
       >
         <ArrowLeft className="h-4 w-4" /> Retour
       </button>
@@ -1041,14 +1041,14 @@ function DoneView({
           <Check className={`h-8 w-8 ${sideFg}`} strokeWidth={3} />
         </div>
         <div>
-          <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <div className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             C'est fait
           </div>
           <h2 className="text-4xl font-bold tracking-tight leading-none">Rangé.</h2>
         </div>
       </div>
 
-      <div className="rounded-[2rem] bg-card border border-border shadow-card overflow-hidden">
+      <div className="rounded-2xl bg-card border border-border shadow-card overflow-hidden">
         <div className={`flex items-center justify-between gap-4 px-6 py-4 ${sideBg}`}>
           <span className={`text-sm font-bold ${sideFg}`}>Dépense {sideLabel}</span>
           <span className={`text-2xl font-black tracking-tight ${sideFg}`}>
@@ -1057,7 +1057,7 @@ function DoneView({
         </div>
         <div className="p-6 space-y-6">
           <div>
-            <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground mb-1">
+            <div className="text-2xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
               Fournisseur
             </div>
             <div className="text-2xl font-bold leading-tight tracking-tight break-words">
@@ -1066,26 +1066,26 @@ function DoneView({
           </div>
           <div className="grid gap-3">
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+              <span className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                 Catégorie
               </span>
               <span className="text-right text-sm font-medium">{category}</span>
             </div>
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+              <span className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                 Membre
               </span>
               <span className="text-right text-sm font-medium">{memberName}</span>
             </div>
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+              <span className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                 {paidByLabel}
               </span>
               <span className="text-right text-sm font-medium">{paidByValue}</span>
             </div>
             {expense.chantierId && (
               <div className="flex items-baseline justify-between gap-3">
-                <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <span className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                   Chantier
                 </span>
                 <span className="text-right text-sm font-medium">
@@ -1106,7 +1106,7 @@ function DoneView({
         </button>
         <button
           onClick={onAgain}
-          className="tap lift group rounded-2xl bg-brand-accent px-4 py-3.5 text-sm font-semibold text-brand-accent-foreground flex items-center justify-center gap-2 shadow-card"
+          className="tap lift group rounded-2xl bg-brand-secondary px-4 py-3.5 text-sm font-semibold text-brand-secondary-foreground flex items-center justify-center gap-2 shadow-card"
         >
           Autre facture{" "}
           <ArrowRight

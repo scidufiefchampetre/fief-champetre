@@ -309,7 +309,7 @@ export function TaskFormSheet({
       >
         <SheetHeader className="mb-5 shrink-0">
           <SheetTitle className="page-title text-left">{title}.</SheetTitle>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="page-lead">
             {subtitle ??
               "Propose une tâche pour les prochains chantiers. Elle sera visible dans le backlog admin."}
           </p>

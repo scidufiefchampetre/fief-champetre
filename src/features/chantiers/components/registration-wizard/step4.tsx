@@ -52,7 +52,7 @@ export function Step4Summary({ people, tokens, mealsMode, mealAttendees, draftDu
   return (
     <div className="space-y-4 py-2">
       {myGroup && (
-        <div className="rounded-xl bg-brand-secondary/10 px-4 py-2.5 text-[11px] font-semibold text-brand-secondary">
+        <div className="rounded-xl bg-brand-secondary/10 px-4 py-2.5 text-xs font-semibold text-brand-secondary">
           Modification de ton inscription existante
         </div>
       )}
@@ -61,7 +61,7 @@ export function Step4Summary({ people, tokens, mealsMode, mealAttendees, draftDu
       <div className="rounded-2xl border border-border bg-card p-4">
         <div className="mb-3 flex items-center gap-2">
           <Users className="h-4 w-4 text-brand-secondary" />
-          <span className="text-[12px] font-bold uppercase tracking-wide text-brand-secondary">
+          <span className="text-xs font-bold uppercase tracking-wide text-brand-secondary">
             Participants
           </span>
         </div>
@@ -69,7 +69,7 @@ export function Step4Summary({ people, tokens, mealsMode, mealAttendees, draftDu
           {people.map((p) => (
             <span
               key={p.key}
-              className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${
+              className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                 isChildPersonType(p.personType)
                   ? "bg-secondary text-muted-foreground"
                   : "bg-brand-secondary/10 text-brand-secondary"
@@ -88,7 +88,7 @@ export function Step4Summary({ people, tokens, mealsMode, mealAttendees, draftDu
       <div className="rounded-2xl border border-border bg-card p-4">
         <div className="mb-3 flex items-center gap-2">
           <Utensils className="h-4 w-4 text-brand-secondary" />
-          <span className="text-[12px] font-bold uppercase tracking-wide text-brand-secondary">
+          <span className="text-xs font-bold uppercase tracking-wide text-brand-secondary">
             Repas
           </span>
         </div>
@@ -96,8 +96,8 @@ export function Step4Summary({ people, tokens, mealsMode, mealAttendees, draftDu
         {allSameMeals ? (
           /* All same: single summary line */
           <div className="flex items-baseline gap-2">
-            <span className="text-[13px] font-bold">Tout le monde</span>
-            <span className="text-[11px] text-muted-foreground">· {tokens.length} repas</span>
+            <span className="text-sm font-bold">Tout le monde</span>
+            <span className="text-xs text-muted-foreground">· {tokens.length} repas</span>
           </div>
         ) : (
           /* Per-person breakdown */
@@ -106,17 +106,17 @@ export function Step4Summary({ people, tokens, mealsMode, mealAttendees, draftDu
               const meals = personMeals(p);
               return (
                 <div key={p.key} className="flex items-start gap-3">
-                  <span className="w-[72px] shrink-0 truncate text-[12px] font-bold">
+                  <span className="w-[72px] shrink-0 truncate text-xs font-bold">
                     {p.name.split(" ")[0]}
                   </span>
                   {meals.length === 0 ? (
-                    <span className="text-[11px] italic text-muted-foreground/50">Aucun repas</span>
+                    <span className="text-xs italic text-muted-foreground/50">Aucun repas</span>
                   ) : (
                     <div className="flex flex-wrap gap-1">
                       {meals.map(({ date, meal }) => (
                         <span
                           key={`${date}:${meal}`}
-                          className="inline-flex items-center gap-0.5 rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold text-foreground"
+                          className="inline-flex items-center gap-0.5 rounded-full bg-secondary px-2 py-0.5 text-2xs font-semibold text-foreground"
                         >
                           {meal === "dejeuner" ? (
                             <Sun className="h-2.5 w-2.5 text-brand-accent" />
@@ -139,12 +139,12 @@ export function Step4Summary({ people, tokens, mealsMode, mealAttendees, draftDu
       <div className="rounded-2xl border border-border bg-card p-4">
         <div className="mb-3 flex items-center gap-2">
           <ShoppingCart className="h-4 w-4 text-brand-secondary" />
-          <span className="text-[12px] font-bold uppercase tracking-wide text-brand-secondary">
+          <span className="text-xs font-bold uppercase tracking-wide text-brand-secondary">
             Intendance
           </span>
         </div>
         {draftDuties.length === 0 ? (
-          <p className="text-[12px] text-muted-foreground">Aucune mission prise.</p>
+          <p className="text-xs text-muted-foreground">Aucune mission prise.</p>
         ) : (() => {
           // Group by person preserving insertion order
           const byPerson = new Map<string, DraftDuty[]>();
@@ -156,11 +156,11 @@ export function Step4Summary({ people, tokens, mealsMode, mealAttendees, draftDu
             <div className="space-y-3">
               {Array.from(byPerson.entries()).map(([personName, duties]) => (
                 <div key={personName} className="flex items-start gap-2.5">
-                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-secondary/10 text-[9px] font-black text-brand-secondary">
+                  <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-secondary/10 text-2xs font-black text-brand-secondary">
                     {initials(personName)}
                   </span>
                   <div className="flex-1">
-                    <div className="mb-1.5 text-[12px] font-bold">{personName.split(" ")[0]}</div>
+                    <div className="mb-1.5 text-xs font-bold">{personName.split(" ")[0]}</div>
                     <div className="space-y-1">
                       {DUTY_ROLES.filter((role) => duties.some((d) => d.role === role)).map((role) => {
                         const Icon = ROLE_ICON[role];
@@ -168,14 +168,14 @@ export function Step4Summary({ people, tokens, mealsMode, mealAttendees, draftDu
                         return (
                           <div key={role} className="flex items-center gap-2">
                             <Icon className="h-3 w-3 shrink-0 text-brand-accent" />
-                            <span className="w-14 shrink-0 text-[10px] font-semibold text-muted-foreground">
+                            <span className="w-14 shrink-0 text-2xs font-semibold text-muted-foreground">
                               {DUTY_ROLE_LABEL[role]}
                             </span>
                             <div className="flex flex-wrap gap-1">
                               {roleDuties.map((d) => (
                                 <span
                                   key={`${d.date}-${d.slot}`}
-                                  className="rounded-full bg-secondary px-2 py-0.5 text-[10px] font-semibold"
+                                  className="rounded-full bg-secondary px-2 py-0.5 text-2xs font-semibold"
                                 >
                                   {fmtDateShort(d.date)} · {SLOT_CHIP[d.role][d.slot]}
                                 </span>
@@ -194,7 +194,7 @@ export function Step4Summary({ people, tokens, mealsMode, mealAttendees, draftDu
       </div>
 
       {isPending && (
-        <div className="flex items-center justify-center gap-2 py-2 text-[12px] text-muted-foreground">
+        <div className="flex items-center justify-center gap-2 py-2 text-xs text-muted-foreground">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           Enregistrement en cours…
         </div>

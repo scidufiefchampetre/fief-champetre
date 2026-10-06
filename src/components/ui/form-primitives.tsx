@@ -28,12 +28,12 @@ export function FormField({
 }) {
   return (
     <div className={`py-4 ${last ? "" : "border-b border-border"}`}>
-      <div className="label-micro mb-2">
+      <div className="field-label mb-2">
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}
       </div>
       {children}
-      {hint && <p className="mt-1.5 text-[10px] text-muted-foreground">{hint}</p>}
+      {hint && <p className="mt-1.5 text-xs text-muted-foreground">{hint}</p>}
     </div>
   );
 }
@@ -70,7 +70,7 @@ export function DateRangeField({
   return (
     <div className="space-y-3">
       <label className="block">
-        <div className="mb-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+        <div className="mb-1.5 text-2xs font-medium uppercase tracking-widest text-muted-foreground">
           {startLabel} *
         </div>
         <input
@@ -81,7 +81,7 @@ export function DateRangeField({
         />
       </label>
       <label className="block">
-        <div className="mb-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+        <div className="mb-1.5 text-2xs font-medium uppercase tracking-widest text-muted-foreground">
           {endLabel} *
         </div>
         <input
@@ -92,7 +92,7 @@ export function DateRangeField({
           className="input-field"
         />
         {nights > 0 && (
-          <p className="mt-1.5 text-[10px] font-semibold text-brand-secondary">
+          <p className="mt-1.5 text-2xs font-semibold text-brand-secondary">
             {nights} nuit{nights > 1 ? "s" : ""}
           </p>
         )}
@@ -190,9 +190,9 @@ export function ToggleField({
     <div className="overflow-hidden rounded-2xl border border-border bg-card">
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div className="min-w-0">
-          <div className="text-[13px] font-semibold">{label}</div>
+          <div className="text-sm font-semibold">{label}</div>
           {description && (
-            <div className="mt-0.5 text-[11px] text-muted-foreground">{description}</div>
+            <div className="mt-0.5 text-xs text-muted-foreground">{description}</div>
           )}
         </div>
         <Toggle checked={checked} onChange={onChange} label={label} />
@@ -326,7 +326,7 @@ export function DurationInput({
         className="w-full bg-transparent text-base font-semibold outline-none placeholder:text-muted-foreground/40 leading-snug"
       />
       {text && (
-        <p className={`mt-1 text-[11px] font-semibold ${isValid ? "text-brand-secondary" : "text-brand-accent"}`}>
+        <p className={`mt-1 text-xs font-semibold ${isValid ? "text-brand-secondary" : "text-brand-accent"}`}>
           {isValid ? `= ${formatDuration(parsed)}` : "Format non reconnu"}
         </p>
       )}
@@ -336,7 +336,7 @@ export function DurationInput({
             key={q.value}
             type="button"
             onClick={() => { setText(q.label); onChange(q.value); }}
-            className={`tap rounded-full border px-2.5 py-1 text-[11px] font-semibold transition ${
+            className={`tap rounded-full border px-2.5 py-1 text-xs font-semibold transition ${
               value === q.value
                 ? "border-brand-secondary bg-brand-secondary/10 text-brand-secondary"
                 : "border-border bg-secondary text-muted-foreground hover:border-brand-secondary/50 hover:text-foreground"
@@ -410,7 +410,7 @@ export function PhotoField({
       </button>
     </div>
   ) : (
-    <label className="flex cursor-pointer items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition">
+    <label className="flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition">
       <ImagePlus className="h-3.5 w-3.5" />
       <span className="underline underline-offset-2">Joindre une photo…</span>
       <input

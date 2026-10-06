@@ -144,15 +144,18 @@ Ne jamais éditer `src/routeTree.gen.ts` à la main — il est auto-généré.
 
 ## Design system
 
-Palette **60–30–10** :
-- `Cloud Dancer #F0EEE9` — base (60 %)
-- `Blue Violet #685BC7` — secondaire, CTAs principaux (30 %)
-- `Exuberant Orange #FF582D` — accent, actions importantes (10 %)
-- Mode sombre : base `#242226`
+**Lire `DESIGN.md` à la racine** : c'est la charte unique (couleurs, échelle typo,
+arrondis, boutons, formulaires, états). Résumé :
 
-Classes Tailwind : `bg-brand-secondary`, `bg-brand-accent`, `text-brand-secondary-foreground`, etc.
+- Palette 60–30–10 : Cloud Dancer (base), Blue Violet = **agir** (tous les
+  boutons de validation, sélection, pastilles icône), Exuberant Orange =
+  **regarder ici** (un seul élément vedette ou alerte par écran ; et l'identité Asso).
+- Jamais de valeur en dur : pas de `text-[13px]`, de hex ni de `rounded-[…]`.
+  Échelle typo : `text-2xs` (10 px, plancher) → `text-xs` → `text-sm` → `text-base`…
+- Classes : `.page-title`, `.page-lead`, `.section-title`, `.item-title`,
+  `.eyebrow`, `.field-label`, `.input-field`.
 
-**CTA principal (règle absolue) :**
+**CTA principal pleine largeur en bas de page :**
 ```tsx
 <div className="sticky bottom-0 bg-background/90 pb-4 pt-3 backdrop-blur-md">
   <button
@@ -162,8 +165,6 @@ Classes Tailwind : `bg-brand-secondary`, `bg-brand-accent`, `text-brand-secondar
   </button>
 </div>
 ```
-
-Ne jamais utiliser `btn-primary` sur un CTA pleine largeur en bas de page.
 
 ---
 

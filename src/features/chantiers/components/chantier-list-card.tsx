@@ -54,7 +54,7 @@ export function ChantierListCard({
       title={chantierTitle(chantier.startDate, chantier.endDate)}
       badge={
         past ? (
-          <span className="rounded-full bg-secondary px-2 py-0.5 text-[7px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+          <span className="rounded-full bg-secondary px-2 py-0.5 text-2xs font-bold uppercase tracking-widest text-muted-foreground">
             Terminé
           </span>
         ) : undefined

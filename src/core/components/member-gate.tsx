@@ -255,7 +255,7 @@ export function MemberGate({
         <div className="mt-8 flex flex-col gap-3">
           <button
             onClick={openExisting}
-            className="tap lift group -mx-3 flex min-h-28 items-center justify-between gap-4 rounded-[1.75rem] border border-brand-secondary bg-brand-secondary px-5 py-5 text-left text-brand-secondary-foreground shadow-card"
+            className="tap lift group -mx-3 flex min-h-28 items-center justify-between gap-4 rounded-3xl border border-brand-secondary bg-brand-secondary px-5 py-5 text-left text-brand-secondary-foreground shadow-card"
           >
             <div className="min-w-0">
               <div className="text-xl font-bold leading-tight">J’ai déjà un profil</div>
@@ -270,7 +270,7 @@ export function MemberGate({
 
           <button
             onClick={() => setMode("new")}
-            className="tap lift group -mx-3 flex min-h-28 items-center justify-between gap-4 rounded-[1.75rem] border border-border bg-card px-5 py-5 text-left hover-device:hover:border-brand-secondary/50 hover-device:hover:bg-secondary/45"
+            className="tap lift group -mx-3 flex min-h-28 items-center justify-between gap-4 rounded-3xl border border-border bg-card px-5 py-5 text-left hover-device:hover:border-brand-secondary/50 hover-device:hover:bg-secondary/45"
           >
             <div className="min-w-0">
               <div className="text-xl font-bold leading-tight">C’est ma première fois</div>
@@ -339,15 +339,15 @@ export function MemberGate({
           <BankPicker value={bankName} onChange={setBankName} />
 
           <div>
-            <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
               <Heart className="h-3 w-3" /> Ma famille (optionnel)
             </div>
-            <p className="mt-1 text-[10px] text-muted-foreground/80">
+            <p className="mt-1 text-2xs text-muted-foreground/80">
               Conjoint·e et enfants — ça te permettra de les ajouter aux résa et aux chantiers plus rapidement.
             </p>
 
             <div className="mt-2">
-              <div className="text-[10px] font-medium text-muted-foreground mb-1">Conjoint·e</div>
+              <div className="text-2xs font-medium text-muted-foreground mb-1">Conjoint·e</div>
               <select
                 value={spouseId}
                 onChange={(e) => setSpouseId(e.target.value)}
@@ -362,12 +362,12 @@ export function MemberGate({
               </select>
             </div>
 
-            <div className="mt-3 text-[10px] font-medium text-muted-foreground mb-1">Enfants</div>
+            <div className="mt-3 text-2xs font-medium text-muted-foreground mb-1">Enfants</div>
 
             {/* Spouse's existing children (read-only) */}
             {spouseChildren.length > 0 && (
               <div className="mt-2 space-y-1.5">
-                <div className="text-[10px] font-semibold text-muted-foreground">
+                <div className="text-2xs font-semibold text-muted-foreground">
                   Enfants de ton·ta conjoint·e (déjà enregistrés)
                 </div>
                 {spouseChildren.map((c) => (
@@ -379,14 +379,14 @@ export function MemberGate({
                     <div className="text-sm">
                       <span className="font-semibold">{c.firstName}</span>
                       {c.birthday && (
-                        <span className="ml-1.5 text-[11px] text-muted-foreground">
+                        <span className="ml-1.5 text-xs text-muted-foreground">
                           né(e) le {c.birthday}
                         </span>
                       )}
                     </div>
                   </div>
                 ))}
-                <p className="text-[10px] text-muted-foreground/70">
+                <p className="text-2xs text-muted-foreground/70">
                   Ils seront automatiquement liés à ton profil.
                 </p>
               </div>
@@ -403,7 +403,7 @@ export function MemberGate({
                     <div className="text-sm">
                       <span className="font-semibold">{c.firstName}</span>
                       {c.birthday && (
-                        <span className="ml-1.5 text-[11px] text-muted-foreground">
+                        <span className="ml-1.5 text-xs text-muted-foreground">
                           né(e) le {c.birthday}
                         </span>
                       )}
@@ -450,7 +450,7 @@ export function MemberGate({
           <button
             onClick={submitNew}
             disabled={loading}
-            className="tap lift w-full rounded-2xl bg-brand-accent px-4 py-4 text-sm font-semibold text-brand-accent-foreground disabled:opacity-50 shadow-card"
+            className="tap lift w-full rounded-2xl bg-brand-secondary px-4 py-4 text-sm font-semibold text-brand-secondary-foreground disabled:opacity-50 shadow-card"
           >
             {loading ? "Enregistrement…" : "C'est parti →"}
           </button>
@@ -484,13 +484,13 @@ export function MemberGate({
         Tape les premières lettres de ton prénom, ou choisis directement.
       </p>
       <div className="mt-4 flex items-center justify-between">
-        <span className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+        <span className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
           {members ? `${members.length} membre${members.length > 1 ? "s" : ""}` : "\u00A0"}
         </span>
         <button
           onClick={() => refreshMembers(true)}
           disabled={loading}
-          className="flex items-center gap-1 text-[10px] font-semibold text-muted-foreground hover:text-foreground transition disabled:opacity-50"
+          className="flex items-center gap-1 text-2xs font-semibold text-muted-foreground hover:text-foreground transition disabled:opacity-50"
         >
           <RotateCw className={`h-3 w-3 ${loading ? "animate-spin" : ""}`} />
           Actualiser
@@ -564,7 +564,7 @@ export function Field({
 }) {
   return (
     <label className="block">
-      <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+      <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
         {label}
       </div>
       <input
@@ -616,7 +616,7 @@ export function BankPicker({ value, onChange }: { value: string; onChange: (v: s
     return (
       <label className="block">
         <div className="flex items-center justify-between">
-          <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+          <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
             Ta banque
           </div>
           <button
@@ -626,7 +626,7 @@ export function BankPicker({ value, onChange }: { value: string; onChange: (v: s
               setQuery("");
               onChange("");
             }}
-            className="text-[10px] font-semibold text-muted-foreground hover:text-foreground transition"
+            className="text-2xs font-semibold text-muted-foreground hover:text-foreground transition"
           >
             ← Choisir dans la liste
           </button>
@@ -644,7 +644,7 @@ export function BankPicker({ value, onChange }: { value: string; onChange: (v: s
 
   return (
     <div className="relative" ref={wrapRef}>
-      <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+      <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
         Ta banque
       </div>
       <div className="relative mt-1.5">

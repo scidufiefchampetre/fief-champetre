@@ -46,18 +46,18 @@ export function TaskRow({
         />
       )}
       <span
-        className={`min-w-0 flex-1 truncate text-[13px] ${task.done ? "line-through text-muted-foreground/60" : "text-foreground"}`}
+        className={`min-w-0 flex-1 truncate text-sm ${task.done ? "line-through text-muted-foreground/60" : "text-foreground"}`}
       >
         {task.label}
       </span>
       {peopleCount > 0 && (
-        <span className="flex shrink-0 items-center gap-0.5 text-[11px] text-muted-foreground">
+        <span className="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground">
           <User className="h-3 w-3" />
           {peopleCount}
         </span>
       )}
       {duration > 0 && (
-        <span className="flex shrink-0 items-center gap-0.5 text-[11px] text-muted-foreground">
+        <span className="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground">
           <Clock className="h-3 w-3" />
           {durationLabel(duration)}
         </span>
@@ -91,20 +91,20 @@ export function PendingTaskRow({
   return (
     <div className="flex items-center gap-2.5 py-1.5">
       <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-dashed border-brand-accent/50 bg-brand-accent/5" />
-      <span className="min-w-0 flex-1 truncate text-[13px] text-foreground">{task.label}</span>
+      <span className="min-w-0 flex-1 truncate text-sm text-foreground">{task.label}</span>
       {(task.estimatedPeopleCount ?? 0) > 0 && (
-        <span className="flex shrink-0 items-center gap-0.5 text-[11px] text-muted-foreground">
+        <span className="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground">
           <User className="h-3 w-3" />
           {task.estimatedPeopleCount}
         </span>
       )}
       {(task.estimatedDurationMinutes ?? 0) > 0 && (
-        <span className="flex shrink-0 items-center gap-0.5 text-[11px] text-muted-foreground">
+        <span className="flex shrink-0 items-center gap-0.5 text-xs text-muted-foreground">
           <Clock className="h-3 w-3" />
           {durationLabel(task.estimatedDurationMinutes!)}
         </span>
       )}
-      <span className="shrink-0 rounded-full bg-brand-accent/10 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-brand-accent">
+      <span className="shrink-0 rounded-full bg-brand-accent/10 px-1.5 py-0.5 text-2xs font-bold uppercase tracking-wider text-brand-accent">
         À valider
       </span>
       {onRemove && (

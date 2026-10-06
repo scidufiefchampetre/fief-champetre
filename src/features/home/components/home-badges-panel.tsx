@@ -534,8 +534,8 @@ export function HomeBadgesPanel({ spreadsheetId, firstName, lastName }: HomeBadg
           <Award className="h-[18px] w-[18px]" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[12px] font-black">Tes badges</span>
-          <span className="mt-0.5 block truncate text-[9px] text-muted-foreground">
+          <span className="block text-xs font-black">Tes badges</span>
+          <span className="mt-0.5 block truncate text-2xs text-muted-foreground">
             {query.isLoading
               ? "Calcul de ta saison…"
               : query.isError
@@ -564,7 +564,7 @@ export function HomeBadgesPanel({ spreadsheetId, firstName, lastName }: HomeBadg
               >
                 <Icon className="h-4 w-4" />
               </span>
-              <span className="mt-1 block truncate text-[7px] font-bold text-muted-foreground">
+              <span className="mt-1 block truncate text-2xs font-bold text-muted-foreground">
                 {badge.label}
               </span>
             </button>
@@ -610,18 +610,18 @@ export function HomeBadgesPanel({ spreadsheetId, firstName, lastName }: HomeBadg
                   </span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
-                      <h3 className="text-[15px] font-black">{selectedBadge.label}</h3>
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-brand-secondary">
+                      <h3 className="text-base font-black">{selectedBadge.label}</h3>
+                      <span className="text-2xs font-bold uppercase tracking-wider text-brand-secondary">
                         {selectedLevelLabel}
                       </span>
                     </div>
-                    <p className="mt-1 text-[11px] font-semibold leading-snug">
+                    <p className="mt-1 text-xs font-semibold leading-snug">
                       « {selectedBadge.copy[Math.max(0, selectedLevel + 1)]} »
                     </p>
-                    <p className="mt-2 text-[9px] leading-relaxed text-muted-foreground">
+                    <p className="mt-2 text-2xs leading-relaxed text-muted-foreground">
                       {selectedBadge.rule}
                     </p>
-                    <div className="mt-2 flex items-center justify-between gap-3 text-[9px] font-bold">
+                    <div className="mt-2 flex items-center justify-between gap-3 text-2xs font-bold">
                       <span>{selectedBadge.valueLabel(selectedValue)}</span>
                       <span className="text-muted-foreground">
                         {nextLevel
@@ -635,10 +635,10 @@ export function HomeBadgesPanel({ spreadsheetId, firstName, lastName }: HomeBadg
 
               <div className="mt-4 flex items-center justify-between gap-3">
                 <div>
-                  <div className="text-[10px] font-black uppercase tracking-[0.18em] text-brand-secondary">
+                  <div className="text-2xs font-black uppercase tracking-widest text-brand-secondary">
                     Les 20 badges
                   </div>
-                  <div className="mt-0.5 text-[10px] text-muted-foreground">
+                  <div className="mt-0.5 text-2xs text-muted-foreground">
                     Appuie sur un badge pour voir sa règle.
                   </div>
                 </div>
@@ -665,7 +665,7 @@ export function HomeBadgesPanel({ spreadsheetId, firstName, lastName }: HomeBadg
                         <Icon className="h-[18px] w-[18px]" />
                       </span>
                       <span
-                        className={`mt-1.5 block text-[8px] font-black leading-tight ${level < 0 ? "text-muted-foreground" : "text-foreground"}`}
+                        className={`mt-1.5 block text-2xs font-black leading-tight ${level < 0 ? "text-muted-foreground" : "text-foreground"}`}
                       >
                         {badge.label}
                       </span>

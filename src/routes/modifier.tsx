@@ -83,7 +83,7 @@ function ModifierPage() {
 
         <div className="animate-rise">
           <h1 className="page-title">Modifier la dépense</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="page-lead">
             Corrige uniquement ce qui ne va pas. Le reste est déjà prêt.
           </p>
         </div>
@@ -332,7 +332,7 @@ function ModifierPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-3xl border border-border bg-card p-5 shadow-card">
+    <section className="rounded-2xl border border-border bg-card p-5 shadow-card">
       <h2 className="text-lg font-bold tracking-tight">{title}</h2>
       <div className="mt-4 space-y-4">{children}</div>
     </section>

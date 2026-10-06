@@ -52,7 +52,7 @@ export function AppHeader({
             (store.member && (
               <button
                 onClick={() => store.setMember(null)}
-                className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-[10px] font-semibold text-muted-foreground transition hover:text-foreground"
+                className="flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 text-2xs font-semibold text-muted-foreground transition hover:text-foreground"
               >
                 <LogOut className="h-3 w-3" />
                 {store.member.firstName}
@@ -68,7 +68,7 @@ export function AppHeader({
               type="button"
               onClick={onBack}
               aria-label={`Retour vers ${resolvedBackLabel}`}
-              className="inline-flex items-center gap-1.5 rounded-full px-1 py-1 text-[10px] font-semibold text-muted-foreground transition hover:text-foreground"
+              className="inline-flex items-center gap-1.5 rounded-full px-1 py-1 text-2xs font-semibold text-muted-foreground transition hover:text-foreground"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               {resolvedBackLabel}
@@ -77,7 +77,7 @@ export function AppHeader({
             <Link
               to={resolvedBackTo}
               aria-label={`Retour vers ${resolvedBackLabel}`}
-              className="inline-flex items-center gap-1.5 rounded-full px-1 py-1 text-[10px] font-semibold text-muted-foreground transition hover:text-foreground"
+              className="inline-flex items-center gap-1.5 rounded-full px-1 py-1 text-2xs font-semibold text-muted-foreground transition hover:text-foreground"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               {resolvedBackLabel}

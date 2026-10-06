@@ -15,10 +15,10 @@ export function FormSection({
   return (
     <section>
       <div className="mb-2 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-[10px] font-bold text-background">
+        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-2xs font-bold text-background">
           {step}
         </span>
-        <h3 className="text-[13px] font-bold uppercase tracking-wide">{title}</h3>
+        <h3 className="text-sm font-bold uppercase tracking-wide">{title}</h3>
       </div>
       {children}
     </section>
@@ -36,7 +36,7 @@ export function ReservationField({
 }) {
   return (
     <label className="block">
-      <div className="mb-1.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+      <div className="mb-1.5 text-2xs font-medium uppercase tracking-widest text-muted-foreground">
         {label}
         {required && <span className="ml-1 text-destructive">*</span>}
       </div>

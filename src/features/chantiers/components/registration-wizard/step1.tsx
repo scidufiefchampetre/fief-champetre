@@ -36,12 +36,12 @@ function PersonChip({
 
   return (
     <div className={`flex items-center gap-2 rounded-2xl px-3.5 py-2.5 ${bg}`}>
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-[11px] font-black">
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-xs font-black">
         {initials(person.name)}
       </span>
       <div className="min-w-0">
-        <div className="text-[13px] font-bold leading-tight">{person.name}</div>
-        <div className={`text-[9px] font-semibold uppercase tracking-wide ${isMe ? "text-white/60" : "text-muted-foreground"}`}>
+        <div className="text-sm font-bold leading-tight">{person.name}</div>
+        <div className={`text-2xs font-semibold uppercase tracking-wide ${isMe ? "text-white/60" : "text-muted-foreground"}`}>
           {isMe ? "Toi" : isChild ? "Enfant" : isGuest ? "Woofer" : "Membre"}
         </div>
       </div>
@@ -137,7 +137,7 @@ export function Step1Participants({ people, currentUserName, myChildren, availab
                 key={c.firstName}
                 type="button"
                 onClick={() => addPerson(c.firstName, "child")}
-                className="tap flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1.5 text-[12px] font-semibold text-muted-foreground transition hover:border-brand-secondary/40 hover:text-brand-secondary"
+                className="tap flex items-center gap-1.5 rounded-full border border-dashed border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-brand-secondary/40 hover:text-brand-secondary"
               >
                 <Baby className="h-3.5 w-3.5" />
                 {c.firstName}
@@ -151,7 +151,7 @@ export function Step1Participants({ people, currentUserName, myChildren, availab
       <button
         type="button"
         onClick={openSheet}
-        className="tap flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-3.5 text-[13px] font-semibold text-muted-foreground transition hover:border-brand-secondary/30 hover:text-brand-secondary"
+        className="tap flex w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border py-3.5 text-sm font-semibold text-muted-foreground transition hover:border-brand-secondary/30 hover:text-brand-secondary"
       >
         <UserPlus className="h-4 w-4" />
         Ajouter un membre ou un woofer
@@ -161,7 +161,7 @@ export function Step1Participants({ people, currentUserName, myChildren, availab
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
         <SheetContent side="bottom" className="max-h-[75dvh] rounded-t-3xl px-5 pb-10 pt-6">
           <SheetHeader className="mb-4">
-            <SheetTitle className="text-left text-[17px] font-black">Ajouter un participant</SheetTitle>
+            <SheetTitle className="text-left text-lg font-black">Ajouter un participant</SheetTitle>
           </SheetHeader>
 
           {/* Mode toggle */}
@@ -169,7 +169,7 @@ export function Step1Participants({ people, currentUserName, myChildren, availab
             <button
               type="button"
               onClick={() => setAddMode("member")}
-              className={`tap flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[12px] font-bold transition ${
+              className={`tap flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition ${
                 addMode === "member"
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground"
@@ -180,7 +180,7 @@ export function Step1Participants({ people, currentUserName, myChildren, availab
             <button
               type="button"
               onClick={() => setAddMode("woofer")}
-              className={`tap flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-[12px] font-bold transition ${
+              className={`tap flex flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-xs font-bold transition ${
                 addMode === "woofer"
                   ? "bg-card text-foreground shadow-sm"
                   : "text-muted-foreground"
@@ -199,13 +199,13 @@ export function Step1Participants({ people, currentUserName, myChildren, availab
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Rechercher un membre…"
-                  className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-4 text-[13px] outline-none focus:border-brand-secondary/50 focus:ring-2 focus:ring-brand-secondary/10"
+                  className="w-full rounded-xl border border-border bg-card py-2.5 pl-9 pr-4 text-sm outline-none focus:border-brand-secondary/50 focus:ring-2 focus:ring-brand-secondary/10"
                 />
               </div>
               {/* Member list */}
               <div className="no-scrollbar max-h-[40vh] space-y-1.5 overflow-y-auto">
                 {filteredMembers.length === 0 ? (
-                  <p className="py-4 text-center text-[12px] text-muted-foreground">
+                  <p className="py-4 text-center text-xs text-muted-foreground">
                     {search ? "Aucun résultat" : "Tous les membres sont déjà ajoutés"}
                   </p>
                 ) : (
@@ -216,10 +216,10 @@ export function Step1Participants({ people, currentUserName, myChildren, availab
                       onClick={() => selectMember(m.firstName)}
                       className="tap flex w-full items-center gap-3 rounded-xl border border-border bg-card px-4 py-3 text-left transition hover:border-brand-secondary/40 hover:bg-brand-secondary/5"
                     >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-secondary/10 text-[11px] font-black text-brand-secondary">
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-secondary/10 text-xs font-black text-brand-secondary">
                         {initials(m.firstName)}
                       </span>
-                      <span className="text-[14px] font-bold">{m.firstName}</span>
+                      <span className="text-sm font-bold">{m.firstName}</span>
                     </button>
                   ))
                 )}
@@ -233,12 +233,12 @@ export function Step1Participants({ people, currentUserName, myChildren, availab
                 placeholder="Prénom du woofer…"
                 autoFocus
                 onKeyDown={(e) => e.key === "Enter" && confirmWoofer()}
-                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-[14px] outline-none focus:border-brand-secondary/50 focus:ring-2 focus:ring-brand-secondary/10"
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-brand-secondary/50 focus:ring-2 focus:ring-brand-secondary/10"
               />
               <button
                 type="button"
                 onClick={() => setWooferIsChild((v) => !v)}
-                className={`flex items-center gap-2 rounded-full border px-4 py-2 text-[12px] font-semibold transition ${
+                className={`flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold transition ${
                   wooferIsChild
                     ? "border-brand-secondary bg-brand-secondary/10 text-brand-secondary"
                     : "border-border text-muted-foreground"
@@ -251,7 +251,7 @@ export function Step1Participants({ people, currentUserName, myChildren, availab
                 type="button"
                 onClick={confirmWoofer}
                 disabled={!wooferName.trim()}
-                className="tap w-full rounded-xl bg-brand-secondary py-3.5 text-[14px] font-bold text-white transition disabled:opacity-40"
+                className="tap w-full rounded-xl bg-brand-secondary py-3.5 text-sm font-bold text-white transition disabled:opacity-40"
               >
                 Ajouter
               </button>

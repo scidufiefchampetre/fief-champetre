@@ -48,17 +48,17 @@ export function Step2Meals({ people, days, tokens, mealsMode, mealAttendees, onM
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-[14px] font-black text-foreground">
+            <div className="text-sm font-black text-foreground">
               Tout le monde, tous les repas
             </div>
-            <div className="mt-0.5 text-[11px] text-muted-foreground">
+            <div className="mt-0.5 text-xs text-muted-foreground">
               {people.length} participant{people.length > 1 ? "s" : ""} · {tokens.length} repas au total
             </div>
             <div className="mt-2 flex flex-wrap gap-1">
               {people.map((p) => (
                 <span
                   key={p.key}
-                  className="inline-flex items-center gap-1 rounded-full bg-brand-secondary/10 px-2 py-0.5 text-[10px] font-semibold text-brand-secondary"
+                  className="inline-flex items-center gap-1 rounded-full bg-brand-secondary/10 px-2 py-0.5 text-2xs font-semibold text-brand-secondary"
                 >
                   {p.name.split(" ")[0]}
                   {p.teletravail && <Home className="h-2.5 w-2.5 opacity-60" />}
@@ -83,7 +83,7 @@ export function Step2Meals({ people, days, tokens, mealsMode, mealAttendees, onM
         <button
           type="button"
           onClick={switchToCustom}
-          className="tap w-full rounded-xl border border-border py-3 text-[13px] font-semibold text-muted-foreground transition hover:border-brand-secondary/30 hover:text-brand-secondary"
+          className="tap w-full rounded-xl border border-border py-3 text-sm font-semibold text-muted-foreground transition hover:border-brand-secondary/30 hover:text-brand-secondary"
         >
           Personnaliser les repas
         </button>
@@ -98,7 +98,7 @@ export function Step2Meals({ people, days, tokens, mealsMode, mealAttendees, onM
             if (daySlots.length === 0) return null;
             return (
               <div key={day}>
-                <div className="mb-2 text-[11px] font-bold capitalize text-muted-foreground">
+                <div className="mb-2 text-xs font-bold capitalize text-muted-foreground">
                   {fmtDate(day)}
                 </div>
                 <div className="space-y-2">
@@ -114,7 +114,7 @@ export function Step2Meals({ people, days, tokens, mealsMode, mealAttendees, onM
                         <Icon
                           className={`h-4 w-4 shrink-0 ${meal === "dejeuner" ? "text-brand-accent" : "text-brand-secondary"}`}
                         />
-                        <span className="w-8 shrink-0 text-[12px] font-bold">
+                        <span className="w-8 shrink-0 text-xs font-bold">
                           {MEAL_LABEL[meal]}
                         </span>
                         <div className="flex flex-wrap gap-1.5">
@@ -125,7 +125,7 @@ export function Step2Meals({ people, days, tokens, mealsMode, mealAttendees, onM
                                 key={p.key}
                                 type="button"
                                 onClick={() => togglePerson(token, p.key)}
-                                className={`tap inline-flex items-center gap-1 rounded-full px-2 py-1 text-[10px] font-bold transition ${
+                                className={`tap inline-flex items-center gap-1 rounded-full px-2 py-1 text-2xs font-bold transition ${
                                   present
                                     ? p.teletravail
                                       ? "border border-dashed border-brand-secondary/50 bg-brand-secondary/8 text-brand-secondary"

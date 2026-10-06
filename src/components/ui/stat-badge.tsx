@@ -7,7 +7,7 @@ export function StatBadge({
 }) {
   return (
     <span
-      className={`rounded-full px-2.5 py-1 text-[9px] font-bold ${
+      className={`rounded-full px-2.5 py-1 text-2xs font-bold ${
         variant === "brand"
           ? "bg-brand-secondary/10 text-brand-secondary"
           : "bg-secondary text-muted-foreground"

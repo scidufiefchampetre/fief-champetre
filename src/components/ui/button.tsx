@@ -12,9 +12,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        // Primary — action principale (valider, créer, confirmer) : toujours orange
+        // Primary — action principale (valider, créer, confirmer) : toujours violet (DESIGN.md §1)
         default:
-          "rounded-2xl bg-brand-accent text-brand-accent-foreground shadow-card hover:brightness-95 active:scale-[0.98]",
+          "rounded-2xl bg-brand-secondary text-brand-secondary-foreground shadow-card hover:brightness-95 active:scale-[0.98]",
         // Destructive — action irréversible : rouge, toujours précédé d'une confirmation
         destructive:
           "rounded-2xl bg-destructive text-destructive-foreground hover:brightness-90 active:scale-[0.98]",
@@ -30,11 +30,11 @@ const buttonVariants = cva(
       },
       size: {
         // Taille unique : min-height 44px (touch target)
-        default: "min-h-11 px-5 py-2.5 text-[13px]",
+        default: "min-h-11 px-5 py-2.5 text-sm",
         // sm : actions intégrées dans des cartes ou listes
-        sm: "min-h-9 px-3.5 py-2 text-[12px] rounded-xl [&_svg]:size-3.5",
+        sm: "min-h-9 px-3.5 py-2 text-xs rounded-xl [&_svg]:size-3.5",
         // lg : CTA pleine largeur dans les sheets / pages
-        lg: "min-h-12 px-6 py-3 text-[14px]",
+        lg: "min-h-12 px-6 py-3 text-sm",
         icon: "min-h-11 w-11 rounded-2xl",
         "icon-sm": "min-h-9 w-9 rounded-xl [&_svg]:size-3.5",
       },

@@ -261,7 +261,7 @@ function AdminPage() {
       {!space && (
         <div className="animate-rise">
           <h1 className="page-title">Espace admin.</h1>
-          <p className="mt-2 text-xs text-muted-foreground">Choisis l'espace que tu veux gérer.</p>
+          <p className="page-lead">Choisis l'espace que tu veux gérer.</p>
           <div className="mt-6 flex flex-col gap-3">
             <button
               onClick={() => setSpace("SCI")}
@@ -393,7 +393,7 @@ function AdminPasswordGate({
   return (
     <div className="animate-rise">
       <h1 className="page-title">Admin {SPACE_LABEL[space]}.</h1>
-      <p className="mt-2 text-xs text-muted-foreground">
+      <p className="page-lead">
         Indique le mot de passe de l'espace {SPACE_LABEL[space]} pour continuer.
       </p>
       {import.meta.env["VITE_USE_MOCK_DATA"] === "true" && (
@@ -747,7 +747,7 @@ function ReimbursementDetailSheet({
               <button
                 onClick={confirmPaid}
                 disabled={submitting || deleting}
-                className="tap lift mt-6 w-full rounded-2xl bg-brand-accent px-4 py-4 text-sm font-semibold text-brand-accent-foreground disabled:opacity-50 shadow-card"
+                className="tap lift mt-6 w-full rounded-2xl bg-brand-secondary px-4 py-4 text-sm font-semibold text-brand-secondary-foreground disabled:opacity-50 shadow-card"
               >
                 {submitting ? "Enregistrement…" : "Marquer comme réglé"}
               </button>
@@ -1190,7 +1190,7 @@ function ChantiersSection({
             <button
               onClick={submitCreate}
               disabled={submitting}
-              className="tap lift flex-1 rounded-2xl bg-brand-accent px-4 py-2 text-xs font-semibold text-brand-accent-foreground disabled:opacity-50"
+              className="tap lift flex-1 rounded-2xl bg-brand-secondary px-4 py-2 text-xs font-semibold text-brand-secondary-foreground disabled:opacity-50"
             >
               {submitting ? "Envoi vers Google…" : "Valider"}
             </button>
@@ -1205,7 +1205,7 @@ function ChantiersSection({
         >
           <SheetHeader className="mb-5 text-left">
             <SheetTitle className="page-title">Nouvelle tâche.</SheetTitle>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="page-lead">
               Elle rejoindra la liste des tâches à faire, à piocher depuis un chantier.
             </p>
           </SheetHeader>
@@ -1452,7 +1452,7 @@ function ChantierCardBody({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="tap lift flex-1 rounded-2xl bg-brand-accent px-4 py-2 text-xs font-semibold text-brand-accent-foreground disabled:opacity-50"
+              className="tap lift flex-1 rounded-2xl bg-brand-secondary px-4 py-2 text-xs font-semibold text-brand-secondary-foreground disabled:opacity-50"
             >
               {saving
                 ? "Envoi vers Google…"
@@ -1912,7 +1912,7 @@ function ChantierBacklogSection({
         >
           <SheetHeader className="mb-5 text-left">
             <SheetTitle className="page-title">Nouvelle tâche.</SheetTitle>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="page-lead">
               Elle rejoindra la liste des tâches à faire, à piocher depuis un chantier.
             </p>
           </SheetHeader>

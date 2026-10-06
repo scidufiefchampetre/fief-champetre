@@ -9,9 +9,7 @@ export function SectionLabel({
 }) {
   return (
     <div
-      className={`text-[10px] font-bold uppercase tracking-[0.14em] ${
-        color === "brand" ? "text-brand-secondary" : "text-muted-foreground"
-      }`}
+      className={`eyebrow ${color === "brand" ? "!text-brand-secondary" : ""}`}
     >
       {children}
     </div>

@@ -810,7 +810,7 @@ export function ChantierBriefCard({
           </div>
           <div className="flex min-h-[142px] flex-col rounded-2xl border border-brand-secondary/10 bg-card/90 p-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-accent/15 text-brand-accent">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-secondary text-brand-secondary-foreground">
                 <Utensils className="h-4 w-4" />
               </span>
               <span className="min-w-0 truncate text-xs font-semibold text-muted-foreground">

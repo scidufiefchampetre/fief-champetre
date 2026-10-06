@@ -61,7 +61,7 @@ function ProposerIdeePage() {
   if (done) {
     return (
       <main className="min-h-dvh w-full bg-background">
-        <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 py-4 sm:py-10">
+        <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-5 py-5 sm:py-10">
           <AppHeader variant="back" backTo="/" />
           <div className="animate-rise flex flex-col items-center justify-center flex-1 text-center gap-4">
             <div className="text-4xl">💡</div>
@@ -75,11 +75,11 @@ function ProposerIdeePage() {
 
   return (
     <main className="min-h-dvh w-full bg-background">
-      <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-4 py-4 sm:py-10">
+      <div className="mx-auto flex min-h-dvh w-full max-w-xl flex-col px-5 py-5 sm:py-10">
         <AppHeader variant="back" backTo="/" />
         <div className="animate-rise">
           <h1 className="page-title">Proposer une idée.</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="page-lead">
             Une fonctionnalité qui manque ? Dis-nous ce que tu imagines.
           </p>
 
@@ -155,7 +155,7 @@ function ProposerIdeePage() {
                     </div>
                     <div>
                       <div className="text-sm font-semibold">{opt.label}</div>
-                      <div className="text-[11px] text-muted-foreground">{opt.description}</div>
+                      <div className="text-xs text-muted-foreground">{opt.description}</div>
                     </div>
                   </button>
                 ))}

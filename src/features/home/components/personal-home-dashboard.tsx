@@ -121,7 +121,7 @@ export function PersonalHomeDashboard({
           <span className="block">Salut</span>
           <span className="mt-[0.08em] block break-words">{firstName || "toi"}.</span>
         </h1>
-        <p className="mt-5 text-[12px] text-muted-foreground">Tu veux faire quoi ?</p>
+        <p className="mt-5 text-xs text-muted-foreground">Tu veux faire quoi ?</p>
       </div>
 
       <div className="mt-4 grid gap-2.5">
@@ -143,8 +143,8 @@ export function PersonalHomeDashboard({
                   <ModuleIcon className="h-4 w-4 text-brand-secondary" />
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[14px] font-black">{module.label}</span>
-                  <span className="mt-0.5 block text-[8px] text-muted-foreground">
+                  <span className="block text-sm font-black">{module.label}</span>
+                  <span className="mt-0.5 block text-2xs text-muted-foreground">
                     {module.links.length} actions
                   </span>
                 </span>
@@ -194,8 +194,8 @@ function HomeModuleAction({
     <>
       <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
       <span className="min-w-0 flex-1">
-        <span className="block text-[11px] font-bold leading-tight">{link.label}</span>
-        <span className="mt-0.5 block text-[8px] leading-snug text-muted-foreground">
+        <span className="block text-xs font-bold leading-tight">{link.label}</span>
+        <span className="mt-0.5 block text-2xs leading-snug text-muted-foreground">
           {link.description}
         </span>
       </span>

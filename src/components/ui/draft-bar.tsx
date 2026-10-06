@@ -80,7 +80,7 @@ export function DraftBar() {
       {store.items.map((item) => (
         <div
           key={item.id}
-          className={`flex h-7 max-w-[120px] items-center truncate rounded-full px-2.5 text-[11px] font-semibold transition ${
+          className={`flex h-7 max-w-[120px] items-center truncate rounded-full px-2.5 text-xs font-semibold transition ${
             item.status === "pending"
               ? "bg-brand-accent/10 text-brand-accent"
               : item.status === "saving"
@@ -98,7 +98,7 @@ export function DraftBar() {
         <button
           onClick={flush}
           disabled={saving}
-          className="flex items-center gap-1.5 rounded-full bg-brand-accent px-3 py-1.5 text-[12px] font-bold text-brand-accent-foreground transition disabled:opacity-50"
+          className="flex items-center gap-1.5 rounded-full bg-brand-accent px-3 py-1.5 text-xs font-bold text-brand-accent-foreground transition disabled:opacity-50"
         >
           <Save className="h-3.5 w-3.5" />
           Enregistrer{pending.length > 1 ? ` · ${pending.length}` : ""}
