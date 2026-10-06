@@ -116,11 +116,60 @@ function extractJson(text: string): unknown {
   }
 }
 
+// Secours quand Claude est indisponible (crédit épuisé, panne...) : appel
+// REST direct à Gemini, sans dépendance supplémentaire.
+async function analyzeWithGemini(
+  apiKey: string,
+  mimeType: string,
+  dataBase64: string,
+): Promise<string> {
+  // Les modèles Gemini gratuits renvoient souvent 503 (forte demande) : on
+  // essaie plusieurs modèles avant d'abandonner.
+  const models = process.env.GEMINI_MODEL
+    ? [process.env.GEMINI_MODEL]
+    : ["gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3.5-flash-lite"];
+  const errors: string[] = [];
+  for (const model of models) {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: SYSTEM }] },
+          contents: [
+            {
+              role: "user",
+              parts: [
+                { text: "Analyse cette facture et renvoie UNIQUEMENT le JSON demandé." },
+                { inlineData: { mimeType, data: dataBase64 } },
+              ],
+            },
+          ],
+          generationConfig: { responseMimeType: "application/json" },
+        }),
+      },
+    );
+    if (!res.ok) {
+      errors.push(`${model} ${res.status}`);
+      continue;
+    }
+    const json = (await res.json()) as {
+      candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+    };
+    const text = json.candidates?.[0]?.content?.parts?.map((p) => p.text ?? "").join("") ?? "";
+    if (text) return text;
+    errors.push(`${model} réponse vide`);
+  }
+  throw new Error(`Gemini indisponible (${errors.join(", ")})`);
+}
+
 export const analyzeInvoice = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => InputSchema.parse(d))
   .handler(async ({ data }) => {
     const anthropicKey = process.env.ANTHROPIC_API_KEY;
-    if (!anthropicKey) throw new Error("ANTHROPIC_API_KEY missing");
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!anthropicKey && !geminiKey) throw new Error("ANTHROPIC_API_KEY missing");
 
     const isImage = data.mimeType.startsWith("image/");
     const userContent: Array<Record<string, unknown>> = [
@@ -139,8 +188,9 @@ export const analyzeInvoice = createServerFn({ method: "POST" })
       });
     }
 
-    let text: string;
+    let text = "";
     try {
+      if (!anthropicKey) throw new Error("ANTHROPIC_API_KEY missing");
       const gateway = createAnthropicProvider(anthropicKey);
       const model = gateway(process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001");
       const res = await generateText({
@@ -162,10 +212,18 @@ export const analyzeInvoice = createServerFn({ method: "POST" })
         console.error("[analyzeInvoice] responseBody:", error.responseBody);
         if (error.responseBody) detail = `${error.statusCode ?? ""} ${error.responseBody}`.trim();
       }
+      if (geminiKey) {
+        try {
+          text = await analyzeWithGemini(geminiKey, data.mimeType, data.dataBase64);
+        } catch (geminiError) {
+          console.error("[analyzeInvoice] échec du secours Gemini:", geminiError);
+          detail = `${detail} | ${geminiError instanceof Error ? geminiError.message : String(geminiError)}`;
+        }
+      }
       // Préfixe "MANUAL:" reconnu côté client : au lieu d'un mur d'erreur, on
       // bascule la personne sur la saisie manuelle pour ne jamais la bloquer
       // complètement si l'IA est indisponible.
-      throw new Error(`MANUAL:${detail}`);
+      if (!text) throw new Error(`MANUAL:${detail}`);
     }
 
     let parsed: unknown;
