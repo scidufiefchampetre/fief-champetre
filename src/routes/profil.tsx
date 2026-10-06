@@ -323,7 +323,7 @@ function ProfilPage() {
 
       <div className="animate-rise">
         <h1 className="page-title">Mon profil.</h1>
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="page-lead">
           {member.firstName} {member.lastName}
         </p>
 
@@ -337,7 +337,7 @@ function ProfilPage() {
                 <CalendarDays className="h-5 w-5" strokeWidth={2} />
               </div>
               <div>
-                <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                   Prochain séjour
                 </div>
                 <div className="text-sm font-bold mt-0.5">
@@ -352,7 +352,7 @@ function ProfilPage() {
                 {!summary.reservationsLoading &&
                   !summary.reservationsError &&
                   summary.reservationsDueCount > 0 && (
-                    <div className="mt-1 text-[10px] font-semibold text-brand-secondary">
+                    <div className="mt-1 text-2xs font-semibold text-brand-secondary">
                       {fmtEur(summary.reservationsDueAmount)} à régler
                     </div>
                   )}
@@ -367,7 +367,7 @@ function ProfilPage() {
                 <HardHat className="h-5 w-5" />
               </div>
               <div>
-                <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                   Prochain chantier
                 </div>
                 <div className="mt-0.5 text-sm font-bold">Chargement…</div>
@@ -382,7 +382,7 @@ function ProfilPage() {
                 <HardHat className="h-5 w-5" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                   Prochain chantier
                 </div>
                 <div className="mt-0.5 text-sm font-bold">Impossible de charger les chantiers</div>
@@ -406,7 +406,7 @@ function ProfilPage() {
                   <HardHat className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                     Prochain chantier
                   </div>
                   <div className="mt-0.5 text-sm font-bold">
@@ -418,11 +418,11 @@ function ProfilPage() {
               </Link>
               <div className="border-t border-border/70 px-4 py-3">
                 <div className="flex items-center justify-between">
-                  <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                     Ton intendance
                   </div>
                   {summary.nextChantierDuties.length > 0 && (
-                    <span className="rounded-full bg-brand-accent/15 px-2 py-0.5 text-[10px] font-bold text-brand-accent">
+                    <span className="rounded-full bg-brand-secondary/10 px-2.5 py-1 text-2xs font-bold text-brand-secondary">
                       {summary.nextChantierDuties.length} mission
                       {summary.nextChantierDuties.length > 1 ? "s" : ""}
                     </span>
@@ -451,18 +451,18 @@ function ProfilPage() {
                               }}
                               className="group flex items-center gap-3 px-3 py-2.5 transition hover:bg-secondary/60"
                             >
-                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-accent/15 text-brand-accent">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-secondary text-brand-secondary-foreground">
                                 <DutyIcon className="h-4 w-4" />
                               </div>
                               <div className="min-w-0 flex-1">
-                                <div className="truncate text-xs font-bold">
+                                <div className="truncate text-sm font-semibold">
                                   {DUTY_ROLE_LABEL[duty.role]}
                                 </div>
-                                <div className="truncate text-[10px] text-muted-foreground">
+                                <div className="truncate text-xs text-muted-foreground">
                                   {DUTY_SLOT_LABEL[duty.role][duty.slot]}
                                 </div>
                               </div>
-                              <div className="shrink-0 text-right text-[10px] font-semibold tabular-nums text-foreground/80">
+                              <div className="shrink-0 text-right text-xs font-semibold tabular-nums text-muted-foreground">
                                 {fmtDate(duty.date)}
                               </div>
                               <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
@@ -481,7 +481,7 @@ function ProfilPage() {
                       signupDemo: false,
                       focus: "intendance",
                     }}
-                    className="mt-1.5 inline-flex items-center gap-1 text-[10px] font-semibold text-brand-secondary"
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-brand-secondary"
                   >
                     Aucune mission choisie · voir les créneaux <ArrowRight className="h-3 w-3" />
                   </Link>
@@ -497,7 +497,7 @@ function ProfilPage() {
                 <HardHat className="h-5 w-5 text-brand-secondary" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                   Prochain chantier
                 </div>
                 <div className="mt-0.5 text-sm font-bold">Aucune inscription</div>
@@ -515,7 +515,7 @@ function ProfilPage() {
                 <Wallet className="h-5 w-5" strokeWidth={2} />
               </div>
               <div>
-                <div className="text-[10px] font-medium uppercase tracking-widest opacity-70">
+                <div className="text-2xs font-medium uppercase tracking-widest opacity-70">
                   Dépenses en attente
                 </div>
                 <div className="text-sm font-bold mt-0.5">
@@ -538,7 +538,7 @@ function ProfilPage() {
                 <HardHat className="h-5 w-5 text-brand-secondary" strokeWidth={2} />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                   Tes jours de chantier
                 </div>
                 <div
@@ -562,7 +562,7 @@ function ProfilPage() {
                 }}
               />
             </div>
-            <div className="mt-1.5 flex items-center justify-between text-[10px] font-semibold text-muted-foreground">
+            <div className="mt-1.5 flex items-center justify-between text-2xs font-semibold text-muted-foreground">
               <span>
                 {chantierDays ?? 0} / {CHANTIER_TARGET}
               </span>
@@ -574,7 +574,7 @@ function ProfilPage() {
             </div>
             <Link
               to="/chantiers"
-              className="mt-2 block text-[10px] font-semibold text-brand-secondary hover:underline"
+              className="mt-2 block text-2xs font-semibold text-brand-secondary hover:underline"
             >
               Voir les prochains chantiers →
             </Link>
@@ -587,7 +587,7 @@ function ProfilPage() {
         >
           <span className="flex items-center gap-2">
             <Pencil className="h-4 w-4 text-muted-foreground" />
-            <span className="text-[13px] font-semibold text-foreground">
+            <span className="text-sm font-semibold text-foreground">
               Modifier mes informations
             </span>
           </span>
@@ -601,14 +601,14 @@ function ProfilPage() {
           >
             <SheetHeader className="mb-5">
               <SheetTitle className="page-title text-left">Mes informations.</SheetTitle>
-              <p className="mt-2 text-sm text-muted-foreground">
+              <p className="page-lead">
                 {member.firstName} {member.lastName} · coordonnées et IBAN
               </p>
             </SheetHeader>
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                     Prénom
                   </div>
                   <div className="mt-1.5 rounded-2xl border border-border bg-secondary/50 px-4 py-3.5 text-base font-semibold">
@@ -616,7 +616,7 @@ function ProfilPage() {
                   </div>
                 </div>
                 <div>
-                  <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+                  <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground">
                     Nom
                   </div>
                   <div className="mt-1.5 rounded-2xl border border-border bg-secondary/50 px-4 py-3.5 text-base font-semibold">
@@ -624,7 +624,7 @@ function ProfilPage() {
                   </div>
                 </div>
               </div>
-              <p className="text-[10px] text-muted-foreground/80">
+              <p className="text-2xs text-muted-foreground/80">
                 Prénom et nom ne sont pas modifiables ici : c'est ce qui relie tes réservations et
                 dépenses passées.
               </p>
@@ -653,17 +653,17 @@ function ProfilPage() {
 
               <div className="rounded-2xl border border-border/60 bg-secondary/30 p-4 space-y-4">
                 <div>
-                  <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                  <div className="text-2xs font-medium uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
                     <Heart className="h-3 w-3" /> Ma famille (optionnel)
                   </div>
-                  <p className="mt-1 text-[10px] text-muted-foreground/80">
+                  <p className="mt-1 text-2xs text-muted-foreground/80">
                     Conjoint·e et enfants — ça te permettra de les ajouter aux résa et aux chantiers
                     plus rapidement.
                   </p>
                 </div>
 
                 <div>
-                  <div className="text-[10px] font-medium text-muted-foreground mb-1">
+                  <div className="text-2xs font-medium text-muted-foreground mb-1">
                     Conjoint·e
                   </div>
                   <select
@@ -681,7 +681,7 @@ function ProfilPage() {
                 </div>
 
                 <div>
-                  <div className="text-[10px] font-medium text-muted-foreground mb-1">Enfants</div>
+                  <div className="text-2xs font-medium text-muted-foreground mb-1">Enfants</div>
 
                   <div className="mt-2 space-y-2">
                     {loadingChildren && (
@@ -702,7 +702,7 @@ function ProfilPage() {
                         <div className="text-sm">
                           <span className="font-semibold">{c.firstName}</span>
                           {c.birthday && (
-                            <span className="ml-1.5 text-[11px] text-muted-foreground">
+                            <span className="ml-1.5 text-xs text-muted-foreground">
                               né(e) le {c.birthday}
                             </span>
                           )}
@@ -748,7 +748,7 @@ function ProfilPage() {
             <div className="sticky bottom-0 mt-4 flex items-center gap-2 bg-background/90 pb-4 pt-3 backdrop-blur-md">
               <button
                 onClick={() => setEditOpen(false)}
-                className="tap rounded-2xl border border-border bg-card px-4 py-3.5 text-[13px] font-semibold text-muted-foreground hover:bg-secondary transition"
+                className="tap rounded-2xl border border-border bg-card px-4 py-3.5 text-sm font-semibold text-muted-foreground hover:bg-secondary transition"
               >
                 Annuler
               </button>
